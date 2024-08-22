@@ -1,5 +1,7 @@
-import { aCells, bCells, superposition } from "./solver.js";
-import { generate, candidates, loneSingles, hiddenSingles, omissions, NakedHiddenGroups, uniqueRectangle, bentWings, xWing, swordfish, jellyfish, bruteForce, phistomefel, REDUCE } from "./solver.js";
+import {
+	generate, candidates, loneSingles, hiddenSingles, omissions, NakedHiddenGroups, uniqueRectangle, bentWings, xWing, swordfish, jellyfish, bruteForce, phistomefel,
+	REDUCE, aCells, bCells, superposition,
+} from "./solver.js";
 
 const consoleOut = (result) => {
 	const lines = [];
