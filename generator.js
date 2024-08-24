@@ -76,7 +76,7 @@ const fillSolve = (cells, search) => {
 		progress = omissions(cells);
 		if (progress) continue;
 
-		if (search === "?markers") continue;
+		if (search === "?markers" || search.startsWith("?strategy=")) continue;
 
 		const nakedHiddenResult = new NakedHiddenGroups(cells).nakedHiddenSets();
 		if (nakedHiddenResult) {
