@@ -147,15 +147,17 @@ const makeArray = (size) => {
 	for (let i = 0; i < size; i++) array[i] = i;
 	return array;
 }
-const randomize = (array) => {
-	const size = array.length;
-	for (let i = 0; i < size; i++) {
-		const position = Math.floor(Math.random() * size);
-		if (position !== i) {
-			const tmp = array[position];
-			array[position] = array[i];
-			array[i] = tmp;
-		}
+const randomize = (array, degree = 1) => {
+	let currentIndex = array.length;
+	while (currentIndex != 0) {
+		const index = currentIndex;
+		currentIndex--;
+		if (degree < 1 && Math.random() < degree) continue;
+
+		const randomIndex = Math.floor(Math.random() * index);
+		const tmp = array[currentIndex];
+		array[currentIndex] = array[randomIndex];
+		array[randomIndex] = tmp;
 	}
 }
 
@@ -361,17 +363,25 @@ const sudokuGenerator = (cells, target = 0) => {
 			randomize(rndi);
 
 			const rnd = [];
-			const rndChanceA = Math.random();
-			for (const cell of aCells) {
-				if (Math.random() < rndChanceA) rnd.push(cell);
-			}
-			const rndChanceB = Math.random() + 0.1;
-			for (const cell of bCells) {
-				if (Math.random() < rndChanceB) rnd.push(cell);
+			const rnda = [];
+			const rndb = [];
+			for (const cell of aCells) rnda.push(cell);
+			for (const cell of bCells) rndb.push(cell);
+
+			randomize(rnda);
+			randomize(rndb);
+
+			if (Math.random() < 0.5) {
+				rnd.push(...rnda);
+				rnd.push(...rndb);
+			} else {
+				rnd.push(...rnda);
+				rnd.push(...rndb);
 			}
 
 			const rndSet = new Set(rnd);
-			randomize(rnd);
+
+			randomize(rnd, Math.random());
 
 			for (let i = 0; i < 81; i++) {
 				const index = rndi[i];
