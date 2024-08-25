@@ -10,13 +10,16 @@ $username = "snovakow";
 $password = "kewbac-recge1-Fiwpux";
 $dbname = "sudoku";
 
+$max = false;
+if (isset($_GET['max'])) $max = true;
+
 try {
 	$conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
 	$conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION, PDO::ATTR_STRINGIFY_FETCHES);
 
 	$table = "puzzles";
 
-	if ($type === "simple") {
+	if ($type === "simple" || !$max) {
 		$stmt = $conn->prepare("
 			SELECT p.`puzzleClues` FROM puzzles AS p WHERE p.`id` IN (
 				SELECT s.`puzzle_id` FROM " . $type . " AS s   
