@@ -1103,131 +1103,132 @@ const superposition = (cells) => {
 	return results;
 }
 
+// 00 01 02|03 04 05|06 07 08
+// 09 10 11|12 13 14|15 16 17
+// 18 19 20|21 22 23|24 25 26
+// --------|--------|--------
+// 27 28 29|30 31 32|33 34 35
+// 36 37 38|39 40 41|42 43 44
+// 45 46 47|48 49 50|51 52 53
+// --------|--------|--------
+// 54 55 56|57 58 59|60 61 62
+// 63 64 65|66 67 68|69 70 71
+// 72 73 74|75 76 77|78 79 80
+
+// A symbols = B symbols
+// AA.|...|.AA
+// AA.|...|.AA
+// ..B|BBB|B..
+// ---|---|---
+// ..B|...|B..
+// ..B|...|B..
+// ..B|...|B..
+// ---|---|---
+// ..B|BBB|B..
+// AA.|...|.AA
+// AA.|...|.AA
+
+// A1.|...|.A2
+// A1.|...|.A2
+// ..5|B1B|5..
+// ---|---|---
+// ..B|...|B..
+// ..4|...|2..
+// ..B|...|B..
+// ---|---|---
+// ..5|B3B|5..
+// A3.|...|.A4
+// A3.|...|.A4
+
 export const aCells = new Set();
 export const bCells = new Set();
+
+const a1Cells = new Set();
+a1Cells.add(0);
+a1Cells.add(1);
+a1Cells.add(9);
+a1Cells.add(10);
+
+const a2Cells = new Set();
+a2Cells.add(7);
+a2Cells.add(8);
+a2Cells.add(16);
+a2Cells.add(17);
+
+const a3Cells = new Set();
+a3Cells.add(63);
+a3Cells.add(64);
+a3Cells.add(72);
+a3Cells.add(73);
+
+const a4Cells = new Set();
+a4Cells.add(70);
+a4Cells.add(71);
+a4Cells.add(79);
+a4Cells.add(80);
+
+const b1Cells = new Set();
+b1Cells.add(21);
+b1Cells.add(22);
+b1Cells.add(23);
+const b1OuterCells = new Set();
+b1OuterCells.add(20);
+b1OuterCells.add(21);
+b1OuterCells.add(22);
+b1OuterCells.add(23);
+b1OuterCells.add(24);
+
+const b2Cells = new Set();
+b2Cells.add(33);
+b2Cells.add(42);
+b2Cells.add(51);
+const b2OuterCells = new Set();
+b2OuterCells.add(24);
+b2OuterCells.add(33);
+b2OuterCells.add(42);
+b2OuterCells.add(51);
+b2OuterCells.add(60);
+
+const b3Cells = new Set();
+b3Cells.add(57);
+b3Cells.add(58);
+b3Cells.add(59);
+const b3OuterCells = new Set();
+b3OuterCells.add(56);
+b3OuterCells.add(57);
+b3OuterCells.add(58);
+b3OuterCells.add(59);
+b3OuterCells.add(60);
+
+const b4Cells = new Set();
+b4Cells.add(29);
+b4Cells.add(38);
+b4Cells.add(47);
+const b4OuterCells = new Set();
+b4OuterCells.add(20);
+b4OuterCells.add(29);
+b4OuterCells.add(38);
+b4OuterCells.add(47);
+b4OuterCells.add(56);
+
+const b5Cells = new Set();
+b5Cells.add(20);
+b5Cells.add(24);
+b5Cells.add(60);
+b5Cells.add(56);
+
+for (const i of a1Cells) aCells.add(i);
+for (const i of a2Cells) aCells.add(i);
+for (const i of a3Cells) aCells.add(i);
+for (const i of a4Cells) aCells.add(i);
+
+for (const i of b1Cells) bCells.add(i);
+for (const i of b2Cells) bCells.add(i);
+for (const i of b3Cells) bCells.add(i);
+for (const i of b4Cells) bCells.add(i);
+for (const i of b5Cells) bCells.add(i);
+
 const phistomefel = (cells) => {
-	// 00 01 02|03 04 05|06 07 08
-	// 09 10 11|12 13 14|15 16 17
-	// 18 19 20|21 22 23|24 25 26
-	// --------|--------|--------
-	// 27 28 29|30 31 32|33 34 35
-	// 36 37 38|39 40 41|42 43 44
-	// 45 46 47|48 49 50|51 52 53
-	// --------|--------|--------
-	// 54 55 56|57 58 59|60 61 62
-	// 63 64 65|66 67 68|69 70 71
-	// 72 73 74|75 76 77|78 79 80
-
-	// A symbols = B symbols
-	// AA.|...|.AA
-	// AA.|...|.AA
-	// ..B|BBB|B..
-	// ---|---|---
-	// ..B|...|B..
-	// ..B|...|B..
-	// ..B|...|B..
-	// ---|---|---
-	// ..B|BBB|B..
-	// AA.|...|.AA
-	// AA.|...|.AA
-
-	// A1.|...|.A2
-	// A1.|...|.A2
-	// ..5|B1B|5..
-	// ---|---|---
-	// ..B|...|B..
-	// ..4|...|2..
-	// ..B|...|B..
-	// ---|---|---
-	// ..5|B3B|5..
-	// A3.|...|.A4
-	// A3.|...|.A4
-
-	const a1Cells = new Set();
-	a1Cells.add(0);
-	a1Cells.add(1);
-	a1Cells.add(9);
-	a1Cells.add(10);
-
-	const a2Cells = new Set();
-	a2Cells.add(7);
-	a2Cells.add(8);
-	a2Cells.add(16);
-	a2Cells.add(17);
-
-	const a3Cells = new Set();
-	a3Cells.add(63);
-	a3Cells.add(64);
-	a3Cells.add(72);
-	a3Cells.add(73);
-
-	const a4Cells = new Set();
-	a4Cells.add(70);
-	a4Cells.add(71);
-	a4Cells.add(79);
-	a4Cells.add(80);
-
-	const b1Cells = new Set();
-	b1Cells.add(21);
-	b1Cells.add(22);
-	b1Cells.add(23);
-	const b1OuterCells = new Set();
-	b1OuterCells.add(20);
-	b1OuterCells.add(21);
-	b1OuterCells.add(22);
-	b1OuterCells.add(23);
-	b1OuterCells.add(24);
-
-	const b2Cells = new Set();
-	b2Cells.add(33);
-	b2Cells.add(42);
-	b2Cells.add(51);
-	const b2OuterCells = new Set();
-	b2OuterCells.add(24);
-	b2OuterCells.add(33);
-	b2OuterCells.add(42);
-	b2OuterCells.add(51);
-	b2OuterCells.add(60);
-
-	const b3Cells = new Set();
-	b3Cells.add(57);
-	b3Cells.add(58);
-	b3Cells.add(59);
-	const b3OuterCells = new Set();
-	b3OuterCells.add(56);
-	b3OuterCells.add(57);
-	b3OuterCells.add(58);
-	b3OuterCells.add(59);
-	b3OuterCells.add(60);
-
-	const b4Cells = new Set();
-	b4Cells.add(29);
-	b4Cells.add(38);
-	b4Cells.add(47);
-	const b4OuterCells = new Set();
-	b4OuterCells.add(20);
-	b4OuterCells.add(29);
-	b4OuterCells.add(38);
-	b4OuterCells.add(47);
-	b4OuterCells.add(56);
-
-	const b5Cells = new Set();
-	b5Cells.add(20);
-	b5Cells.add(24);
-	b5Cells.add(60);
-	b5Cells.add(56);
-
-	for (const i of a1Cells) aCells.add(i);
-	for (const i of a2Cells) aCells.add(i);
-	for (const i of a3Cells) aCells.add(i);
-	for (const i of a4Cells) aCells.add(i);
-
-	for (const i of b1Cells) bCells.add(i);
-	for (const i of b2Cells) bCells.add(i);
-	for (const i of b3Cells) bCells.add(i);
-	for (const i of b4Cells) bCells.add(i);
-	for (const i of b5Cells) bCells.add(i);
-
 	let reduced = false;
 	let filled = false;
 
