@@ -24,6 +24,10 @@ if (!isset($_GET['phistomefel'])) die();
 if (!isset($_GET['superpositions'])) die();
 if (!isset($_GET['bruteForce'])) die();
 
+$table = "puzzles";
+if (isset($_GET['dbphistomefel'])) $table = "phistomefel";
+else die();
+
 $puzzleClues = $_GET['puzzleClues'];
 $puzzleFilled = $_GET['puzzleFilled'];
 $clueCount = $_GET['clueCount'];
@@ -72,9 +76,6 @@ try {
 	// set the PDO error mode to exception
 	$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 	// echo "Connected successfully";
-
-	$table = "puzzles";
-	if (isset($_GET['dbphistomefel'])) $table = "phistomefel";
 
 	$sql = "INSERT INTO " . $table . " (puzzleClues, puzzleFilled, clueCount, simple, naked2, naked3, naked4, hidden2, hidden3, hidden4, 
 			yWing, xyzWing, xWing, swordfish, jellyfish, uniqueRectangle, phistomefel, has_naked2, has_naked3, has_naked4, has_hidden2, has_hidden3, has_hidden4, 
