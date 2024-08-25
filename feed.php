@@ -148,48 +148,50 @@ try {
 		printStat("phistomefel", $phistomefel, $markers);
 		echo  "<br/>";
 
-		flushOut("--- Strategies Isolated", $flush);
-		$naked2 = queryStrategy($conn, 'naked2', $markers);
-		$naked3 = queryStrategy($conn, 'naked3', $markers);
-		$naked4 = queryStrategy($conn, 'naked4', $markers);
-		$hidden2 = queryStrategy($conn, 'hidden2', $markers);
-		$hidden3 = queryStrategy($conn, 'hidden3', $markers);
-		$hidden4 = queryStrategy($conn, 'hidden4', $markers);
-		$yWing = queryStrategy($conn, 'yWing', $markers);
-		$xyzWing = queryStrategy($conn, 'xyzWing', $markers);
-		$xWing = queryStrategy($conn, 'xWing', $markers);
-		$swordfish = queryStrategy($conn, 'swordfish', $markers);
-		$jellyfish = queryStrategy($conn, 'jellyfish', $markers);
-		$uniqueRectangle = queryStrategy($conn, 'uniqueRectangle', $markers);
+		if (!isset($_GET['dbphistomefel'])) {
+			flushOut("--- Strategies Isolated", $flush);
+			$naked2 = queryStrategy($conn, 'naked2', $markers);
+			$naked3 = queryStrategy($conn, 'naked3', $markers);
+			$naked4 = queryStrategy($conn, 'naked4', $markers);
+			$hidden2 = queryStrategy($conn, 'hidden2', $markers);
+			$hidden3 = queryStrategy($conn, 'hidden3', $markers);
+			$hidden4 = queryStrategy($conn, 'hidden4', $markers);
+			$yWing = queryStrategy($conn, 'yWing', $markers);
+			$xyzWing = queryStrategy($conn, 'xyzWing', $markers);
+			$xWing = queryStrategy($conn, 'xWing', $markers);
+			$swordfish = queryStrategy($conn, 'swordfish', $markers);
+			$jellyfish = queryStrategy($conn, 'jellyfish', $markers);
+			$uniqueRectangle = queryStrategy($conn, 'uniqueRectangle', $markers);
 
-		$markers = 0;
-		$markers += $naked2['count'];
-		$markers += $naked3['count'];
-		$markers += $naked4['count'];
-		$markers += $hidden2['count'];
-		$markers += $hidden3['count'];
-		$markers += $hidden4['count'];
-		$markers += $yWing['count'];
-		$markers += $xyzWing['count'];
-		$markers += $xWing['count'];
-		$markers += $swordfish['count'];
-		$markers += $jellyfish['count'];
-		$markers += $uniqueRectangle['count'];
-		$markers += $phistomefel['count'];
+			$markers = 0;
+			$markers += $naked2['count'];
+			$markers += $naked3['count'];
+			$markers += $naked4['count'];
+			$markers += $hidden2['count'];
+			$markers += $hidden3['count'];
+			$markers += $hidden4['count'];
+			$markers += $yWing['count'];
+			$markers += $xyzWing['count'];
+			$markers += $xWing['count'];
+			$markers += $swordfish['count'];
+			$markers += $jellyfish['count'];
+			$markers += $uniqueRectangle['count'];
+			$markers += $phistomefel['count'];
 
-		printStat("Naked 2 (" . $naked2['max'] . ")", $naked2['count'], $markers);
-		printStat("Naked 3 (" . $naked3['max'] . ")", $naked3['count'], $markers);
-		printStat("Naked 4 (" . $naked4['max'] . ")", $naked4['count'], $markers);
-		printStat("Hidden 2 (" . $hidden2['max'] . ")", $hidden2['count'], $markers);
-		printStat("Hidden 3 (" . $hidden3['max'] . ")", $hidden3['count'], $markers);
-		printStat("Hidden 4 (" . $hidden4['max'] . ")", $hidden4['count'], $markers);
-		printStat("yWing (" . $yWing['max'] . ")", $yWing['count'], $markers);
-		printStat("xyzWing (" . $xyzWing['max'] . ")", $xyzWing['count'], $markers);
-		printStat("xWing (" . $xWing['max'] . ")", $xWing['count'], $markers);
-		printStat("swordfish (" . $swordfish['max'] . ")", $swordfish['count'], $markers);
-		printStat("jellyfish (" . $jellyfish['max'] . ")", $jellyfish['count'], $markers);
-		printStat("uniqueRectangle (" . $uniqueRectangle['max'] . ")", $uniqueRectangle['count'], $markers);
-		echo  "<br/>";
+			printStat("Naked 2 (" . $naked2['max'] . ")", $naked2['count'], $markers);
+			printStat("Naked 3 (" . $naked3['max'] . ")", $naked3['count'], $markers);
+			printStat("Naked 4 (" . $naked4['max'] . ")", $naked4['count'], $markers);
+			printStat("Hidden 2 (" . $hidden2['max'] . ")", $hidden2['count'], $markers);
+			printStat("Hidden 3 (" . $hidden3['max'] . ")", $hidden3['count'], $markers);
+			printStat("Hidden 4 (" . $hidden4['max'] . ")", $hidden4['count'], $markers);
+			printStat("yWing (" . $yWing['max'] . ")", $yWing['count'], $markers);
+			printStat("xyzWing (" . $xyzWing['max'] . ")", $xyzWing['count'], $markers);
+			printStat("xWing (" . $xWing['max'] . ")", $xWing['count'], $markers);
+			printStat("swordfish (" . $swordfish['max'] . ")", $swordfish['count'], $markers);
+			printStat("jellyfish (" . $jellyfish['max'] . ")", $jellyfish['count'], $markers);
+			printStat("uniqueRectangle (" . $uniqueRectangle['max'] . ")", $uniqueRectangle['count'], $markers);
+			echo  "<br/>";
+		}
 	}
 
 	if ($mode === 3 || $mode === -1) {
