@@ -59,11 +59,11 @@ class Board {
 	draw(pickerVisible, selectedRow, selectedCol) {
 		const ctx = canvas.getContext("2d");
 
-		ctx.fillStyle = 'white';
+		ctx.fillStyle = 'WhiteSmoke';
 		ctx.fillRect(0, 0, canvas.width, canvas.height);
 		// ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-		ctx.strokeStyle = 'black';
+		ctx.strokeStyle = 'Black';
 
 		const sizeTotal = canvas.width;
 		const size = sizeTotal - LINE_THICK * window.devicePixelRatio;
