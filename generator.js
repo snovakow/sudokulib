@@ -85,8 +85,6 @@ const fillSolve = (cells, search) => {
 			continue;
 		}
 
-		if (search === "?sets") continue;
-
 		const bentWingResults = bentWings(cells);
 		if (bentWingResults.length > 0) {
 			progress = true;
@@ -114,8 +112,6 @@ const fillSolve = (cells, search) => {
 			continue;
 		}
 
-		if (search === "?all") continue;
-
 		if (!bruteForceFill) bruteForceFill = !isFinished(cells);
 
 		const superpositionResults = superposition(cells);
@@ -125,7 +121,7 @@ const fillSolve = (cells, search) => {
 			continue;
 		}
 
-		if (search === "?brute" && bruteForceFill) bruteForce(cells);
+		// if (bruteForceFill) bruteForce(cells);
 	} while (progress);
 
 	return {
@@ -148,16 +144,13 @@ const makeArray = (size) => {
 	return array;
 }
 const randomize = (array, degree = 1) => {
-	let currentIndex = array.length;
-	while (currentIndex != 0) {
-		const index = currentIndex;
-		currentIndex--;
+	for (let i = array.length - 1; i > 0; i--) {
 		if (degree < 1 && Math.random() < degree) continue;
 
-		const randomIndex = Math.floor(Math.random() * index);
-		const tmp = array[currentIndex];
-		array[currentIndex] = array[randomIndex];
-		array[randomIndex] = tmp;
+		const randomi = Math.floor(Math.random() * (i + 1));
+		const tmp = array[i];
+		array[i] = array[randomi];
+		array[randomi] = tmp;
 	}
 }
 
