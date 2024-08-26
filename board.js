@@ -72,11 +72,19 @@ class Board {
 
 		let base;
 		base = LINE_THICK_HALF * window.devicePixelRatio;
+		const pixBase = pixAlign(base);
 		if (pickerVisible) {
-			const off = 0.5;
 			ctx.fillStyle = 'cyan';
-			const pix = pixAlign(base);
-			ctx.fillRect(size * selectedCol / 9 + pix, pixAlign(size * selectedRow / 9) + pix, pixAlign(unitSize), pixAlign(unitSize));
+			ctx.fillRect(size * selectedCol / 9 + pixBase, pixAlign(size * selectedRow / 9) + pixBase, pixAlign(unitSize), pixAlign(unitSize));
+		}
+
+		for (let r = 0; r < GRID_SIDE; r++) {
+			for (let c = 0; c < GRID_SIDE; c++) {
+				const cell = this.startCells[r * 9 + c];
+				if (cell.symbol === 0) continue;
+				ctx.fillStyle = 'White'; // White WhiteSmoke Gainsboro
+				ctx.fillRect(size * c / 9 + pixBase, pixAlign(size * r / 9) + pixBase, pixAlign(unitSize), pixAlign(unitSize));
+			}
 		}
 
 		ctx.beginPath();
@@ -118,7 +126,7 @@ class Board {
 
 		ctx.textAlign = 'center';
 		ctx.textBaseline = 'bottom';
-		ctx.fillStyle = 'black';
+		ctx.fillStyle = 'Black'; // DimGray Black
 
 		let measure = null;
 		let measureMarker = null;
@@ -128,7 +136,8 @@ class Board {
 		for (let r = 0; r < GRID_SIDE; r++, roff += unitSize) {
 			let coff = base;
 			for (let c = 0; c < GRID_SIDE; c++, coff += unitSize) {
-				const cell = this.cells[r * 9 + c];
+				const index = r * 9 + c;
+				const cell = this.cells[index];
 				if (cell.size > 0 && cell.show) {
 					ctx.font = "100 " + pixAlign(unitSize * 0.7 * 1 / 3) + "px " + FONT;
 					// ctx.font = "100 " + unitSize * 0.75 * 1 / 3 + "px " + FONTS[fontCurrent];
@@ -151,15 +160,16 @@ class Board {
 					const symbol = cell.symbol;
 					if (symbol === 0) continue;
 
-					ctx.font = "100 " + pixAlign(unitSize * 0.7) + "px " + FONT;
+					const fontSize = pixAlign(unitSize * 0.7);
+					ctx.font = "100 " + fontSize + "px " + FONT;
 					// ctx.font = "100 " + unitSize * 0.75 + "px " + FONTS[fontCurrent];
 					// ctx.font = "100 " + unitSize * 0.8 + "px " + FONTS[fontCurrent];
 
 					if (!measure) measure = ctx.measureText("0");
 
-					const x = coff;
-					const y = roff + (measure.actualBoundingBoxAscent * 0.5 - measure.actualBoundingBoxDescent * 0.5);
-					ctx.fillText(symbol, pixAlign(x), pixAlign(y));
+					const x = pixAlign(coff);
+					const y = pixAlign(roff + (measure.actualBoundingBoxAscent * 0.5 - measure.actualBoundingBoxDescent * 0.5));
+					ctx.fillText(symbol, x, y);
 				}
 			}
 		}
