@@ -59,7 +59,7 @@ class Board {
 	draw(pickerVisible, selectedRow, selectedCol) {
 		const ctx = canvas.getContext("2d");
 
-		ctx.fillStyle = 'WhiteSmoke';
+		ctx.fillStyle = 'WhiteSmoke'; // GhostWhite White WhiteSmoke Gainsboro
 		ctx.fillRect(0, 0, canvas.width, canvas.height);
 		// ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -78,14 +78,14 @@ class Board {
 			ctx.fillRect(size * selectedCol / 9 + pixBase, pixAlign(size * selectedRow / 9) + pixBase, pixAlign(unitSize), pixAlign(unitSize));
 		}
 
-		for (let r = 0; r < GRID_SIDE; r++) {
-			for (let c = 0; c < GRID_SIDE; c++) {
-				const cell = this.startCells[r * 9 + c];
-				if (cell.symbol === 0) continue;
-				ctx.fillStyle = 'White'; // White WhiteSmoke Gainsboro
-				ctx.fillRect(size * c / 9 + pixBase, pixAlign(size * r / 9) + pixBase, pixAlign(unitSize), pixAlign(unitSize));
-			}
-		}
+		// for (let r = 0; r < GRID_SIDE; r++) {
+		// 	for (let c = 0; c < GRID_SIDE; c++) {
+		// 		const cell = this.startCells[r * 9 + c];
+		// 		if (cell.symbol === 0) continue;
+		// 		ctx.fillStyle = 'WhiteSmoke';
+		// 		ctx.fillRect(size * c / 9 + pixBase, pixAlign(size * r / 9) + pixBase, pixAlign(unitSize), pixAlign(unitSize));
+		// 	}
+		// }
 
 		ctx.beginPath();
 		ctx.lineWidth = LINE_THICK * window.devicePixelRatio;
@@ -177,4 +177,65 @@ class Board {
 }
 const board = new Board();
 
-export { board, FONT };
+const storageToCells = (data) => {
+	const dataCells = data.split(",");
+	for (let i = 0; i < 81; i++) {
+		const dataCell = dataCells[i];
+		const startCell = board.startCells[i];
+		const cell = board.cells[i];
+		const type = dataCell[0];
+		const value = dataCell.substring(1);
+		if (type == "0") {
+			startCell.symbol = parseInt(value);
+			cell.setSymbol(parseInt(value));
+		}
+		if (type == "1") {
+			startCell.symbol = 0;
+			cell.setSymbol(parseInt(value));
+		}
+		if (type == "2") {
+			startCell.symbol = 0;
+			cell.setSymbol(0);
+			const dataMarkers = value.split("");
+			for (let x = 0; x < 9; x++) {
+				const dataMark = dataMarkers[x];
+				if (dataMark == "0") cell.delete(x + 1);
+			}
+		}
+	}
+}
+const cellsToStorage = () => {
+	const dataCells = [];
+	for (let i = 0; i < 81; i++) {
+		const startCell = board.startCells[i];
+		let data = [];
+		if (startCell.symbol === 0) {
+			const cell = board.cells[i];
+			if (cell.symbol === 0) {
+				data += "2";
+				for (let x = 1; x <= 9; x++) {
+					if (cell.has(x)) {
+						data += "1";
+					} else {
+						data += "0";
+					}
+				}
+			} else {
+				data += "1" + cell.symbol;
+			}
+		} else {
+			data += "0" + startCell.symbol;
+		}
+		dataCells.push(data);
+	}
+	return dataCells.join(",");
+}
+
+const saveGrid = () => {
+	window.name = cellsToStorage();
+};
+const loadGrid = () => {
+	if (window.name) storageToCells(window.name);
+};
+
+export { board, FONT, loadGrid, saveGrid };
