@@ -1,4 +1,4 @@
-import { Cell, CellMarker, Grid } from "../sudokulib/Grid.js";
+import { Cell, CellCandidate, Grid } from "../sudokulib/Grid.js";
 const pixAlign = (val) => {
 	return Math.round(val) + 0.5;
 };
@@ -19,7 +19,7 @@ class Board {
 		this.canvas = canvas;
 
 		this.cells = new Grid();
-		for (const index of Grid.indices) this.cells[index] = new CellMarker(index);
+		for (const index of Grid.indices) this.cells[index] = new CellCandidate(index);
 
 		this.startCells = new Grid();
 		for (const index of Grid.indices) this.startCells[index] = new Cell(index);
@@ -59,7 +59,7 @@ class Board {
 	draw(pickerVisible, selectedRow, selectedCol) {
 		const ctx = canvas.getContext("2d");
 
-		ctx.fillStyle = 'WhiteSmoke'; // GhostWhite White WhiteSmoke Gainsboro
+		ctx.fillStyle = 'GhostWhite'; // GhostWhite White WhiteSmoke Gainsboro
 		ctx.fillRect(0, 0, canvas.width, canvas.height);
 		// ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -129,7 +129,7 @@ class Board {
 		ctx.fillStyle = 'Black'; // DimGray Black
 
 		let measure = null;
-		let measureMarker = null;
+		let measureCandidate = null;
 
 		base = LINE_THICK_HALF * window.devicePixelRatio + unitSize * 0.5;
 		let roff = base;
@@ -143,7 +143,7 @@ class Board {
 					// ctx.font = "100 " + unitSize * 0.75 * 1 / 3 + "px " + FONTS[fontCurrent];
 					// ctx.font = "100 " + unitSize * 0.8 * 1 / 3 + "px " + FONTS[fontCurrent];
 
-					if (!measureMarker) measureMarker = ctx.measureText("0");
+					if (!measureCandidate) measureCandidate = ctx.measureText("0");
 
 					for (let x = 0; x < 3; x++) {
 						for (let y = 0; y < 3; y++) {
@@ -151,7 +151,7 @@ class Board {
 							if (cell.has(symbol)) {
 								const spacing = 3.5;
 								const xx = coff + unitSize * (x - 1) / spacing;
-								const yy = roff + (measureMarker.actualBoundingBoxAscent * 0.5 - measureMarker.actualBoundingBoxDescent * 0.5) + unitSize * (y - 1) / spacing;
+								const yy = roff + (measureCandidate.actualBoundingBoxAscent * 0.5 - measureCandidate.actualBoundingBoxDescent * 0.5) + unitSize * (y - 1) / spacing;
 								ctx.fillText(symbol, xx, yy);
 							}
 						}
@@ -196,10 +196,10 @@ const storageToCells = (data) => {
 		if (type == "2") {
 			startCell.symbol = 0;
 			cell.setSymbol(0);
-			const dataMarkers = value.split("");
+			const dataCandidates = value.split("");
 			for (let x = 0; x < 9; x++) {
-				const dataMark = dataMarkers[x];
-				if (dataMark == "0") cell.delete(x + 1);
+				const dataCandidate = dataCandidates[x];
+				if (dataCandidate == "0") cell.delete(x + 1);
 			}
 		}
 	}
