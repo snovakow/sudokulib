@@ -1,4 +1,4 @@
-import { Grid, GridCell, Marker } from "./Grid.js";
+import { Grid, GridCell, Candidate } from "./Grid.js";
 
 let reduce_i = 0;
 const REDUCE = {
@@ -19,22 +19,22 @@ const REDUCE = {
 };
 
 const openSingles = (grid) => {
-	let marker = new Marker();
+	let candidate = new Candidate();
 	for (const group of Grid.groupTypes) {
 		let gridIndex = -1;
-		marker.clear();
+		candidate.clear();
 		for (const index of group) {
 			const symbol = grid[index];
 			if (symbol === 0) {
 				if (gridIndex === -1) { gridIndex = index; }
 				else { gridIndex = -1; break; }
 			} else {
-				marker.delete(symbol);
+				candidate.delete(symbol);
 			}
 		}
 		if (gridIndex !== -1) {
-			assert(marker.size === 1, "Invalid remainder for marker size " + marker.size);
-			grid[gridIndex] = marker.remainder;
+			assert(candidate.size === 1, "Invalid remainder for candidate size " + candidate.size);
+			grid[gridIndex] = candidate.remainder;
 			return true;
 		}
 	}
@@ -1015,12 +1015,9 @@ const superposition = (cells) => {
 		return reduced;
 	};
 
-	const masterMarkers2 = [];
-	const masterSymbols2 = [];
-
 	const results = [];
-	const superMarkers = (targetSize, pairs) => {
-		const masterMarkers = [];
+	const superCandidates = (targetSize, pairs) => {
+		const masterCandidates = [];
 		for (let index = 0; index < 81; index++) {
 			const cell = cells[index];
 			if (cell.symbol !== 0) continue;
@@ -1037,10 +1034,10 @@ const superposition = (cells) => {
 
 				cells.fromData(startBoard);
 			}
-			masterMarkers.push(supers);
+			masterCandidates.push(supers);
 		}
-		for (const supers of masterMarkers) {
-			const title = pairs ? "Cell Markers Pair" : "Cell Markers";
+		for (const supers of masterCandidates) {
+			const title = pairs ? "Cell Candidates Pair" : "Cell Candidates";
 			const reduced = checkCells(title, cells, supers, supers.length);
 			if (reduced.length > 0) results.push(...reduced);
 		}
@@ -1084,11 +1081,11 @@ const superposition = (cells) => {
 	}
 
 	for (let target = 2; target <= 9; target++) {
-		superMarkers(target, false);
+		superCandidates(target, false);
 		if (results.length > 0) break;
 		superSymbols(target, false);
 		if (results.length > 0) break;
-		superMarkers(target, true);
+		superCandidates(target, true);
 		if (results.length > 0) break;
 		superSymbols(target, true);
 		if (results.length > 0) break;
@@ -1234,14 +1231,14 @@ const phistomefel = (cells) => {
 
 	for (let x = 1; x <= 9; x++) {
 		let aCount = 0;
-		let aMarkers = 0;
+		let aCandidates = 0;
 		let aFull = true;
 		for (const aIndex of aCells) {
 			const aCell = cells[aIndex];
 			if (aCell.symbol === 0) {
 				if (aCell.has(x)) {
 					aFull = false;
-					aMarkers++;
+					aCandidates++;
 				}
 			} else {
 				if (aCell.symbol === x) aCount++;
@@ -1249,14 +1246,14 @@ const phistomefel = (cells) => {
 		}
 
 		let bCount = 0;
-		let bMarkers = 0;
+		let bCandidates = 0;
 		let bFull = true;
 		for (const bIndex of bCells) {
 			const bCell = cells[bIndex];
 			if (bCell.symbol === 0) {
 				if (bCell.has(x)) {
 					bFull = false;
-					bMarkers++;
+					bCandidates++;
 				}
 			} else {
 				if (bCell.symbol === x) bCount++;
@@ -1264,14 +1261,14 @@ const phistomefel = (cells) => {
 		}
 
 		if (aFull) {
-			if (aCount === bCount && bMarkers > 0) {
+			if (aCount === bCount && bCandidates > 0) {
 				for (const bIndex of bCells) {
 					const bCell = cells[bIndex];
 					if (bCell.symbol !== 0) continue;
 					if (bCell.delete(x)) reduced = true;
 				}
 			}
-			if (aCount === bCount + bMarkers) {
+			if (aCount === bCount + bCandidates) {
 				for (const bIndex of bCells) {
 					const bCell = cells[bIndex];
 					if (bCell.symbol !== 0) continue;
@@ -1283,14 +1280,14 @@ const phistomefel = (cells) => {
 			}
 		}
 		if (bFull) {
-			if (bCount === aCount && aMarkers > 0) {
+			if (bCount === aCount && aCandidates > 0) {
 				for (const aIndex of aCells) {
 					const aCell = cells[aIndex];
 					if (aCell.symbol !== 0) continue;
 					if (aCell.delete(x)) reduced = true;
 				}
 			}
-			if (bCount === aCount + aMarkers) {
+			if (bCount === aCount + aCandidates) {
 				for (const aIndex of aCells) {
 					const aCell = cells[aIndex];
 					if (aCell.symbol !== 0) continue;
