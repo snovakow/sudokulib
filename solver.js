@@ -53,7 +53,7 @@ const candidates = (cells) => {
 	}
 }
 
-const loneSingles = (cells) => {
+const nakedSingles = (cells) => {
 	let reduced = false;
 	for (const cell of cells) {
 		if (cell.symbol !== 0 || cell.size !== 1) continue;
@@ -889,7 +889,7 @@ const solve = (cells, pairs) => {
 	do {
 		candidates(cells);
 
-		progress = loneSingles(cells);
+		progress = nakedSingles(cells);
 		if (progress) continue;
 
 		progress = hiddenSingles(cells);
@@ -1413,6 +1413,6 @@ const generate = (cells) => {
 }
 
 export {
-	REDUCE, generate, candidates, loneSingles, hiddenSingles, omissions, NakedHiddenGroups, bentWings, xWing, swordfish, jellyfish,
+	REDUCE, generate, candidates, nakedSingles, hiddenSingles, omissions, NakedHiddenGroups, bentWings, xWing, swordfish, jellyfish,
 	uniqueRectangle, superposition, phistomefel, bruteForce
 };
