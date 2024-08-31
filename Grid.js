@@ -134,7 +134,7 @@ export class Cell {
 	}
 }
 
-export class CellMarker extends Cell {
+export class CellCandidate extends Cell {
 	constructor(index) {
 		super(index);
 
@@ -225,7 +225,7 @@ export class CellMarker extends Cell {
 	}
 }
 
-class Marker {
+class Candidate {
 	constructor() {
 		this.clear();
 	}
@@ -355,4 +355,4 @@ class Grid extends Array {
 	}
 }
 
-export { Grid, GridCell, Marker };
+export { Grid, GridCell, Candidate };
