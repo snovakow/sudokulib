@@ -1,5 +1,5 @@
 import {
-	generate, candidates, loneSingles, hiddenSingles, omissions, NakedHiddenGroups, uniqueRectangle, bentWings, xWing, swordfish, jellyfish, bruteForce, phistomefel,
+	generate, candidates, nakedSingles, hiddenSingles, omissions, NakedHiddenGroups, uniqueRectangle, bentWings, xWing, swordfish, jellyfish, bruteForce, phistomefel,
 	REDUCE, aCells, bCells, superposition,
 } from "./solver.js";
 
