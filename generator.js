@@ -67,7 +67,7 @@ const fillSolve = (cells, search) => {
 	do {
 		candidates(cells);
 
-		progress = loneSingles(cells);
+		progress = nakedSingles(cells);
 		if (progress) continue;
 
 		progress = hiddenSingles(cells);
@@ -75,8 +75,7 @@ const fillSolve = (cells, search) => {
 
 		progress = omissions(cells);
 		if (progress) continue;
-
-		if (search === "?markers" || search.startsWith("?strategy=")) continue;
+		if (search === "?candidates" || search.startsWith("?strategy=")) continue;
 
 		const nakedHiddenResult = new NakedHiddenGroups(cells).nakedHiddenSets();
 		if (nakedHiddenResult) {
