@@ -895,14 +895,14 @@ const solve = (cells, pairs) => {
 		progress = hiddenSingles(cells);
 		if (progress) continue;
 
-		progress = omissions(cells);
-		if (progress) continue;
-
 		if (pairs) {
 			const nakedHidden = new NakedHiddenGroups(cells);
 			progress = nakedHidden.nakedPair();
 			if (progress) continue;
 		}
+
+		// progress = omissions(cells);
+		// if (progress) continue;
 
 		// progress = nakedHidden.nakedTriple();
 		// if (progress) continue;
