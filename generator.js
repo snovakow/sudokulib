@@ -410,10 +410,10 @@ const sudokuGenerator = (cells, target = 0) => {
 		}
 	}
 
-	let hits = 0;
+	let clueCount = 0;
 	for (let i = 0; i < 81; i++) {
 		if (grid[i] !== 0) {
-			hits++;
+			clueCount++;
 		}
 	}
 	totalPuzzles++;
@@ -423,7 +423,7 @@ const sudokuGenerator = (cells, target = 0) => {
 		cell.setSymbol(grid[i]);
 	}
 
-	return { clueCount: hits, operations };
+	return clueCount;
 }
 
 
