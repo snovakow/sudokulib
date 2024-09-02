@@ -25,18 +25,18 @@ const consoleOut = (result) => {
 	lines.push("Swordfish: " + result.swordfishReduced);
 	lines.push("Jellyfish: " + result.jellyfishReduced);
 	lines.push("Deadly Pattern Unique Rectangle: " + result.uniqueRectangleReduced);
-	lines.push("Phistomefel: " + phistomefelReduced + (phistomefelFilled > 0 ? " + " + phistomefelFilled + " filled" : ""));
-	if (result.superpositionReduced.length > 0) {
-		const once = new Set();
-		for (const superpositionResult of result.superpositionReduced) {
-			const key = superpositionResult.type + " " + superpositionResult.size;
-			if (once.has(key)) continue;
+	// lines.push("Phistomefel: " + phistomefelReduced + (phistomefelFilled > 0 ? " + " + phistomefelFilled + " filled" : ""));
+	// if (result.superpositionReduced.length > 0) {
+	// 	const once = new Set();
+	// 	for (const superpositionResult of result.superpositionReduced) {
+	// 		const key = superpositionResult.type + " " + superpositionResult.size;
+	// 		if (once.has(key)) continue;
 
-			once.add(key);
+	// 		once.add(key);
 
-			lines.push("Superposition: " + key);
-		}
-	}
+	// 		lines.push("Superposition: " + key);
+	// 	}
+	// }
 	lines.push("Brute Force: " + result.bruteForceFill);
 	return lines;
 }
