@@ -231,9 +231,7 @@ const sodokoSolver = (grid) => {
 
 const skew = false;
 
-let operations = 0;
 const solutionCount = (grid, solutions = 0) => {
-	operations++;
 	for (let i = 0; i < 81; i++) {
 		if (grid[i] !== 0) continue;
 		const index = i;
@@ -281,8 +279,6 @@ const sudokuGenerator = (cells, target = 0) => {
 	}
 
 	if (!skew) randomize(rndi);
-
-	operations = 0;
 
 	if (target === 0) {
 		for (let i = 0; i < 81; i++) {
