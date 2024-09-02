@@ -51,6 +51,7 @@ const isFinished = (cells) => {
 const fillSolve = (cells, search) => {
 
 	let nakedHiddenSetsReduced = [];
+	let omissionsReduced = 0;
 	let bentWingsReduced = [];
 	let xWingReduced = 0;
 	let swordfishReduced = 0;
@@ -73,8 +74,6 @@ const fillSolve = (cells, search) => {
 		progress = hiddenSingles(cells);
 		if (progress) continue;
 
-		progress = omissions(cells);
-		if (progress) continue;
 		if (search === "?candidates" || search.startsWith("?strategy=")) continue;
 
 		const nakedHiddenResult = new NakedHiddenGroups(cells).nakedHiddenSets();
@@ -83,6 +82,9 @@ const fillSolve = (cells, search) => {
 			nakedHiddenSetsReduced.push(nakedHiddenResult);
 			continue;
 		}
+
+		progress = omissions(cells);
+		if (progress) { omissionsReduced++; continue; }
 
 		const bentWingResults = bentWings(cells);
 		if (bentWingResults.length > 0) {
@@ -125,6 +127,7 @@ const fillSolve = (cells, search) => {
 
 	return {
 		nakedHiddenSetsReduced,
+		omissionsReduced,
 		bentWingsReduced,
 		xWingReduced,
 		swordfishReduced,
