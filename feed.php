@@ -64,7 +64,7 @@ try {
 	$counts = array();
 
 	$stmt = $conn->prepare("
-		SELECT COUNT(*) as totalPuzzles	FROM " . $table . " WHERE 1
+		SELECT COUNT(*) as totalPuzzles FROM " . $table . " WHERE 1
 	");
 	$stmt->execute();
 	$totalPuzzles = $stmt->fetch();
