@@ -112,6 +112,7 @@ try {
 			SUM(`has_hidden2`) AS hidden2, MAX(`hidden2`) AS max_hidden2,
 			SUM(`has_hidden3`) AS hidden3, MAX(`hidden3`) AS max_hidden3,
 			SUM(`has_hidden4`) AS hidden4, MAX(`hidden4`) AS max_hidden4,
+			SUM(`has_omissions`) AS omissions, MAX(`omissions`) AS max_omissions,
 			SUM(`has_yWing`) AS yWing, MAX(`yWing`) AS max_yWing,
 			SUM(`has_xyzWing`) AS xyzWing, MAX(`xyzWing`) AS max_xyzWing,
 			SUM(`has_xWing`) AS xWing, MAX(`xWing`) AS max_xWing,
@@ -130,6 +131,7 @@ try {
 		$hidden2 = $solveTypes['hidden2'];
 		$hidden3 = $solveTypes['hidden3'];
 		$hidden4 = $solveTypes['hidden4'];
+		$omissions = $solveTypes['omissions'];
 		$yWing = $solveTypes['yWing'];
 		$xyzWing = $solveTypes['xyzWing'];
 		$xWing = $solveTypes['xWing'];
@@ -145,6 +147,7 @@ try {
 		$candidates += $hidden2;
 		$candidates += $hidden3;
 		$candidates += $hidden4;
+		$candidates += $omissions;
 		$candidates += $yWing;
 		$candidates += $xyzWing;
 		$candidates += $xWing;
@@ -154,11 +157,12 @@ try {
 		$candidates += $phistomefel;
 
 		printStat("Naked 2 (" . $solveTypes['max_naked2']  . ")", $naked2, $candidates);
-		printStat("Naked 3 (" . $solveTypes['max_naked2']  . ")", $naked3, $candidates);
-		printStat("Naked 4 (" . $solveTypes['max_naked2']  . ")", $naked4, $candidates);
+		printStat("Naked 3 (" . $solveTypes['max_naked3']  . ")", $naked3, $candidates);
+		printStat("Naked 4 (" . $solveTypes['max_naked4']  . ")", $naked4, $candidates);
 		printStat("Hidden 2 (" . $solveTypes['max_hidden2']  . ")", $hidden2, $candidates);
-		printStat("Hidden 3 (" . $solveTypes['max_hidden2']  . ")", $hidden3, $candidates);
-		printStat("Hidden 4 (" . $solveTypes['max_hidden2']  . ")", $hidden4, $candidates);
+		printStat("Hidden 3 (" . $solveTypes['max_hidden3']  . ")", $hidden3, $candidates);
+		printStat("Hidden 4 (" . $solveTypes['max_hidden4']  . ")", $hidden4, $candidates);
+		printStat("Omissions (" . $solveTypes['max_omissions']  . ")", $omissions, $candidates);
 		printStat("yWing (" . $solveTypes['max_yWing']  . ")", $yWing, $candidates);
 		printStat("xyzWing (" . $solveTypes['max_xyzWing']  . ")", $xyzWing, $candidates);
 		printStat("xWing (" . $solveTypes['max_xWing']  . ")", $xWing, $candidates);
@@ -181,6 +185,7 @@ try {
 			$hidden2 = queryStrategy($conn, 'hidden2');
 			$hidden3 = queryStrategy($conn, 'hidden3');
 			$hidden4 = queryStrategy($conn, 'hidden4');
+			$omissions = queryStrategy($conn, 'omissions');
 			$yWing = queryStrategy($conn, 'yWing');
 			$xyzWing = queryStrategy($conn, 'xyzWing');
 			$xWing = queryStrategy($conn, 'xWing');
@@ -195,6 +200,7 @@ try {
 			$candidates += $hidden2['count'];
 			$candidates += $hidden3['count'];
 			$candidates += $hidden4['count'];
+			$candidates += $omissions['count'];
 			$candidates += $yWing['count'];
 			$candidates += $xyzWing['count'];
 			$candidates += $xWing['count'];
@@ -209,6 +215,7 @@ try {
 			printStat("Hidden 2 (" . $hidden2['max'] . ")", $hidden2['count'], $candidates);
 			printStat("Hidden 3 (" . $hidden3['max'] . ")", $hidden3['count'], $candidates);
 			printStat("Hidden 4 (" . $hidden4['max'] . ")", $hidden4['count'], $candidates);
+			printStat("Omissions (" . $omissions['max'] . ")", $omissions['count'], $candidates);
 			printStat("yWing (" . $yWing['max'] . ")", $yWing['count'], $candidates);
 			printStat("xyzWing (" . $xyzWing['max'] . ")", $xyzWing['count'], $candidates);
 			printStat("xWing (" . $xWing['max'] . ")", $xWing['count'], $candidates);
