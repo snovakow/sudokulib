@@ -11,7 +11,9 @@ $password = "kewbac-recge1-Fiwpux";
 $dbname = "sudoku";
 
 $max = false;
+$min = false;
 if (isset($_GET['max'])) $max = true;
+else if (isset($_GET['min'])) $min = true;
 
 try {
 	$conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
@@ -19,7 +21,7 @@ try {
 
 	$table = "puzzles";
 
-	if ($type === "simple" || !$max) {
+	if ($type === "simple" || (!$max && !$min)) {
 		$stmt = $conn->prepare("
 			SELECT p.`puzzleClues` FROM puzzles AS p WHERE p.`id` IN (
 				SELECT s.`puzzle_id` FROM " . $type . " AS s   
@@ -30,10 +32,11 @@ try {
 			LIMIT 1
 		");
 	} else {
+		$op = $min ? "MIN" : "MAX";
 		$stmt = $conn->prepare("
 			SELECT `puzzleClues`, (s.`count`) FROM `puzzles` AS p 
 			JOIN `" . $type . "` AS s
-			ON s.`count` = (SELECT MAX(`count`) FROM " . $type . ") && s.`puzzle_id` = p.id
+			ON s.`count` = (SELECT " . $op . "(`count`) FROM " . $type . ") && s.`puzzle_id` = p.id
 			ORDER BY RAND()
 			LIMIT 1
 		");
