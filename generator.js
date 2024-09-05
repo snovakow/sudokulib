@@ -106,22 +106,24 @@ const fillSolve = (cells, search) => {
 		progress = uniqueRectangle(cells);
 		if (progress) { uniqueRectangleReduced++; continue; }
 
-		const { reduced, filled } = phistomefel(cells);
-		progress = reduced > 0 || filled > 0;
-		if (progress) {
-			if (reduced > 0) phistomefelReduced++;
-			if (filled > 0) phistomefelFilled++;
-			continue;
+		if (search === "?dbphistomefel" || search === "?phistomefel") {
+			const { reduced, filled } = phistomefel(cells);
+			progress = reduced > 0 || filled > 0;
+			if (progress) {
+				if (reduced > 0) phistomefelReduced++;
+				if (filled > 0) phistomefelFilled++;
+				continue;
+			}
 		}
 
 		if (!bruteForceFill) bruteForceFill = !isFinished(cells);
 
-		const superpositionResults = superposition(cells);
-		if (superpositionResults.length > 0) {
-			progress = true;
-			superpositionReduced.push(...superpositionResults);
-			continue;
-		}
+		// const superpositionResults = superposition(cells);
+		// if (superpositionResults.length > 0) {
+		// 	progress = true;
+		// 	superpositionReduced.push(...superpositionResults);
+		// 	continue;
+		// }
 
 		// if (bruteForceFill) bruteForce(cells);
 	} while (progress);
@@ -424,7 +426,6 @@ const sudokuGenerator = (cells, target = 0) => {
 
 	return clueCount;
 }
-
 
 export { totalPuzzles };
 export { sudokuGenerator, fillSolve, consoleOut };
