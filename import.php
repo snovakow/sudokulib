@@ -1,4 +1,6 @@
 <?php
+die();
+
 $version = 1;
 
 if (!isset($_GET['version'])) die();
@@ -14,6 +16,7 @@ if (!isset($_GET['naked4'])) die();
 if (!isset($_GET['hidden2'])) die();
 if (!isset($_GET['hidden3'])) die();
 if (!isset($_GET['hidden4'])) die();
+if (!isset($_GET['omissions'])) die();
 if (!isset($_GET['yWing'])) die();
 if (!isset($_GET['xyzWing'])) die();
 if (!isset($_GET['xWing'])) die();
@@ -26,7 +29,6 @@ if (!isset($_GET['bruteForce'])) die();
 
 $table = "puzzles";
 if (isset($_GET['dbphistomefel'])) $table = "phistomefel";
-else die();
 
 $puzzleClues = $_GET['puzzleClues'];
 $puzzleFilled = $_GET['puzzleFilled'];
@@ -38,6 +40,7 @@ $naked4 = $_GET['naked4'];
 $hidden2 = $_GET['hidden2'];
 $hidden3 = $_GET['hidden3'];
 $hidden4 = $_GET['hidden4'];
+$omissions = $_GET['omissions'];
 $yWing = $_GET['yWing'];
 $xyzWing = $_GET['xyzWing'];
 $xWing = $_GET['xWing'];
@@ -63,6 +66,7 @@ $has_naked4 = $naked4 > 0 ? 1 : 0;
 $has_hidden2 = $hidden2 > 0 ? 1 : 0;
 $has_hidden3 = $hidden3 > 0 ? 1 : 0;
 $has_hidden4 = $hidden4 > 0 ? 1 : 0;
+$has_omissions = $omissions > 0 ? 1 : 0;
 $has_yWing = $yWing > 0 ? 1 : 0;
 $has_xyzWing = $xyzWing > 0 ? 1 : 0;
 $has_xWing = $xWing > 0 ? 1 : 0;
@@ -73,15 +77,13 @@ $has_phistomefel = $phistomefel > 0 ? 1 : 0;
 
 try {
 	$pdo = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
-	// set the PDO error mode to exception
 	$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-	// echo "Connected successfully";
 
-	$sql = "INSERT INTO " . $table . " (puzzleClues, puzzleFilled, clueCount, simple, naked2, naked3, naked4, hidden2, hidden3, hidden4, 
-			yWing, xyzWing, xWing, swordfish, jellyfish, uniqueRectangle, phistomefel, has_naked2, has_naked3, has_naked4, has_hidden2, has_hidden3, has_hidden4, 
+	$sql = "INSERT INTO " . $table . " (puzzleClues, puzzleFilled, clueCount, simple, naked2, naked3, naked4, hidden2, hidden3, hidden4, omissions, 
+			yWing, xyzWing, xWing, swordfish, jellyfish, uniqueRectangle, phistomefel, has_naked2, has_naked3, has_naked4, has_hidden2, has_hidden3, has_hidden4, has_omissions, 
 			has_yWing, has_xyzWing, has_xWing, has_swordfish, has_jellyfish, has_uniqueRectangle, has_phistomefel, superpositions, bruteForce, solveType) 
-			VALUES (:puzzleClues, :puzzleFilled, :clueCount, :simple, :naked2, :naked3, :naked4, :hidden2, :hidden3, :hidden4, 
-			:yWing, :xyzWing, :xWing, :swordfish, :jellyfish, :uniqueRectangle, :phistomefel, :has_naked2, :has_naked3, :has_naked4, :has_hidden2, :has_hidden3, :has_hidden4, 
+			VALUES (:puzzleClues, :puzzleFilled, :clueCount, :simple, :naked2, :naked3, :naked4, :hidden2, :hidden3, :hidden4, :omissions, 
+			:yWing, :xyzWing, :xWing, :swordfish, :jellyfish, :uniqueRectangle, :phistomefel, :has_naked2, :has_naked3, :has_naked4, :has_hidden2, :has_hidden3, :has_hidden4, :has_omissions, 
 			:has_yWing, :has_xyzWing, :has_xWing, :has_swordfish, :has_jellyfish, :has_uniqueRectangle, :has_phistomefel, :superpositions, :bruteForce, :solveType)";
 
 	$statement = $pdo->prepare($sql);
@@ -97,6 +99,7 @@ try {
 		'hidden2' => $hidden2,
 		'hidden3' => $hidden3,
 		'hidden4' => $hidden4,
+		'omissions' => $omissions,
 		'yWing' => $yWing,
 		'xyzWing' => $xyzWing,
 		'xWing' => $xWing,
@@ -110,6 +113,7 @@ try {
 		'has_hidden2' => $has_hidden2,
 		'has_hidden3' => $has_hidden3,
 		'has_hidden4' => $has_hidden4,
+		'has_omissions' => $has_omissions,
 		'has_yWing' => $has_yWing,
 		'has_xyzWing' => $has_xyzWing,
 		'has_xWing' => $has_xWing,
@@ -121,7 +125,6 @@ try {
 		'bruteForce' => $bruteForce,
 		'solveType' => $solveType
 	]);
-	// echo "New record created successfully";
 } catch (PDOException $e) {
 	// echo "Connection failed: " . $e->getMessage();
 }
@@ -131,21 +134,21 @@ $pdo = null;
 /*
 TRUNCATE TABLE simple
 
-simple naked2 naked3 naked4 hidden2 hidden3 hidden4 yWing xyzWing xWing swordfish jellyfish uniqueRectangle
-has_naked2 has_naked3 has_naked4 has_hidden2 has_hidden3 has_hidden4 has_yWing has_xyzWing has_xWing has_swordfish has_jellyfish has_uniqueRectangle
+simple naked2 naked3 naked4 hidden2 hidden3 hidden4 omissions yWing xyzWing xWing swordfish jellyfish uniqueRectangle
+has_naked2 has_naked3 has_naked4 has_hidden2 has_hidden3 has_hidden4 has_omissions has_yWing has_xyzWing has_xWing has_swordfish has_jellyfish has_uniqueRectangle
 
 INSERT INTO `simple` (`puzzle_id`)
 SELECT `id`
 FROM `puzzles` AS p
 WHERE p.`simple` > 0
 
-INSERT INTO `naked3` (`puzzle_id`, `count`)
-SELECT `id`, `naked3`
+INSERT INTO `naked2` (`puzzle_id`, `count`)
+SELECT `id`, `naked2`
 FROM `puzzles` AS p
-WHERE p.`naked2`=0 AND p.`naked3`>0 AND p.`naked4`=0 AND p.`hidden2`=0 AND p.`hidden3`=0 AND p.`hidden4`=0 AND p.`yWing`=0 AND p.`xyzWing`=0 AND p.`xWing`=0 AND p.`swordfish`=0 AND p.`jellyfish`=0 AND p.`uniqueRectangle`=0 AND p.`bruteForce`=0
+WHERE p.`naked2`>0 AND p.`naked3`=0 AND p.`naked4`=0 AND p.`hidden2`=0 AND p.`hidden3`=0 AND p.`hidden4`=0 AND p.`omissions`=0 AND p.`yWing`=0 AND p.`xyzWing`=0 AND p.`xWing`=0 AND p.`swordfish`=0 AND p.`jellyfish`=0 AND p.`uniqueRectangle`=0 AND p.`bruteForce`=0
 
 INSERT INTO `phistomefelRing` (`puzzle_id`, `count`)
 SELECT `id`, `phistomefel`
 FROM `phistomefel` AS p
-WHERE p.`naked2`=0 AND p.`naked3`=0 AND p.`naked4`=0 AND p.`hidden2`=0 AND p.`hidden3`=0 AND p.`hidden4`=0 AND p.`yWing`=0 AND p.`xyzWing`=0 AND p.`xWing`=0 AND p.`swordfish`=0 AND p.`jellyfish`=0 AND p.`uniqueRectangle`=0 AND p.`phistomefel`>0 AND p.`bruteForce`=0
+WHERE p.`naked2`=0 AND p.`naked3`=0 AND p.`naked4`=0 AND p.`hidden2`=0 AND p.`hidden3`=0 AND p.`hidden4`=0 AND p.`omissions`=0 AND p.`yWing`=0 AND p.`xyzWing`=0 AND p.`xWing`=0 AND p.`swordfish`=0 AND p.`jellyfish`=0 AND p.`uniqueRectangle`=0 AND p.`phistomefel`>0 AND p.`bruteForce`=0
 */
