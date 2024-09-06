@@ -243,19 +243,10 @@ const solutionCount = (grid, solutions = 0) => {
 			if (isValidCell(grid, Math.floor(index / 9), index % 9, symbol)) {
 				grid[index] = symbol;
 				solutions = solutionCount(grid, solutions);
-
-				if (skew) {
-					if (solutions === 1) {
-						grid[index] = 0;
-					} else {
-						return solutions;
-					}
+				if (solutions < 2) {
+					grid[index] = 0;
 				} else {
-					if (solutions < 2) {
-						grid[index] = 0;
-					} else {
-						return solutions;
-					}
+					return solutions;
 				}
 			}
 		}
