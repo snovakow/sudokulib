@@ -234,14 +234,12 @@ const sodokoSolver = (grid) => {
 	return true;
 }
 
-const skew = false;
-
 const solutionCount = (grid, solutions = 0) => {
 	for (let i = 0; i < 81; i++) {
 		if (grid[i] !== 0) continue;
 		const index = i;
-		for (let x = 0; x < 9; x++) {
-			const symbol = x + 1;
+		for (let x = 1; x <= 9; x++) {
+			const symbol = x;
 			if (isValidCell(grid, Math.floor(index / 9), index % 9, symbol)) {
 				grid[index] = symbol;
 				solutions = solutionCount(grid, solutions);
@@ -274,7 +272,7 @@ const sudokuGenerator = (cells, target = 0) => {
 		for (let i = 0; i < 81; i++) grid[i] = cells[i].symbol;
 	} else {
 		for (let i = 0; i < 81; i++) grid[i] = 0;
-		if (!skew) for (let i = 0; i < 9; i++) grid[i] = i + 1;
+		for (let i = 0; i < 9; i++) grid[i] = i + 1;
 		sodokoSolver(grid);
 	}
 
@@ -283,7 +281,7 @@ const sudokuGenerator = (cells, target = 0) => {
 		return;
 	}
 
-	if (!skew) randomize(rndi);
+	randomize(rndi);
 
 	if (target === 0) {
 		for (let i = 0; i < 81; i++) {
