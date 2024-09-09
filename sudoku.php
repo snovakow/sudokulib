@@ -5,6 +5,25 @@
 if (!isset($_GET['strategy'])) die;
 $type = $_GET['strategy'];
 
+$strategy = false;
+
+if ($type == 'simple') $strategy = $type;
+if ($type == 'naked2') $strategy = $type;
+if ($type == 'naked3') $strategy = $type;
+if ($type == 'naked4') $strategy = $type;
+if ($type == 'hidden2') $strategy = $type;
+if ($type == 'hidden3') $strategy = $type;
+if ($type == 'hidden4') $strategy = $type;
+if ($type == 'omissions') $strategy = $type;
+if ($type == 'yWing') $strategy = $type;
+if ($type == 'xyzWing') $strategy = $type;
+if ($type == 'xWing') $strategy = $type;
+if ($type == 'swordfish') $strategy = $type;
+if ($type == 'jellyfish') $strategy = $type;
+if ($type == 'uniqueRectangle') $strategy = $type;
+
+if (!$strategy) die();
+
 $servername = "localhost";
 $username = "snovakow";
 $password = "kewbac-recge1-Fiwpux";
@@ -21,12 +40,12 @@ try {
 
 	$table = "puzzles";
 
-	if ($type === "simple" || (!$max && !$min)) {
+	if ($strategy === "simple" || (!$max && !$min)) {
 		$stmt = $conn->prepare("
 			SELECT p.`puzzleClues` FROM puzzles AS p WHERE p.`id` IN (
-				SELECT s.`puzzle_id` FROM " . $type . " AS s   
+				SELECT s.`puzzle_id` FROM " . $strategy . " AS s   
 					JOIN (
-						SELECT FLOOR(RAND() * (SELECT MAX(`id`) FROM " . $type . ")) AS `rand_id`
+						SELECT FLOOR(RAND() * (SELECT MAX(`id`) FROM " . $strategy . ")) AS `rand_id`
 					) r ON s.`id` > r.`rand_id`
 			)
 			LIMIT 1
@@ -35,8 +54,8 @@ try {
 		$op = $min ? "MIN" : "MAX";
 		$stmt = $conn->prepare("
 			SELECT `puzzleClues`, (s.`count`) FROM `puzzles` AS p 
-			JOIN `" . $type . "` AS s
-			ON s.`count` = (SELECT " . $op . "(`count`) FROM " . $type . ") && s.`puzzle_id` = p.id
+			JOIN `" . $strategy . "` AS s
+			ON s.`count` = (SELECT " . $op . "(`count`) FROM " . $strategy . ") && s.`puzzle_id` = p.id
 			ORDER BY RAND()
 			LIMIT 1
 		");
