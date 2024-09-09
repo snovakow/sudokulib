@@ -9,7 +9,15 @@ const LINE_THICK = 8;
 const LINE_THICK_HALF = LINE_THICK * 0.5;
 const LINE_THIN = 2;
 
-const FONT = "Hauss,sans-serif";
+const FONT = {};
+FONT.BASE = "Hauss,sans-serif";
+FONT.MARKER = "Comic Sans MS, Comic Sans, cursive";
+
+FONT.marker = FONT.BASE;
+
+const setMarkerFont = (markerFont) => {
+	FONT.marker = markerFont ? FONT.MARKER : FONT.BASE;
+};
 
 const BOX_SIDE = 3;
 const GRID_SIDE = BOX_SIDE * BOX_SIDE;
@@ -139,9 +147,7 @@ class Board {
 				const index = r * 9 + c;
 				const cell = this.cells[index];
 				if (cell.size > 0 && cell.show) {
-					ctx.font = "100 " + pixAlign(unitSize * 0.7 * 1 / 3) + "px " + FONT;
-					// ctx.font = "100 " + unitSize * 0.75 * 1 / 3 + "px " + FONTS[fontCurrent];
-					// ctx.font = "100 " + unitSize * 0.8 * 1 / 3 + "px " + FONTS[fontCurrent];
+					ctx.font = "100 " + pixAlign(unitSize * 0.7 * 1 / 3) + "px " + startCell.marker;
 
 					if (!measureCandidate) measureCandidate = ctx.measureText("0");
 
@@ -157,13 +163,14 @@ class Board {
 						}
 					}
 				} else {
+					const startCell = board.startCells[index];
+					const font = startCell.symbol > 0 ? FONT.BASE : FONT.marker;
+
 					const symbol = cell.symbol;
 					if (symbol === 0) continue;
 
 					const fontSize = pixAlign(unitSize * 0.7);
-					ctx.font = "100 " + fontSize + "px " + FONT;
-					// ctx.font = "100 " + unitSize * 0.75 + "px " + FONTS[fontCurrent];
-					// ctx.font = "100 " + unitSize * 0.8 + "px " + FONTS[fontCurrent];
+					ctx.font = "100 " + fontSize + "px " + font;
 
 					if (!measure) measure = ctx.measureText("0");
 
@@ -178,64 +185,56 @@ class Board {
 const board = new Board();
 
 const storageToCells = (data) => {
-	const dataCells = data.split(",");
+	const dataCells = data.grid;
+	if (!dataCells) return null;
 	for (let i = 0; i < 81; i++) {
 		const dataCell = dataCells[i];
 		const startCell = board.startCells[i];
 		const cell = board.cells[i];
-		const type = dataCell[0];
-		const value = dataCell.substring(1);
-		if (type == "0") {
-			startCell.symbol = parseInt(value);
-			cell.setSymbol(parseInt(value));
-		}
-		if (type == "1") {
+		if (dataCell.clue) {
+			startCell.symbol = dataCell.symbol;
+			cell.symbol = dataCell.symbol;
+		} else {
 			startCell.symbol = 0;
-			cell.setSymbol(parseInt(value));
-		}
-		if (type == "2") {
-			startCell.symbol = 0;
-			cell.setSymbol(0);
-			const dataCandidates = value.split("");
-			for (let x = 0; x < 9; x++) {
-				const dataCandidate = dataCandidates[x];
-				if (dataCandidate == "0") cell.delete(x + 1);
-			}
+			cell.setSymbol(dataCell.symbol);
 		}
 	}
+	return data.metadata;
 }
-const cellsToStorage = () => {
+const cellsToStorage = (metadata) => {
 	const dataCells = [];
 	for (let i = 0; i < 81; i++) {
 		const startCell = board.startCells[i];
-		let data = [];
+		const data = {};
 		if (startCell.symbol === 0) {
 			const cell = board.cells[i];
-			if (cell.symbol === 0) {
-				data += "2";
-				for (let x = 1; x <= 9; x++) {
-					if (cell.has(x)) {
-						data += "1";
-					} else {
-						data += "0";
-					}
-				}
-			} else {
-				data += "1" + cell.symbol;
-			}
+			data.clue = false;
+			data.symbol = cell.symbol;
 		} else {
-			data += "0" + startCell.symbol;
+			data.clue = true;
+			data.symbol = startCell.symbol;
 		}
 		dataCells.push(data);
 	}
-	return dataCells.join(",");
+	return {
+		grid: dataCells,
+		metadata
+	}
 }
 
-const saveGrid = () => {
-	window.name = cellsToStorage();
+const saveGrid = (metadata) => {
+	window.name = JSON.stringify(cellsToStorage(metadata));
 };
 const loadGrid = () => {
-	if (window.name) storageToCells(window.name);
+	const data = window.name;
+	if (!data) return null;
+	let metadata = null;
+	try {
+		metadata = storageToCells(JSON.parse(data));
+	} catch (err) {
+		console.log("Window name data error", err);
+	}
+	return metadata;
 };
 
-export { board, FONT, loadGrid, saveGrid };
+export { board, FONT, loadGrid, saveGrid, setMarkerFont };
