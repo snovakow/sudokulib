@@ -10,13 +10,25 @@ const LINE_THICK_HALF = LINE_THICK * 0.5;
 const LINE_THIN = 2;
 
 const FONT = {};
-FONT.BASE = "Hauss,sans-serif";
-FONT.MARKER = "Comic Sans MS, Comic Sans, cursive";
-
-FONT.marker = FONT.BASE;
+FONT.LIGHT = "LIGHT";
+FONT.REGULAR = "REGULAR";
+FONT.COMIC = "COMIC";
+FONT.marker = FONT.REGULAR;
+FONT.default = FONT.REGULAR;
+Object.freeze(FONT.default);
+FONT.type = 0;
 
 const setMarkerFont = (markerFont) => {
-	FONT.marker = markerFont ? FONT.MARKER : FONT.BASE;
+	FONT.type = markerFont;
+	if (markerFont === 0) {
+		FONT.marker = FONT.REGULAR;
+	}
+	if (markerFont === 1) {
+		FONT.marker = FONT.LIGHT;
+	}
+	if (markerFont === 2) {
+		FONT.marker = FONT.COMIC;
+	}
 };
 
 const BOX_SIDE = 3;
@@ -136,6 +148,7 @@ class Board {
 		ctx.textBaseline = 'bottom';
 		ctx.fillStyle = 'Black'; // DimGray Black
 
+		let measureClue = null;
 		let measure = null;
 		let measureCandidate = null;
 
@@ -147,7 +160,7 @@ class Board {
 				const index = r * 9 + c;
 				const cell = this.cells[index];
 				if (cell.size > 0 && cell.show) {
-					ctx.font = "100 " + pixAlign(unitSize * 0.7 * 1 / 3) + "px " + startCell.marker;
+					ctx.font = pixAlign(unitSize * 0.7 * 1 / 3) + "px " + startCell.marker;
 
 					if (!measureCandidate) measureCandidate = ctx.measureText("0");
 
@@ -164,18 +177,25 @@ class Board {
 					}
 				} else {
 					const startCell = board.startCells[index];
-					const font = startCell.symbol > 0 ? FONT.BASE : FONT.marker;
+					const font = startCell.symbol > 0 ? FONT.default : FONT.marker;
 
 					const symbol = cell.symbol;
 					if (symbol === 0) continue;
 
 					const fontSize = pixAlign(unitSize * 0.7);
-					ctx.font = "100 " + fontSize + "px " + font;
+					ctx.font = fontSize + "px " + font;
 
-					if (!measure) measure = ctx.measureText("0");
+					let measured = measure;
+					if (startCell.symbol === 0) {
+						if (!measure) measure = ctx.measureText("0");
+						measured = measure;
+					} else {
+						if (!measureClue) measureClue = ctx.measureText("0");
+						measured = measureClue;
+					}
 
 					const x = pixAlign(coff);
-					const y = pixAlign(roff + (measure.actualBoundingBoxAscent * 0.5 - measure.actualBoundingBoxDescent * 0.5));
+					const y = pixAlign(roff + (measured.actualBoundingBoxAscent * 0.5 - measured.actualBoundingBoxDescent * 0.5));
 					ctx.fillText(symbol, x, y);
 				}
 			}
