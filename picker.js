@@ -5,7 +5,7 @@ picker.style.position = 'fixed';
 picker.style.width = '192px';
 picker.style.height = '192px';
 picker.style.bottom = '0px';
-picker.style.left = '0px';
+picker.style.right = '0px';
 
 pickerMarker.style.position = 'fixed';
 pickerMarker.style.width = '192px';
@@ -54,6 +54,8 @@ export const canvasDraw = (font, canvas) => {
 
 	}
 	ctx.stroke();
+
+	if (!font) return;
 
 	ctx.strokeStyle = 'black';
 	ctx.font = font;
