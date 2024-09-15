@@ -10,25 +10,18 @@ const LINE_THICK_HALF = LINE_THICK * 0.5;
 const LINE_THIN = 2;
 
 const FONT = {};
-FONT.LIGHT = "LIGHT";
-FONT.REGULAR = "REGULAR";
-FONT.COMIC = "COMIC";
+FONT.REGULAR = "REGULAR, Hauss, sans-serif";
+FONT.COMIC = "COMIC, 'Comic Sans MS', 'Comic Sans', cursive";
 FONT.marker = FONT.REGULAR;
 FONT.default = FONT.REGULAR;
+FONT.initialized = false;
+Object.freeze(FONT.REGULAR);
+Object.freeze(FONT.COMIC);
 Object.freeze(FONT.default);
-FONT.type = 0;
 
 const setMarkerFont = (markerFont) => {
-	FONT.type = markerFont;
-	if (markerFont === 0) {
-		FONT.marker = FONT.REGULAR;
-	}
-	if (markerFont === 1) {
-		FONT.marker = FONT.LIGHT;
-	}
-	if (markerFont === 2) {
-		FONT.marker = FONT.COMIC;
-	}
+	if (markerFont) FONT.marker = FONT.COMIC;
+	else FONT.marker = FONT.REGULAR;
 };
 
 const BOX_SIDE = 3;
@@ -144,6 +137,8 @@ class Board {
 		}
 		ctx.stroke();
 
+		if (!FONT.initialized) return;
+
 		ctx.textAlign = 'center';
 		ctx.textBaseline = 'bottom';
 		ctx.fillStyle = 'Black'; // DimGray Black
@@ -160,7 +155,7 @@ class Board {
 				const index = r * 9 + c;
 				const cell = this.cells[index];
 				if (cell.size > 0 && cell.show) {
-					ctx.font = pixAlign(unitSize * 0.7 * 1 / 3) + "px " + startCell.marker;
+					ctx.font = pixAlign(unitSize * 0.7 * 1 / 3) + "px " + FONT.marker;
 
 					if (!measureCandidate) measureCandidate = ctx.measureText("0");
 
@@ -177,11 +172,10 @@ class Board {
 					}
 				} else {
 					const startCell = board.startCells[index];
-					const font = startCell.symbol > 0 ? FONT.default : FONT.marker;
-
 					const symbol = cell.symbol;
 					if (symbol === 0) continue;
 
+					const font = startCell.symbol > 0 ? FONT.default : FONT.marker;
 					const fontSize = pixAlign(unitSize * 0.7);
 					ctx.font = fontSize + "px " + font;
 
