@@ -416,5 +416,154 @@ const sudokuGenerator = (cells, target = 0) => {
 	return clueCount;
 }
 
-export { totalPuzzles };
+const swapCell = (array, i1, i2) => {
+	const tmp = array[i1];
+	array[i1] = array[i2];
+	array[i2] = tmp;
+}
+const swapRow = (array, i1, i2) => {
+	if (i1 === i2) return;
+	const rowi1 = i1 * 9;
+	const rowi2 = i2 * 9;
+	for (let i = 0; i < 9; i++) {
+		swapCell(array, rowi1 + i, rowi2 + i);
+	}
+}
+const swapCol = (array, i1, i2) => {
+	if (i1 === i2) return;
+	for (let i = 0; i < 9; i++) {
+		const rowi = i * 9;
+		swapCell(array, rowi + i1, rowi + i2);
+	}
+}
+
+const generateTransform = () => {
+	const triple = makeArray(3);
+	const row = new Uint8Array(9);
+	const col = new Uint8Array(9);
+	const box = new Uint8Array(3);
+	box[0] = 0;
+	box[1] = 3;
+	box[2] = 6;
+
+	const swapBoxGroup = (group) => {
+		randomize(box);
+		randomize(triple);
+		for (let i = 0; i < 3; i++) group[i + 0] = triple[i] + box[0];
+		randomize(triple);
+		for (let i = 0; i < 3; i++) group[i + 3] = triple[i] + box[1];
+		randomize(triple);
+		for (let i = 0; i < 3; i++) group[i + 6] = triple[i] + box[2];
+	}
+
+	swapBoxGroup(row);
+	swapBoxGroup(col);
+
+	const symbols = makeArray(9);
+	randomize(symbols);
+
+	const data = {
+		rotation: Math.floor(Math.random() * 4),
+		reflection1: Math.floor(Math.random() * 2),
+		reflection2: Math.floor(Math.random() * 2),
+		reflection3: Math.floor(Math.random() * 2),
+		reflection4: Math.floor(Math.random() * 2),
+		row,
+		col,
+		symbols
+	};
+
+	return data;
+}
+const generateFromSeed = (puzzleString, transform) => {
+	const puzzle = new Uint8Array(81);
+
+	for (let i = 0; i < 81; i++) puzzle[i] = parseInt(puzzleString[i]);
+
+	const tmp = new Uint8Array(81);
+	const rotation = transform.rotation;
+	if (rotation === 1) { // 90° cw x=y y=-x
+		tmp.set(puzzle);
+		for (let row = 0; row < 9; row++) {
+			for (let col = 0; col < 9; col++) {
+				const colInv = 8 - col;
+				puzzle[row * 9 + col] = tmp[colInv * 9 + row];
+			}
+		}
+	}
+	if (rotation === 2) { // 180° x=-x y=-y
+		tmp.set(puzzle);
+		for (let row = 0; row < 9; row++) {
+			for (let col = 0; col < 9; col++) {
+				const rowInv = 8 - row;
+				const colInv = 8 - col;
+				puzzle[row * 9 + col] = tmp[rowInv * 9 + colInv];
+			}
+		}
+	}
+	if (rotation === 3) { // 90° ccw // x=-y y=x
+		tmp.set(puzzle);
+		for (let row = 0; row < 9; row++) {
+			for (let col = 0; col < 9; col++) {
+				const rowInv = 8 - row;
+				puzzle[row * 9 + col] = tmp[col * 9 + rowInv];
+			}
+		}
+	}
+
+	const half = 8 / 2;
+	const reflection1 = transform.reflection1; // | x=-x
+	if (reflection1 === 1) {
+		for (let row = 0; row < 9; row++) {
+			for (let col = 0; col < half; col++) {
+				const colInv = 8 - col;
+				const rowi = row * 9;
+				swapCell(puzzle, rowi + col, rowi + colInv);
+			}
+		}
+	}
+	const reflection2 = transform.reflection2; // - y=-y
+	if (reflection2 === 1) {
+		for (let row = 0; row < half; row++) {
+			for (let col = 0; col < 9; col++) {
+				const rowInv = 8 - row;
+				swapCell(puzzle, row * 9 + col, rowInv * 9 + col);
+			}
+		}
+	}
+	const reflection3 = transform.reflection3; // \ x=y y=x
+	if (reflection3 === 1) {
+		for (let row = 0; row < 9; row++) {
+			for (let col = 0; col < row; col++) {
+				swapCell(puzzle, row * 9 + col, col * 9 + row);
+			}
+		}
+	}
+	const reflection4 = transform.reflection4; // / x=-y y=-x
+	if (reflection4 === 1) {
+		for (let col = 0; col < 9; col++) {
+			for (let row = 0; row < col; row++) {
+				const rowInv = 8 - row;
+				const colInv = 8 - col;
+				swapCell(puzzle, row * 9 + colInv, col * 9 + rowInv);
+			}
+		}
+	}
+
+	const row = transform.row;
+	const col = transform.col;
+	for (let i = 0; i < 9; i++) swapRow(puzzle, i, row[i]);
+	for (let i = 0; i < 9; i++) swapCol(puzzle, i, col[i]);
+
+	const symbols = transform.symbols;
+	for (let i = 0; i < 81; i++) {
+		const symbol = puzzle[i];
+		const swap = (symbol === 0 ? 0 : symbols[symbol - 1] + 1);
+		puzzle[i] = swap;
+	}
+
+	return puzzle;
+};
+
+export { totalPuzzles, generateFromSeed, generateTransform };
 export { sudokuGenerator, fillSolve, consoleOut };
