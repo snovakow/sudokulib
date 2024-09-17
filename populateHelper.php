@@ -27,10 +27,12 @@ try {
 	$statement = $pdo->prepare($sql);
 	if ($execute) $statement->execute();
 
+	$table = "puzzles2";
+
 	$sql = "
 		INSERT INTO `simple` (`puzzle_id`)
 		SELECT `id`
-		FROM `puzzles` AS p
+		FROM `" . $table . "` AS p
 		WHERE p.`simple` > 0
 	";
 	flushOut($sql . "<br/>");
@@ -46,7 +48,7 @@ try {
 		$sql = "
 			INSERT INTO `" . $strategy . "` (`puzzle_id`, `count`)
 			SELECT `id`, `" . $strategy . "`
-			FROM `puzzles` AS p
+			FROM `" . $table . "` AS p
 			WHERE  p.`bruteForce`=0
 		";
 		foreach ($strategies as $name) {
