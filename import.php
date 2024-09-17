@@ -1,9 +1,6 @@
 <?php
-die();
-
-$version = 1;
-
 if (!isset($_GET['version'])) die();
+$version = 1;
 if ($_GET['version'] != $version) die();
 
 if (!isset($_GET['puzzleClues'])) die();
@@ -27,8 +24,8 @@ if (!isset($_GET['phistomefel'])) die();
 if (!isset($_GET['superpositions'])) die();
 if (!isset($_GET['bruteForce'])) die();
 
-$table = "puzzles";
-if (isset($_GET['dbphistomefel'])) $table = "phistomefel";
+$table = "puzzles2";
+if (isset($_GET['dbphistomefel'])) $table = "phistomefel2";
 
 $puzzleClues = $_GET['puzzleClues'];
 $puzzleFilled = $_GET['puzzleFilled'];
@@ -79,7 +76,7 @@ try {
 	$pdo = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
 	$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-	$sql = "INSERT INTO " . $table . " (puzzleClues, puzzleFilled, clueCount, simple, naked2, naked3, naked4, hidden2, hidden3, hidden4, omissions, 
+	$sql = "INSERT INTO `" . $table . "` (puzzleClues, puzzleFilled, clueCount, simple, naked2, naked3, naked4, hidden2, hidden3, hidden4, omissions, 
 			yWing, xyzWing, xWing, swordfish, jellyfish, uniqueRectangle, phistomefel, has_naked2, has_naked3, has_naked4, has_hidden2, has_hidden3, has_hidden4, has_omissions, 
 			has_yWing, has_xyzWing, has_xWing, has_swordfish, has_jellyfish, has_uniqueRectangle, has_phistomefel, superpositions, bruteForce, solveType) 
 			VALUES (:puzzleClues, :puzzleFilled, :clueCount, :simple, :naked2, :naked3, :naked4, :hidden2, :hidden3, :hidden4, :omissions, 
