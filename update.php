@@ -6,7 +6,7 @@ if ($_GET['version'] != $version) die();
 
 $array = json_decode(file_get_contents("php://input"));
 
-$table = "puzzles";
+$table = "puzzles2";
 if (isset($_GET['dbphistomefel'])) $table = "phistomefel";
 
 $servername = "localhost";
@@ -18,7 +18,7 @@ try {
 	$pdo = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
 	$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-	$sql = "UPDATE " . $table . " SET simple=:simple, naked2=:naked2, naked3=:naked3, naked4=:naked4, 
+	$sql = "UPDATE `" . $table . "` SET simple=:simple, naked2=:naked2, naked3=:naked3, naked4=:naked4, 
 	hidden2=:hidden2, hidden3=:hidden3, hidden4=:hidden4, omissions=:omissions,
 	yWing=:yWing, xyzWing=:xyzWing, xWing=:xWing, swordfish=:swordfish, jellyfish=:jellyfish, 
 	uniqueRectangle=:uniqueRectangle, phistomefel=:phistomefel, 
