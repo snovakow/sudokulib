@@ -29,7 +29,7 @@ function printStat($title, $count, $total)
 
 function queryStrategy($conn, $table)
 {
-	$stmt = $conn->prepare("SELECT COUNT(*) as count, MAX(count) as max FROM " . $table);
+	$stmt = $conn->prepare("SELECT COUNT(*) as count, MAX(count) as max FROM `" . $table . "`");
 	$stmt->execute();
 	$result = $stmt->fetch();
 	return $result;
@@ -58,13 +58,13 @@ try {
 	$conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
 	$conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION, PDO::ATTR_STRINGIFY_FETCHES);
 
-	$table = "puzzles";
+	$table = "puzzles2";
 	if (isset($_GET['dbphistomefel'])) $table = "phistomefel";
 
 	$counts = array();
 
 	$stmt = $conn->prepare("
-		SELECT COUNT(*) as totalPuzzles FROM " . $table . " WHERE 1
+		SELECT COUNT(*) as totalPuzzles FROM `" . $table . "` WHERE 1
 	");
 	$stmt->execute();
 	$totalPuzzles = $stmt->fetch();
@@ -73,7 +73,7 @@ try {
 	if ($mode === 1 || $mode === -1) {
 		flushOut("--- Clues", $flush);
 
-		$stmt = $conn->prepare("SELECT `clueCount`, COUNT(*) as count FROM " . $table . " GROUP BY `clueCount`");
+		$stmt = $conn->prepare("SELECT `clueCount`, COUNT(*) as count FROM `" . $table . "` GROUP BY `clueCount`");
 		$stmt->execute();
 		$result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 		foreach ($result as $key => $row) {
@@ -83,7 +83,7 @@ try {
 			printStat($clueCount, $count, $total);
 
 			if ($mode === 1) {
-				$stmtClue = $conn->prepare("SELECT `solveType`, COUNT(*) as count FROM " . $table . " WHERE clueCount=" . $clueCount . " GROUP BY `solveType`");
+				$stmtClue = $conn->prepare("SELECT `solveType`, COUNT(*) as count FROM `" . $table . "` WHERE clueCount=" . $clueCount . " GROUP BY `solveType`");
 				$stmtClue->execute();
 				$resultClue = $stmtClue->fetchAll(\PDO::FETCH_ASSOC);
 				foreach ($resultClue as $key => $row) {
@@ -120,7 +120,7 @@ try {
 			SUM(`has_jellyfish`) AS jellyfish, MAX(`jellyfish`) AS max_jellyfish,
 			SUM(`has_uniqueRectangle`) AS uniqueRectangle, MAX(`uniqueRectangle`) AS max_uniqueRectangle,
 			SUM(`has_phistomefel`) AS phistomefel
-			FROM " . $table . " WHERE `simple` = 0 AND `bruteForce` = 0
+			FROM `" . $table . "` WHERE `simple` = 0 AND `bruteForce` = 0
 		");
 		$stmt->execute();
 		$solveTypes = $stmt->fetch();
@@ -229,7 +229,7 @@ try {
 	if ($mode === 3 || $mode === -1) {
 		flushOut("--- Stats", $flush);
 
-		$stmt = $conn->prepare("SELECT `solveType`, COUNT(*) as count FROM " . $table . " GROUP BY `solveType`");
+		$stmt = $conn->prepare("SELECT `solveType`, COUNT(*) as count FROM `" . $table . "` GROUP BY `solveType`");
 		$stmt->execute();
 		$result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 		foreach ($result as $key => $row) {
