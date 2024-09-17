@@ -16,10 +16,10 @@ try {
 	$conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
 	$conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION, PDO::ATTR_STRINGIFY_FETCHES);
 
-	$table = "puzzles";
+	$table = "puzzles2";
 	if (isset($_GET['dbphistomefel'])) $table = "phistomefel";
 
-	$stmt = $conn->prepare("SELECT * FROM puzzles WHERE `id`>" . $start . " AND `id`<=" . $end);
+	$stmt = $conn->prepare("SELECT * FROM `" . $table . "` WHERE `id`>" . $start . " AND `id`<=" . $end);
 	$stmt->execute();
 
 	$result = $stmt->fetchAll(PDO::FETCH_ASSOC);
