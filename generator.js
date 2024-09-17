@@ -234,25 +234,22 @@ const sodokoSolver = (grid) => {
 	return true;
 }
 
-const solutionCount = (grid, solutions = 0) => {
+const solutionCount = (grid, baseIndex, baseSymbol) => {
 	for (let i = 0; i < 81; i++) {
 		if (grid[i] !== 0) continue;
 		const index = i;
 		for (let x = 1; x <= 9; x++) {
 			const symbol = x;
+			if (baseIndex === index && baseSymbol === symbol) continue;
 			if (isValidCell(grid, Math.floor(index / 9), index % 9, symbol)) {
 				grid[index] = symbol;
-				solutions = solutionCount(grid, solutions);
-				if (solutions < 2) {
-					grid[index] = 0;
-				} else {
-					return solutions;
-				}
+				if (solutionCount(grid, baseIndex, baseSymbol)) return true;
+				else grid[index] = 0;
 			}
 		}
-		return solutions;
+		return false;
 	}
-	return solutions + 1;
+	return true;
 }
 
 const savedGrid = new Uint8Array(81);
@@ -284,11 +281,9 @@ const sudokuGenerator = (cells, target = 0) => {
 
 			savedGrid.set(grid);
 
-			const result = solutionCount(grid);
+			const result = solutionCount(grid, index, symbol);
 			grid.set(savedGrid);
-			if (result !== 1) {
-				grid[index] = symbol;
-			}
+			if (result) grid[index] = symbol;
 		}
 	} else {
 		if (target === 1) {
