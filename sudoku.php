@@ -43,7 +43,7 @@ try {
 
 	if ($strategy === "simple" || (!$max && !$min)) {
 		$stmt = $conn->prepare("
-			SELECT p.`id`, p.`puzzleClues`, p.`puzzleFilled` FROM puzzles AS p WHERE p.`id` IN (
+			SELECT p.`id`, p.`puzzleClues`, p.`puzzleFilled` FROM `" . $table . "` AS p WHERE p.`id` IN (
 				SELECT s.`puzzle_id` FROM " . $strategy . " AS s   
 					JOIN (
 						SELECT FLOOR(RAND() * (SELECT MAX(`id`) FROM " . $strategy . ")) AS `rand_id`
@@ -54,7 +54,7 @@ try {
 	} else {
 		$op = $min ? "MIN" : "MAX";
 		$stmt = $conn->prepare("
-			SELECT p.`id`, `puzzleClues`, p.`puzzleFilled`, (s.`count`) FROM `puzzles` AS p 
+			SELECT p.`id`, `puzzleClues`, p.`puzzleFilled`, (s.`count`) FROM `" . $table . "` AS p 
 			JOIN `" . $strategy . "` AS s
 			ON s.`count` = (SELECT " . $op . "(`count`) FROM " . $strategy . ") && s.`puzzle_id` = p.id
 			ORDER BY RAND()
