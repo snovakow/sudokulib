@@ -11,7 +11,7 @@ pickerMarker.style.position = 'fixed';
 pickerMarker.style.width = '192px';
 pickerMarker.style.height = '192px';
 pickerMarker.style.bottom = '0px';
-pickerMarker.style.right = '0px';
+pickerMarker.style.left = '0px';
 
 const LINE_THIN = 2;
 
