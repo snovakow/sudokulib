@@ -18,7 +18,7 @@ const consoleOut = (result) => {
 		if (reduced.strategy === REDUCE.Y_Wing) yWings++;
 		if (reduced.strategy === REDUCE.XYZ_Wing) xyzWings++;
 	}
-	lines.push("Omissions: " + result.omissions);
+	lines.push("Omissions: " + result.omissionsReduced);
 	lines.push("Y Wing: " + yWings);
 	lines.push("XYZ Wing: " + xyzWings);
 	lines.push("X Wing: " + result.xWingReduced);
