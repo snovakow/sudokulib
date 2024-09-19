@@ -1,5 +1,5 @@
 <?php
-die();
+// die();
 
 $servername = "localhost";
 $username = "snovakow";
@@ -15,31 +15,36 @@ function flushOut($message)
 	flush();
 }
 
+$single = $_GET['strategy'];
+
 try {
 	$pdo = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
 	$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-	$simple = "simple";
 	$strategies = array("naked2", "naked3", "naked4", "hidden2", "hidden3", "hidden4", "omissions", "yWing", "xyzWing", "xWing", "swordfish", "jellyfish", "uniqueRectangle");
-
-	$sql = "TRUNCATE TABLE `" . $simple . "`";
-	flushOut($sql);
-	$statement = $pdo->prepare($sql);
-	if ($execute) $statement->execute();
 
 	$table = "puzzles2";
 
-	$sql = "
-		INSERT INTO `simple` (`puzzle_id`)
-		SELECT `id`
-		FROM `" . $table . "` AS p
-		WHERE p.`simple` > 0
-	";
-	flushOut($sql . "<br/>");
-	$statement = $pdo->prepare($sql);
-	if ($execute) $statement->execute();
+	if (!$single || $single == "simple") {
+		$sql = "TRUNCATE TABLE `simple`";
+		flushOut($sql);
+		$statement = $pdo->prepare($sql);
+		if ($execute) $statement->execute();
+
+		$sql = "
+			INSERT INTO `simple` (`puzzle_id`)
+			SELECT `id`
+			FROM `" . $table . "` AS p
+			WHERE p.`simple` > 0
+		";
+		flushOut($sql . "<br/>");
+		$statement = $pdo->prepare($sql);
+		if ($execute) $statement->execute();
+	}
 
 	foreach ($strategies as $strategy) {
+		if ($single && $single != $strategy) continue;
+
 		$sql = "TRUNCATE TABLE `" . $strategy . "`";
 		flushOut($sql);
 		$statement = $pdo->prepare($sql);
@@ -52,6 +57,8 @@ try {
 			WHERE  p.`bruteForce`=0
 		";
 		foreach ($strategies as $name) {
+			// if ($strategy == "jellyfish" && $name == "naked2") continue;
+
 			$sql .= " AND p.`" . $name . "`";
 			if ($name == $strategy) $sql .= ">0";
 			else $sql .= "=0";
