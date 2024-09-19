@@ -16,7 +16,7 @@ $dbname = "sudoku";
 
 try {
 	$pdo = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
-	$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+	// $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
 	$sql = "UPDATE `" . $table . "` SET simple=:simple, naked2=:naked2, naked3=:naked3, naked4=:naked4, 
 	hidden2=:hidden2, hidden3=:hidden3, hidden4=:hidden4, omissions=:omissions,

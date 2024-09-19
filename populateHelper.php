@@ -19,7 +19,7 @@ $single = $_GET['strategy'];
 
 try {
 	$pdo = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
-	$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+	// $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
 	$strategies = array("naked2", "naked3", "naked4", "hidden2", "hidden3", "hidden4", "omissions", "yWing", "xyzWing", "xWing", "swordfish", "jellyfish", "uniqueRectangle");
 

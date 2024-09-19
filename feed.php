@@ -56,7 +56,7 @@ $dbname = "sudoku";
 
 try {
 	$conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
-	$conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION, PDO::ATTR_STRINGIFY_FETCHES);
+	// $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION, PDO::ATTR_STRINGIFY_FETCHES);
 
 	$table = "puzzles2";
 	if (isset($_GET['dbphistomefel'])) $table = "phistomefel";
