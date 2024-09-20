@@ -45,6 +45,7 @@ if (!isset($_GET['table'])) die;
 // 2 = Strategies
 // 3 = Isolated Strategies
 // 4 = Stats
+// 5 = Count
 $mode = (int)$_GET['mode'];
 if ($mode < -1 || $mode > 5) die;
 
