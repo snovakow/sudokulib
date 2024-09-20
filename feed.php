@@ -237,8 +237,8 @@ try {
 			$count = $row['count'];
 
 			$type = "Simples";
-			if ($solveType === "1") $type =  "Strategies";
-			else if ($solveType === "2") $type = "Brute Force";
+			if ($solveType == 1) $type =  "Strategies";
+			else if ($solveType == 2) $type = "Brute Force";
 			printStat($type, $count, $total);
 		}
 
