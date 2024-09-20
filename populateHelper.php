@@ -1,5 +1,5 @@
 <?php
-// die();
+if (!isset($_GET['table'])) die;
 
 $servername = "localhost";
 $username = "snovakow";
@@ -23,7 +23,7 @@ try {
 
 	$strategies = array("naked2", "naked3", "naked4", "hidden2", "hidden3", "hidden4", "omissions", "yWing", "xyzWing", "xWing", "swordfish", "jellyfish", "uniqueRectangle");
 
-	$table = "puzzles2";
+	$table = $_GET['table'];
 
 	if (!$single || $single == "simple") {
 		$sql = "TRUNCATE TABLE `simple`";
