@@ -171,7 +171,8 @@ try {
 		printStat("uniqueRectangle (" . $solveTypes['max_uniqueRectangle']  . ")", $uniqueRectangle, $candidates);
 		printStat("phistomefel", $phistomefel, $candidates);
 		echo  "<br/>";
-
+	}
+	if ($mode === 3 || $mode === -1) {
 		if (isset($_GET['dbphistomefel'])) {
 			flushSend();
 			$phistomefel = queryStrategy($conn, 'phistomefelRing');
@@ -225,7 +226,7 @@ try {
 		}
 	}
 
-	if ($mode === 3 || $mode === -1) {
+	if ($mode === 4 || $mode === -1) {
 		flushOut("--- Stats", $flush);
 
 		$stmt = $conn->prepare("SELECT `solveType`, COUNT(*) as count FROM `" . $table . "` GROUP BY `solveType`");
