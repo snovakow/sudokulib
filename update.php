@@ -6,8 +6,8 @@ if ($_GET['version'] != $version) die();
 
 $array = json_decode(file_get_contents("php://input"));
 
-$table = "puzzles2";
-if (isset($_GET['dbphistomefel'])) $table = "phistomefel";
+if (!isset($_GET['table'])) die();
+$table = $_GET['table'];
 
 $servername = "localhost";
 $username = "snovakow";

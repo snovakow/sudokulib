@@ -23,9 +23,9 @@ if (!isset($_GET['uniqueRectangle'])) die();
 if (!isset($_GET['phistomefel'])) die();
 if (!isset($_GET['superpositions'])) die();
 if (!isset($_GET['bruteForce'])) die();
+if (!isset($_GET['table'])) die();
 
-$table = "puzzles2";
-if (isset($_GET['dbphistomefel'])) $table = "phistomefel2";
+$table = $_GET['table'];
 
 $puzzleClues = $_GET['puzzleClues'];
 $puzzleFilled = $_GET['puzzleFilled'];

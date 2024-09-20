@@ -4,6 +4,7 @@
 
 if (!isset($_GET['uid'])) die;
 if (!isset($_GET['strategy'])) die;
+if (!isset($_GET['table'])) die;
 $type = $_GET['strategy'];
 
 $strategy = false;
@@ -39,7 +40,7 @@ try {
 	$conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
 	// $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION, PDO::ATTR_STRINGIFY_FETCHES);
 
-	$table = "puzzles";
+	$table = $_GET['table'];
 
 	if ($strategy === "simple" || (!$max && !$min)) {
 		$stmt = $conn->prepare("
