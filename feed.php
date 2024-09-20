@@ -207,7 +207,6 @@ try {
 			$candidates += $swordfish['count'];
 			$candidates += $jellyfish['count'];
 			$candidates += $uniqueRectangle['count'];
-			$candidates += $phistomefel['count'];
 
 			printStat("Naked 2 (" . $naked2['max'] . ")", $naked2['count'], $candidates);
 			printStat("Naked 3 (" . $naked3['max'] . ")", $naked3['count'], $candidates);
