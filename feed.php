@@ -37,12 +37,14 @@ function queryStrategy($conn, $table)
 
 // header("Access-Control-Allow-Origin: *");
 if (!isset($_GET['mode'])) die;
+if (!isset($_GET['table'])) die;
 
 // -1 = All
 // 0 = Count
 // 1 = Clues
 // 2 = Strategies
-// 3 = Stats
+// 3 = Isolated Strategies
+// 4 = Stats
 $mode = (int)$_GET['mode'];
 if ($mode < -1 || $mode > 5) die;
 
@@ -58,8 +60,7 @@ try {
 	$conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
 	// $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION, PDO::ATTR_STRINGIFY_FETCHES);
 
-	$table = "puzzles2";
-	if (isset($_GET['dbphistomefel'])) $table = "phistomefel";
+	$table = $_GET['table'];
 
 	$counts = array();
 
@@ -173,7 +174,7 @@ try {
 		echo  "<br/>";
 	}
 	if ($mode === 3 || $mode === -1) {
-		if (isset($_GET['dbphistomefel'])) {
+		if ($table == "phistomefel") {
 			flushSend();
 			$phistomefel = queryStrategy($conn, 'phistomefelRing');
 			printStat("Phistomefel Isolated", $phistomefel['count'], $total);
