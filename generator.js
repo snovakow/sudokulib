@@ -50,7 +50,7 @@ const isFinished = (cells) => {
 }
 
 const fillSolve = (cells, search) => {
-	const searchParams = new URLSearchParams(window.location.search);
+	const searchParams = new URLSearchParams(search);
 
 	let nakedHiddenSetsReduced = [];
 	let omissionsReduced = 0;
