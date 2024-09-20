@@ -50,6 +50,7 @@ const isFinished = (cells) => {
 }
 
 const fillSolve = (cells, search) => {
+	const searchParams = new URLSearchParams(window.location.search);
 
 	let nakedHiddenSetsReduced = [];
 	let omissionsReduced = 0;
@@ -75,7 +76,8 @@ const fillSolve = (cells, search) => {
 		progress = hiddenSingles(cells);
 		if (progress) continue;
 
-		if (search === "?candidates" || search.startsWith("?strategy=")) continue;
+
+		if (searchParams.has("candidates") || searchParams.has("strategy")) continue;
 
 		const nakedHiddenResult = new NakedHiddenGroups(cells).nakedHiddenSets();
 		if (nakedHiddenResult) {
@@ -106,7 +108,8 @@ const fillSolve = (cells, search) => {
 		progress = uniqueRectangle(cells);
 		if (progress) { uniqueRectangleReduced++; continue; }
 
-		if (search === "?dbphistomefel" || search === "?phistomefel") {
+		const table = searchParams.get("table");
+		if (table == "phistomefel") {
 			const { reduced, filled } = phistomefel(cells);
 			progress = reduced > 0 || filled > 0;
 			if (progress) {
