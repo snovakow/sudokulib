@@ -83,7 +83,7 @@ const hiddenSingles = (cells) => {
 	return false;
 }
 
-const omissions = (cells) => {
+const omissions = (cells, candidates) => {
 	const groupInGroup = (x, srcGroups, srcGroupType, dstGroups, dstGroupType) => {
 		let groupIndex = 0;
 		for (const group of srcGroups) {
@@ -109,8 +109,15 @@ const omissions = (cells) => {
 					const cell = cells[index];
 					if (cell.symbol !== 0) continue;
 					if (cell[dstGroupType] === groupIndex) continue;
-					const had = cell.delete(x);
-					if (had) reduced = true;
+					if (candidates) {
+						const had = cell.delete(x);
+						if (had) reduced = true;
+					} else {
+						if (cell.size === 2) {
+							const had = cell.delete(x);
+							if (had) reduced = true;
+						}
+					}
 				}
 			}
 
@@ -406,6 +413,36 @@ class NakedHiddenGroups {
 		}
 		return null;
 	}
+	nakedSet2() {
+		const reduced = this.nakedPair();
+		if (reduced) return { hidden: false, size: 2, ...reduced };
+		return null;
+	}
+	nakedSet3() {
+		const reduced = this.nakedTriple();
+		if (reduced) return { hidden: false, size: 3, ...reduced };
+		return null;
+	}
+	nakedSet4() {
+		const reduced = this.nakedQuad();
+		if (reduced) return { hidden: false, size: 4, ...reduced };
+		return null;
+	}
+	hiddenSet2() {
+		const reduced = this.hiddenPair();
+		if (reduced) return { hidden: true, size: 2, ...reduced };
+		return null;
+	}
+	hiddenSet3() {
+		const reduced = this.hiddenTriple();
+		if (reduced) return { hidden: true, size: 3, ...reduced };
+		return null;
+	}
+	hiddenSet4() {
+		const reduced = this.hiddenQuad();
+		if (reduced) return { hidden: true, size: 4, ...reduced };
+		return null;
+	}
 	nakedHiddenSets() {
 		// 9  4 4 = 8 53
 		// 8  4 3 = 7 52
@@ -417,18 +454,18 @@ class NakedHiddenGroups {
 
 		let reduced;
 		reduced = this.nakedPair();
-		if (reduced) return { hidden: false, size: 2, ...reduced };
+		if (reduced) return reduced;
 		reduced = this.nakedTriple();
-		if (reduced) return { hidden: false, size: 3, ...reduced };
+		if (reduced) return reduced;
 		reduced = this.nakedQuad();
-		if (reduced) return { hidden: false, size: 4, ...reduced };
+		if (reduced) return reduced;
 
 		reduced = this.hiddenPair();
-		if (reduced) return { hidden: true, size: 2, ...reduced };
+		if (reduced) return reduced;
 		reduced = this.hiddenTriple();
-		if (reduced) return { hidden: true, size: 3, ...reduced };
+		if (reduced) return reduced;
 		reduced = this.hiddenQuad();
-		if (reduced) return { hidden: true, size: 4, ...reduced };
+		if (reduced) return reduced;
 		return null;
 	}
 }
