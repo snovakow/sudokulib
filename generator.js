@@ -76,23 +76,40 @@ const fillSolve = (cells, search) => {
 		progress = hiddenSingles(cells);
 		if (progress) continue;
 
+		progress = omissions(cells, false);
+		if (progress) continue;
 
 		if (searchParams.has("candidates") || searchParams.has("strategy")) continue;
 
-		const nakedHiddenResult = new NakedHiddenGroups(cells).nakedHiddenSets();
+		const nakedSets = new NakedHiddenGroups(cells);
+		let nakedHiddenResult = nakedSets.nakedSet2();
+		if (!nakedHiddenResult) nakedHiddenResult = nakedSets.nakedSet3();
+		if (!nakedHiddenResult) nakedHiddenResult = nakedSets.nakedSet4();
 		if (nakedHiddenResult) {
 			progress = true;
 			nakedHiddenSetsReduced.push(nakedHiddenResult);
 			continue;
 		}
 
-		progress = omissions(cells);
+		progress = uniqueRectangle(cells);
+		if (progress) { uniqueRectangleReduced++; continue; }
+
+		progress = omissions(cells, true);
 		if (progress) { omissionsReduced++; continue; }
 
 		const bentWingResults = bentWings(cells);
 		if (bentWingResults.length > 0) {
 			progress = true;
 			bentWingsReduced.push(...bentWingResults);
+			continue;
+		}
+
+		const hiddenSets = new NakedHiddenGroups(cells);
+		nakedHiddenResult = hiddenSets.hiddenSet2();
+		if (!nakedHiddenResult) nakedHiddenResult = hiddenSets.hiddenSet3();
+		if (nakedHiddenResult) {
+			progress = true;
+			nakedHiddenSetsReduced.push(nakedHiddenResult);
 			continue;
 		}
 
@@ -105,8 +122,13 @@ const fillSolve = (cells, search) => {
 		progress = jellyfish(cells);
 		if (progress) { jellyfishReduced++; continue; }
 
-		progress = uniqueRectangle(cells);
-		if (progress) { uniqueRectangleReduced++; continue; }
+		const hiddenSet4 = new NakedHiddenGroups(cells);
+		nakedHiddenResult = hiddenSet4.hiddenSet4();
+		if (nakedHiddenResult) {
+			progress = true;
+			nakedHiddenSetsReduced.push(nakedHiddenResult);
+			continue;
+		}
 
 		const table = searchParams.get("table");
 		if (table == "phistomefel") {
