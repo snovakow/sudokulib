@@ -49,9 +49,33 @@ const isFinished = (cells) => {
 	return true;
 }
 
-const fillSolve = (cells, search) => {
-	const searchParams = new URLSearchParams(search);
+const STRATEGY = {
+	NONE: 0,
+	NAKED: 1,
+	INTERSECTION_REMOVAL: 2,
+	DEADLY_PATTERN: 3,
+	HIDDEN: 4,
+	BENT_WINGS: 5,
+	X_WING: 6,
+	SWORDFISH: 7,
+	JELLYFISH: 8,
+	ALL: 9,
+};
+Object.freeze(STRATEGY);
 
+const STRATEGIES = [
+	STRATEGY.NAKED,
+	STRATEGY.INTERSECTION_REMOVAL,
+	STRATEGY.DEADLY_PATTERN,
+	STRATEGY.HIDDEN,
+	STRATEGY.BENT_WINGS,
+	STRATEGY.X_WING,
+	STRATEGY.SWORDFISH,
+	STRATEGY.JELLYFISH,
+];
+Object.freeze(STRATEGIES);
+
+const fillSolve = (cells, solveStrategy = STRATEGY.NONE) => {
 	let nakedHiddenSetsReduced = [];
 	let omissionsReduced = 0;
 	let bentWingsReduced = [];
@@ -67,6 +91,68 @@ const fillSolve = (cells, search) => {
 	let bruteForceFill = false;
 
 	let progress = false;
+
+	const solvePriority = (strategy) => {
+		if (strategy === STRATEGY.NAKED) {
+			const nakedSets = new NakedHiddenGroups(cells);
+			let nakedHiddenResult = nakedSets.nakedSet2();
+			if (!nakedHiddenResult) nakedHiddenResult = nakedSets.nakedSet3();
+			if (!nakedHiddenResult) nakedHiddenResult = nakedSets.nakedSet4();
+			if (nakedHiddenResult) {
+				nakedHiddenSetsReduced.push(nakedHiddenResult);
+				return true;
+			}
+		}
+		if (strategy === STRATEGY.HIDDEN) {
+			const hiddenSets = new NakedHiddenGroups(cells);
+			let nakedHiddenResult = hiddenSets.hiddenSet2();
+			if (!nakedHiddenResult) nakedHiddenResult = hiddenSets.hiddenSet3();
+			if (!nakedHiddenResult) nakedHiddenResult = hiddenSets.hiddenSet4();
+			if (nakedHiddenResult) {
+				nakedHiddenSetsReduced.push(nakedHiddenResult);
+				return true;
+			}
+		}
+		if (strategy === STRATEGY.DEADLY_PATTERN) {
+			if (uniqueRectangle(cells)) {
+				uniqueRectangleReduced++;
+				return true;
+			}
+		}
+		if (strategy === STRATEGY.INTERSECTION_REMOVAL) {
+			if (omissions(cells)) {
+				omissionsReduced++;
+				return true;
+			}
+		}
+		if (strategy === STRATEGY.BENT_WINGS) {
+			const bentWingResults = bentWings(cells);
+			if (bentWingResults.length > 0) {
+				bentWingsReduced.push(...bentWingResults);
+				return true;
+			}
+		}
+		if (strategy === STRATEGY.X_WING) {
+			if (xWing(cells)) {
+				xWingReduced++;
+				return true;
+			}
+		}
+		if (strategy === STRATEGY.SWORDFISH) {
+			if (swordfish(cells)) {
+				swordfishReduced++;
+				return true;
+			}
+		}
+		if (strategy === STRATEGY.JELLYFISH) {
+			if (jellyfish(cells)) {
+				jellyfishReduced++;
+				return true;
+			}
+		}
+		return false;
+	}
+
 	do {
 		candidates(cells);
 
@@ -76,70 +162,29 @@ const fillSolve = (cells, search) => {
 		progress = hiddenSingles(cells);
 		if (progress) continue;
 
-		progress = omissions(cells, false);
+		if (solveStrategy === STRATEGY.NONE) continue;
+
+		for (const strategy of STRATEGIES) {
+			if (strategy === solveStrategy) continue;
+			progress = solvePriority(strategy);
+			if (progress) break;
+		}
 		if (progress) continue;
 
-		if (searchParams.has("candidates") || searchParams.has("strategy")) continue;
-
-		const nakedSets = new NakedHiddenGroups(cells);
-		let nakedHiddenResult = nakedSets.nakedSet2();
-		if (!nakedHiddenResult) nakedHiddenResult = nakedSets.nakedSet3();
-		if (!nakedHiddenResult) nakedHiddenResult = nakedSets.nakedSet4();
-		if (nakedHiddenResult) {
-			progress = true;
-			nakedHiddenSetsReduced.push(nakedHiddenResult);
-			continue;
+		if (solveStrategy !== STRATEGY.ALL) {
+			progress = solvePriority(solveStrategy);
+			if (progress) continue;
 		}
 
-		progress = uniqueRectangle(cells);
-		if (progress) { uniqueRectangleReduced++; continue; }
-
-		progress = omissions(cells, true);
-		if (progress) { omissionsReduced++; continue; }
-
-		const bentWingResults = bentWings(cells);
-		if (bentWingResults.length > 0) {
-			progress = true;
-			bentWingsReduced.push(...bentWingResults);
-			continue;
-		}
-
-		const hiddenSets = new NakedHiddenGroups(cells);
-		nakedHiddenResult = hiddenSets.hiddenSet2();
-		if (!nakedHiddenResult) nakedHiddenResult = hiddenSets.hiddenSet3();
-		if (nakedHiddenResult) {
-			progress = true;
-			nakedHiddenSetsReduced.push(nakedHiddenResult);
-			continue;
-		}
-
-		progress = xWing(cells);
-		if (progress) { xWingReduced++; continue; }
-
-		progress = swordfish(cells);
-		if (progress) { swordfishReduced++; continue; }
-
-		progress = jellyfish(cells);
-		if (progress) { jellyfishReduced++; continue; }
-
-		const hiddenSet4 = new NakedHiddenGroups(cells);
-		nakedHiddenResult = hiddenSet4.hiddenSet4();
-		if (nakedHiddenResult) {
-			progress = true;
-			nakedHiddenSetsReduced.push(nakedHiddenResult);
-			continue;
-		}
-
-		const table = searchParams.get("table");
-		if (table == "phistomefel") {
-			const { reduced, filled } = phistomefel(cells);
-			progress = reduced > 0 || filled > 0;
-			if (progress) {
-				if (reduced > 0) phistomefelReduced++;
-				if (filled > 0) phistomefelFilled++;
-				continue;
-			}
-		}
+		// if (table == "phistomefel") {
+		// 	const { reduced, filled } = phistomefel(cells);
+		// 	progress = reduced > 0 || filled > 0;
+		// 	if (progress) {
+		// 		if (reduced > 0) phistomefelReduced++;
+		// 		if (filled > 0) phistomefelFilled++;
+		// 		continue;
+		// 	}
+		// }
 
 		if (!bruteForceFill) bruteForceFill = !isFinished(cells);
 
@@ -585,5 +630,5 @@ const generateFromSeed = (puzzleString, transform) => {
 	return puzzle;
 };
 
-export { totalPuzzles, generateFromSeed, generateTransform };
+export { totalPuzzles, generateFromSeed, generateTransform, STRATEGY, STRATEGIES };
 export { sudokuGenerator, fillSolve, consoleOut };
