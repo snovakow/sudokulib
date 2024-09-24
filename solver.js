@@ -83,7 +83,7 @@ const hiddenSingles = (cells) => {
 	return false;
 }
 
-const omissions = (cells, candidates) => {
+const omissions = (cells) => {
 	const groupInGroup = (x, srcGroups, srcGroupType, dstGroups, dstGroupType) => {
 		let groupIndex = 0;
 		for (const group of srcGroups) {
@@ -109,15 +109,8 @@ const omissions = (cells, candidates) => {
 					const cell = cells[index];
 					if (cell.symbol !== 0) continue;
 					if (cell[dstGroupType] === groupIndex) continue;
-					if (candidates) {
-						const had = cell.delete(x);
-						if (had) reduced = true;
-					} else {
-						if (cell.size === 2) {
-							const had = cell.delete(x);
-							if (had) reduced = true;
-						}
-					}
+					const had = cell.delete(x);
+					if (had) reduced = true;
 				}
 			}
 
