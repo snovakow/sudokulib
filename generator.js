@@ -1,6 +1,7 @@
 import {
-	generate, candidates, nakedSingles, hiddenSingles, omissions, NakedHiddenGroups, uniqueRectangle, bentWings, xWing, swordfish, jellyfish, bruteForce, phistomefel,
-	REDUCE, aCells, bCells, superposition,
+	generate, candidates, nakedSingles, hiddenSingles, omissions, NakedHiddenGroups,
+	uniqueRectangle, yWing, xyzWing, xWing, swordfish, jellyfish,
+	bruteForce, phistomefel, aCells, bCells, superposition,
 } from "./solver.js";
 
 const consoleOut = (result) => {
@@ -12,15 +13,9 @@ const consoleOut = (result) => {
 		if (nakedHiddenSet.hidden) lines.push("    Hidden " + nakedHiddenSet.size);
 		else lines.push("    Naked " + nakedHiddenSet.size);
 	}
-	let yWings = 0;
-	let xyzWings = 0;
-	for (const reduced of result.bentWingsReduced) {
-		if (reduced.strategy === REDUCE.Y_Wing) yWings++;
-		if (reduced.strategy === REDUCE.XYZ_Wing) xyzWings++;
-	}
 	lines.push("Omissions: " + result.omissionsReduced);
-	lines.push("Y Wing: " + yWings);
-	lines.push("XYZ Wing: " + xyzWings);
+	lines.push("Y Wing: " + result.yWingReduced);
+	lines.push("XYZ Wing: " + result.xyzWingReduced);
 	lines.push("X Wing: " + result.xWingReduced);
 	lines.push("Swordfish: " + result.swordfishReduced);
 	lines.push("Jellyfish: " + result.jellyfishReduced);
@@ -55,11 +50,12 @@ const STRATEGY = {
 	INTERSECTION_REMOVAL: 2,
 	DEADLY_PATTERN: 3,
 	HIDDEN: 4,
-	BENT_WINGS: 5,
-	X_WING: 6,
-	SWORDFISH: 7,
-	JELLYFISH: 8,
-	ALL: 9,
+	Y_WING: 5,
+	XYZ_WING: 6,
+	X_WING: 7,
+	SWORDFISH: 8,
+	JELLYFISH: 9,
+	ALL: 10,
 };
 Object.freeze(STRATEGY);
 
@@ -68,7 +64,8 @@ const STRATEGIES = [
 	STRATEGY.INTERSECTION_REMOVAL,
 	STRATEGY.DEADLY_PATTERN,
 	STRATEGY.HIDDEN,
-	STRATEGY.BENT_WINGS,
+	STRATEGY.Y_WING,
+	STRATEGY.XYZ_WING,
 	STRATEGY.X_WING,
 	STRATEGY.SWORDFISH,
 	STRATEGY.JELLYFISH,
@@ -78,7 +75,8 @@ Object.freeze(STRATEGIES);
 const fillSolve = (cells, solveStrategy = STRATEGY.NONE) => {
 	let nakedHiddenSetsReduced = [];
 	let omissionsReduced = 0;
-	let bentWingsReduced = [];
+	let yWingReduced = 0;
+	let xyzWingReduced = 0;
 	let xWingReduced = 0;
 	let swordfishReduced = 0;
 	let jellyfishReduced = 0;
@@ -89,8 +87,6 @@ const fillSolve = (cells, solveStrategy = STRATEGY.NONE) => {
 	let superpositionReduced = [];
 
 	let bruteForceFill = false;
-
-	let progress = false;
 
 	const solvePriority = (strategy) => {
 		if (strategy === STRATEGY.NAKED) {
@@ -125,10 +121,15 @@ const fillSolve = (cells, solveStrategy = STRATEGY.NONE) => {
 				return true;
 			}
 		}
-		if (strategy === STRATEGY.BENT_WINGS) {
-			const bentWingResults = bentWings(cells);
-			if (bentWingResults.length > 0) {
-				bentWingsReduced.push(...bentWingResults);
+		if (strategy === STRATEGY.Y_WING) {
+			if (yWing(cells)) {
+				yWingReduced++;
+				return true;
+			}
+		}
+		if (strategy === STRATEGY.XYZ_WING) {
+			if (xyzWing(cells)) {
+				xyzWingReduced++;
 				return true;
 			}
 		}
@@ -153,6 +154,7 @@ const fillSolve = (cells, solveStrategy = STRATEGY.NONE) => {
 		return false;
 	}
 
+	let progress = false;
 	do {
 		candidates(cells);
 
@@ -201,7 +203,8 @@ const fillSolve = (cells, solveStrategy = STRATEGY.NONE) => {
 	return {
 		nakedHiddenSetsReduced,
 		omissionsReduced,
-		bentWingsReduced,
+		yWingReduced,
+		xyzWingReduced,
 		xWingReduced,
 		swordfishReduced,
 		jellyfishReduced,
