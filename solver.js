@@ -1,23 +1,5 @@
 import { Grid, GridCell, Candidate } from "./Grid.js";
 
-let reduce_i = 0;
-const REDUCE = {
-	Naked_2: reduce_i++,
-	Naked_3: reduce_i++,
-	Naked_4: reduce_i++,
-	Hidden_2: reduce_i++,
-	Hidden_3: reduce_i++,
-	Hidden_4: reduce_i++,
-	UniqueRectangle: reduce_i++,
-	X_Wing: reduce_i++,
-	Y_Wing: reduce_i++,
-	XYZ_Wing: reduce_i++,
-	Swordfish: reduce_i++,
-	Jellyfish: reduce_i++,
-	Phistomefel: reduce_i++,
-	Brute_Force: reduce_i++,
-};
-
 const openSingles = (grid) => {
 	let candidate = new Candidate();
 	for (const group of Grid.groupTypes) {
@@ -719,20 +701,120 @@ const jellyfish = (cells) => {
 }
 
 class BentWingResult {
-	constructor(symbol, cells, xyz) {
-		this.strategy = xyz ? REDUCE.XYZ_Wing : REDUCE.Y_Wing;
+	constructor(symbol, cells) {
 		this.symbol = symbol;
 		this.cells = cells;
 	}
 }
-const bentWings = (cells) => {
-	class Pair {
-		constructor(cell, s1, s2) {
-			this.cell = cell;
-			this.s1 = s1;
-			this.s2 = s2;
+class BentWingPair {
+	constructor(cell, s1, s2) {
+		this.cell = cell;
+		this.s1 = s1;
+		this.s2 = s2;
+	}
+}
+const processBentWing = (cells, pairs, triples = null) => {
+	const results = [];
+
+	const pairLen_0 = pairs.length;
+	const pairLen_1 = pairLen_0 - 1;
+
+	for (let i1 = 0; i1 < pairLen_1; i1++) {
+		const pair1 = pairs[i1];
+		for (let i2 = i1 + 1; i2 < pairLen_0; i2++) {
+			const pair2 = pairs[i2];
+
+			if (pair1.s1 === pair2.s1 && pair1.s2 === pair2.s2) continue; // same
+
+			let s1 = -1;
+			let s2 = -1;
+			let common = -1;
+			if (pair1.s1 === pair2.s1) {
+				common = pair1.s1;
+				s1 = pair1.s2;
+				s2 = pair2.s2;
+			} else if (pair1.s1 === pair2.s2) {
+				common = pair1.s1;
+				s1 = pair1.s2;
+				s2 = pair2.s1;
+			} else if (pair1.s2 === pair2.s1) {
+				common = pair1.s2;
+				s1 = pair1.s1;
+				s2 = pair2.s2;
+			} else if (pair1.s2 === pair2.s2) {
+				common = pair1.s2;
+				s1 = pair1.s1;
+				s2 = pair2.s1;
+			}
+
+			if (common === -1) continue;
+
+			const overlaps = new Set();
+			for (const i of pair1.cell.group) {
+				const cell = cells[i];
+				if (cell.symbol !== 0) continue;
+				if (pair2.cell.groupSet.has(i)) overlaps.add(i);
+			}
+			if (overlaps.size > 0) {
+				const reduced = [];
+				const cellGroups = triples ?? pairs;
+				for (const pair of cellGroups) {
+					if (triples && !pair.cell.has(common)) continue;
+					if (!pair.cell.has(s1)) continue;
+					if (!pair.cell.has(s2)) continue;
+					if (!overlaps.has(pair.cell.index)) continue;
+
+					if (triples) {
+						for (const i of overlaps) {
+							if (pair.cell.groupSet.has(i)) continue;
+							overlaps.delete(i);
+						}
+					}
+					overlaps.delete(pair.cell.index);
+
+					for (const i of overlaps) {
+						const cell = cells[i];
+						if (cell.has(common)) reduced.push(cell);
+					}
+				}
+				if (reduced.length > 0) results.push(new BentWingResult(common, reduced));
+			}
 		}
 	}
+	return results;
+}
+const yWing = (cells) => {
+	const pairCells = [];
+	for (const cell of cells) {
+		if (cell.symbol !== 0) continue;
+		let s1 = 0;
+		let s2 = 0;
+		for (let s = 1; s <= 9; s++) {
+			if (!cell.has(s)) continue;
+			if (s1 === 0) {
+				s1 = s;
+			} else if (s2 === 0) {
+				s2 = s;
+			} else {
+				s2 = 0;
+				break;
+			}
+		}
+		if (s2 === 0) continue;
+		pairCells.push(new BentWingPair(cell, s1, s2));
+	}
+
+	if (pairCells.length < 3) return false;
+
+	const results = processBentWing(cells, pairCells);
+	for (const result of results) {
+		for (const cell of result.cells) {
+			cell.delete(result.symbol);
+		}
+	}
+	return results.length > 0;
+}
+const xyzWing = (cells) => {
 	class Triple {
 		constructor(cell, s1, s2, s3) {
 			this.cell = cell;
@@ -741,8 +823,6 @@ const bentWings = (cells) => {
 			this.s3 = s3;
 		}
 	}
-
-	const results = [];
 
 	const pairCells = [];
 	const tripleCells = [];
@@ -766,93 +846,22 @@ const bentWings = (cells) => {
 		}
 		if (s2 === 0) continue;
 		if (s3 === 0) {
-			pairCells.push(new Pair(cell, s1, s2));
+			pairCells.push(new BentWingPair(cell, s1, s2));
 		} else {
 			tripleCells.push(new Triple(cell, s1, s2, s3));
 		}
 	}
 
-	const pairLen_0 = pairCells.length;
-	const pairLen_1 = pairLen_0 - 1;
-	const processWing = (pairs, triples = null) => {
-		for (let i1 = 0; i1 < pairLen_1; i1++) {
-			const pair1 = pairs[i1];
-			for (let i2 = i1 + 1; i2 < pairLen_0; i2++) {
-				const pair2 = pairs[i2];
+	if (pairCells.length < 2 || tripleCells.length < 1) return false;
 
-				if (pair1.s1 === pair2.s1 && pair1.s2 === pair2.s2) continue; // same
-
-				let s1 = -1;
-				let s2 = -1;
-				let common = -1;
-				if (pair1.s1 === pair2.s1) {
-					common = pair1.s1;
-					s1 = pair1.s2;
-					s2 = pair2.s2;
-				} else if (pair1.s1 === pair2.s2) {
-					common = pair1.s1;
-					s1 = pair1.s2;
-					s2 = pair2.s1;
-				} else if (pair1.s2 === pair2.s1) {
-					common = pair1.s2;
-					s1 = pair1.s1;
-					s2 = pair2.s2;
-				} else if (pair1.s2 === pair2.s2) {
-					common = pair1.s2;
-					s1 = pair1.s1;
-					s2 = pair2.s1;
-				}
-
-				if (common === -1) continue;
-
-				const overlaps = new Set();
-				for (const i of pair1.cell.group) {
-					const cell = cells[i];
-					if (cell.symbol !== 0) continue;
-					if (pair2.cell.groupSet.has(i)) overlaps.add(i);
-				}
-				if (overlaps.size > 0) {
-					const reduced = [];
-					const cellGroups = triples ?? pairs;
-					for (const pair of cellGroups) {
-						if (triples && !pair.cell.has(common)) continue;
-						if (!pair.cell.has(s1)) continue;
-						if (!pair.cell.has(s2)) continue;
-						if (!overlaps.has(pair.cell.index)) continue;
-
-						if (triples) {
-							for (const i of overlaps) {
-								if (pair.cell.groupSet.has(i)) continue;
-								overlaps.delete(i);
-							}
-						}
-						overlaps.delete(pair.cell.index);
-
-						for (const i of overlaps) {
-							const cell = cells[i];
-							if (cell.has(common)) reduced.push(cell);
-						}
-					}
-					if (reduced.length > 0) {
-						if (triples) results.push(new BentWingResult(common, reduced, true));
-						else results.push(new BentWingResult(common, reduced, false));
-					}
-				}
-			}
-		}
-	}
-
-	processWing(pairCells);
-	processWing(pairCells, tripleCells);
-
+	const results = processBentWing(cells, pairCells, tripleCells);
 	for (const result of results) {
 		for (const cell of result.cells) {
 			cell.delete(result.symbol);
 		}
 	}
-	return results;
+	return results.length > 0;
 }
-
 
 // Deadly Pattern: Unique Rectangle
 const uniqueRectangle = (cells) => {
@@ -930,46 +939,6 @@ const solve = (cells, pairs) => {
 			progress = nakedHidden.nakedPair();
 			if (progress) continue;
 		}
-
-		// progress = omissions(cells);
-		// if (progress) continue;
-
-		// progress = nakedHidden.nakedTriple();
-		// if (progress) continue;
-
-		// progress = nakedHidden.nakedQuad();
-		// if (progress) continue;
-
-		// progress = nakedHidden.hiddenPair();
-		// if (progress) continue;
-		// progress = nakedHidden.hiddenTriple();
-		// if (progress) continue;
-		// progress = nakedHidden.hiddenQuad();
-		// if (progress) continue;
-
-		// const nakedHiddenResult = new NakedHiddenGroups(cells).nakedHiddenSets();
-		// if (nakedHiddenResult) {
-		// 	progress = true;
-		// 	continue;
-		// }
-
-		// const bentWingResults = bentWings(cells);
-		// if (bentWingResults.length > 0) {
-		// 	progress = true;
-		// 	continue;
-		// }
-
-		// progress = xWing(cells);
-		// if (progress) { continue; }
-
-		// progress = swordfish(cells);
-		// if (progress) { continue; }
-
-		// progress = jellyfish(cells);
-		// if (progress) { continue; }
-
-		// progress = uniqueRectangle(cells);
-		// if (progress) { continue; }
 	} while (progress);
 };
 const superposition = (cells) => {
@@ -1443,6 +1412,6 @@ const generate = (cells) => {
 }
 
 export {
-	REDUCE, generate, candidates, nakedSingles, hiddenSingles, omissions, NakedHiddenGroups, bentWings, xWing, swordfish, jellyfish,
+	generate, candidates, nakedSingles, hiddenSingles, omissions, NakedHiddenGroups, yWing, xyzWing, xWing, swordfish, jellyfish,
 	uniqueRectangle, superposition, phistomefel, bruteForce
 };
