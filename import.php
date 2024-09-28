@@ -23,8 +23,22 @@ if (!isset($_GET['uniqueRectangle'])) die();
 if (!isset($_GET['phistomefel'])) die();
 if (!isset($_GET['superpositions'])) die();
 if (!isset($_GET['bruteForce'])) die();
-if (!isset($_GET['table'])) die();
 
+if (!isset($_GET['has_naked2'])) die();
+if (!isset($_GET['has_naked3'])) die();
+if (!isset($_GET['has_naked4'])) die();
+if (!isset($_GET['has_hidden2'])) die();
+if (!isset($_GET['has_hidden3'])) die();
+if (!isset($_GET['has_hidden4'])) die();
+if (!isset($_GET['has_omissions'])) die();
+if (!isset($_GET['has_uniqueRectangle'])) die();
+if (!isset($_GET['has_yWing'])) die();
+if (!isset($_GET['has_xyzWing'])) die();
+if (!isset($_GET['has_xWing'])) die();
+if (!isset($_GET['has_swordfish'])) die();
+if (!isset($_GET['has_jellyfish'])) die();
+
+if (!isset($_GET['table'])) die();
 $table = $_GET['table'];
 
 $puzzleClues = $_GET['puzzleClues'];
@@ -57,20 +71,21 @@ $solveType = 1;
 if ($simple > 0) $solveType = 0;
 if ($bruteForce > 0) $solveType = 2;
 
-$has_naked2 = $naked2 > 0 ? 1 : 0;
-$has_naked3 = $naked3 > 0 ? 1 : 0;
-$has_naked4 = $naked4 > 0 ? 1 : 0;
-$has_hidden2 = $hidden2 > 0 ? 1 : 0;
-$has_hidden3 = $hidden3 > 0 ? 1 : 0;
-$has_hidden4 = $hidden4 > 0 ? 1 : 0;
-$has_omissions = $omissions > 0 ? 1 : 0;
-$has_yWing = $yWing > 0 ? 1 : 0;
-$has_xyzWing = $xyzWing > 0 ? 1 : 0;
-$has_xWing = $xWing > 0 ? 1 : 0;
-$has_swordfish = $swordfish > 0 ? 1 : 0;
-$has_jellyfish = $jellyfish > 0 ? 1 : 0;
-$has_uniqueRectangle = $uniqueRectangle > 0 ? 1 : 0;
-$has_phistomefel = $phistomefel > 0 ? 1 : 0;
+$has_naked2 = $_GET['has_naked2'];
+$has_naked3 = $_GET['has_naked3'];
+$has_naked4 = $_GET['has_naked4'];
+$has_hidden2 = $_GET['has_hidden2'];
+$has_hidden3 = $_GET['has_hidden3'];
+$has_hidden4 = $_GET['has_hidden4'];
+$has_omissions = $_GET['has_omissions'];
+$has_uniqueRectangle = $_GET['has_uniqueRectangle'];
+$has_yWing = $_GET['has_yWing'];
+$has_xyzWing = $_GET['has_xyzWing'];
+$has_xWing = $_GET['has_xWing'];
+$has_swordfish = $_GET['has_swordfish'];
+$has_jellyfish = $_GET['has_jellyfish'];
+
+$has_phistomefel = $phistomefel;
 
 try {
 	$pdo = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
