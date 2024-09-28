@@ -808,11 +808,10 @@ const yWing = (cells) => {
 
 	const results = processBentWing(cells, pairCells);
 	for (const result of results) {
-		for (const cell of result.cells) {
-			cell.delete(result.symbol);
-		}
+		for (const cell of result.cells) cell.delete(result.symbol);
+		return true;
 	}
-	return results.length > 0;
+	return false;
 }
 const xyzWing = (cells) => {
 	class Triple {
@@ -856,11 +855,10 @@ const xyzWing = (cells) => {
 
 	const results = processBentWing(cells, pairCells, tripleCells);
 	for (const result of results) {
-		for (const cell of result.cells) {
-			cell.delete(result.symbol);
-		}
+		for (const cell of result.cells) cell.delete(result.symbol);
+		return true;
 	}
-	return results.length > 0;
+	return false;
 }
 
 // Deadly Pattern: Unique Rectangle
