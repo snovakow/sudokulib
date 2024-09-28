@@ -37,20 +37,16 @@ function queryStrategy($conn, $table)
 
 // header("Access-Control-Allow-Origin: *");
 if (!isset($_GET['mode'])) die;
-if (!isset($_GET['table'])) die;
 
 // -1 = All
 // 0 = Count
 // 1 = Clues
 // 2 = Strategies
-// 3 = Isolated Strategies
-// 4 = Stats
-// 5 = Count
+// 3 = Stats
 $mode = (int)$_GET['mode'];
 if ($mode < -1 || $mode > 5) die;
 
-$flush = false;
-if ($mode === -1) $flush = true;
+header('Content-type: text/html; charset=utf-8');
 
 $servername = "localhost";
 $username = "snovakow";
@@ -61,127 +57,31 @@ try {
 	$conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
 	// $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION, PDO::ATTR_STRINGIFY_FETCHES);
 
-	$table = $_GET['table'];
+	if (isset($_GET['table'])) $tables = array($_GET['table']);
+	else $tables = array("puzzles1", "puzzles2", "puzzles3");
 
-	$counts = array();
-
-	$stmt = $conn->prepare("
-		SELECT COUNT(*) as totalPuzzles FROM `" . $table . "` WHERE 1
-	");
-	$stmt->execute();
-	$totalPuzzles = $stmt->fetch();
-	$total = $totalPuzzles["totalPuzzles"];
-
-	if ($mode === 1 || $mode === -1) {
-		flushOut("--- Clues", $flush);
-
-		$stmt = $conn->prepare("SELECT `clueCount`, COUNT(*) as count FROM `" . $table . "` GROUP BY `clueCount`");
-		$stmt->execute();
-		$result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-		foreach ($result as $key => $row) {
-			$clueCount = $row['clueCount'];
-			$count = $row['count'];
-
-			printStat($clueCount, $count, $total);
-
-			if ($mode === 1) {
-				$stmtClue = $conn->prepare("SELECT `solveType`, COUNT(*) as count FROM `" . $table . "` WHERE clueCount=" . $clueCount . " GROUP BY `solveType`");
-				$stmtClue->execute();
-				$resultClue = $stmtClue->fetchAll(\PDO::FETCH_ASSOC);
-				foreach ($resultClue as $key => $row) {
-					$solveType = $row['solveType'];
-					$countClue = $row['count'];
-
-					$type = "Simples";
-					if ($solveType === "1") $type =  "Strategies";
-					else if ($solveType === "2") $type = "Brute Force";
-					printStat("&nbsp;&nbsp;-" . $type, $countClue, $count);
-				}
-				flushSend();
-			}
-		}
-		echo  "<br/>";
-	}
-
-	if ($mode === 2 || $mode === -1) {
-		flushOut("--- Strategies", $flush);
-
+	$total = 0;
+	foreach ($tables as $table) {
 		$stmt = $conn->prepare("
-			SELECT
-			SUM(`has_naked2`) AS naked2, MAX(`naked2`) AS max_naked2,
-			SUM(`has_naked3`) AS naked3, MAX(`naked3`) AS max_naked3,
-			SUM(`has_naked4`) AS naked4, MAX(`naked4`) AS max_naked4,
-			SUM(`has_hidden2`) AS hidden2, MAX(`hidden2`) AS max_hidden2,
-			SUM(`has_hidden3`) AS hidden3, MAX(`hidden3`) AS max_hidden3,
-			SUM(`has_hidden4`) AS hidden4, MAX(`hidden4`) AS max_hidden4,
-			SUM(`has_omissions`) AS omissions, MAX(`omissions`) AS max_omissions,
-			SUM(`has_yWing`) AS yWing, MAX(`yWing`) AS max_yWing,
-			SUM(`has_xyzWing`) AS xyzWing, MAX(`xyzWing`) AS max_xyzWing,
-			SUM(`has_xWing`) AS xWing, MAX(`xWing`) AS max_xWing,
-			SUM(`has_swordfish`) AS swordfish, MAX(`swordfish`) AS max_swordfish,
-			SUM(`has_jellyfish`) AS jellyfish, MAX(`jellyfish`) AS max_jellyfish,
-			SUM(`has_uniqueRectangle`) AS uniqueRectangle, MAX(`uniqueRectangle`) AS max_uniqueRectangle,
-			SUM(`has_phistomefel`) AS phistomefel
-			FROM `" . $table . "` WHERE `simple` = 0 AND `bruteForce` = 0
+			SELECT MAX(id) as totalPuzzles FROM `" . $table . "`
 		");
 		$stmt->execute();
-		$solveTypes = $stmt->fetch();
-
-		$naked2 = $solveTypes['naked2'];
-		$naked3 = $solveTypes['naked3'];
-		$naked4 = $solveTypes['naked4'];
-		$hidden2 = $solveTypes['hidden2'];
-		$hidden3 = $solveTypes['hidden3'];
-		$hidden4 = $solveTypes['hidden4'];
-		$omissions = $solveTypes['omissions'];
-		$yWing = $solveTypes['yWing'];
-		$xyzWing = $solveTypes['xyzWing'];
-		$xWing = $solveTypes['xWing'];
-		$swordfish = $solveTypes['swordfish'];
-		$jellyfish = $solveTypes['jellyfish'];
-		$uniqueRectangle = $solveTypes['uniqueRectangle'];
-		$phistomefel = $solveTypes['phistomefel'];
-
-		$candidates = 0;
-		$candidates += $naked2;
-		$candidates += $naked3;
-		$candidates += $naked4;
-		$candidates += $hidden2;
-		$candidates += $hidden3;
-		$candidates += $hidden4;
-		$candidates += $omissions;
-		$candidates += $yWing;
-		$candidates += $xyzWing;
-		$candidates += $xWing;
-		$candidates += $swordfish;
-		$candidates += $jellyfish;
-		$candidates += $uniqueRectangle;
-		$candidates += $phistomefel;
-
-		printStat("Naked 2 (" . $solveTypes['max_naked2']  . ")", $naked2, $candidates);
-		printStat("Naked 3 (" . $solveTypes['max_naked3']  . ")", $naked3, $candidates);
-		printStat("Naked 4 (" . $solveTypes['max_naked4']  . ")", $naked4, $candidates);
-		printStat("Hidden 2 (" . $solveTypes['max_hidden2']  . ")", $hidden2, $candidates);
-		printStat("Hidden 3 (" . $solveTypes['max_hidden3']  . ")", $hidden3, $candidates);
-		printStat("Hidden 4 (" . $solveTypes['max_hidden4']  . ")", $hidden4, $candidates);
-		printStat("Omissions (" . $solveTypes['max_omissions']  . ")", $omissions, $candidates);
-		printStat("yWing (" . $solveTypes['max_yWing']  . ")", $yWing, $candidates);
-		printStat("xyzWing (" . $solveTypes['max_xyzWing']  . ")", $xyzWing, $candidates);
-		printStat("xWing (" . $solveTypes['max_xWing']  . ")", $xWing, $candidates);
-		printStat("swordfish (" . $solveTypes['max_swordfish']  . ")", $swordfish, $candidates);
-		printStat("jellyfish (" . $solveTypes['max_jellyfish']  . ")", $jellyfish, $candidates);
-		printStat("uniqueRectangle (" . $solveTypes['max_uniqueRectangle']  . ")", $uniqueRectangle, $candidates);
-		printStat("phistomefel", $phistomefel, $candidates);
-		echo  "<br/>";
+		$totalPuzzles = $stmt->fetch()["totalPuzzles"];
+		$total += $totalPuzzles;
+		flushOut($table . ": " . number_format($totalPuzzles), false);
 	}
-	if ($mode === 3 || $mode === -1) {
+	if (count($tables) > 1) flushOut("Total Puzzles: " . number_format($total), false);
+	echo  "<br/>";
+
+	if ($mode === 1 || $mode === -1) {
 		if ($table == "phistomefel") {
 			flushSend();
 			$phistomefel = queryStrategy($conn, 'phistomefelRing');
 			printStat("Phistomefel Isolated", $phistomefel['count'], $total);
 			echo  "<br/>";
 		} else {
-			flushOut("--- Strategies Isolated", $flush);
+			flushOut("--- Strategies", true);
+
 			$naked2 = queryStrategy($conn, 'naked2');
 			$naked3 = queryStrategy($conn, 'naked3');
 			$naked4 = queryStrategy($conn, 'naked4');
@@ -228,27 +128,52 @@ try {
 		}
 	}
 
-	if ($mode === 4 || $mode === -1) {
-		flushOut("--- Stats", $flush);
+	if ($mode === 2 || $mode === -1) {
+		flushOut("--- Clues", true);
+		$counts = array();
+		$count0 = array();
+		$count1 = array();
+		$count2 = array();
+		foreach ($tables as $table) {
+			$stmt = $conn->prepare("SELECT `clueCount`, `solveType`, COUNT(*) as count FROM `" . $table . "` GROUP BY `clueCount`, `solveType`");
+			$stmt->execute();
+			$result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+			foreach ($result as $key => $row) {
+				$clueCount = $row['clueCount'];
+				$solveType = $row['solveType'];
+				$count = $row['count'];
 
-		$stmt = $conn->prepare("SELECT `solveType`, COUNT(*) as count FROM `" . $table . "` GROUP BY `solveType`");
-		$stmt->execute();
-		$result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-		foreach ($result as $key => $row) {
-			$solveType = $row['solveType'];
-			$count = $row['count'];
+				if (!$counts[$clueCount]) $counts[$clueCount] = 0;
+				if (!$count0[$clueCount]) $count0[$clueCount] = 0;
+				if (!$count1[$clueCount]) $count1[$clueCount] = 0;
+				if (!$count2[$clueCount]) $count2[$clueCount] = 0;
 
-			$type = "Simples";
-			if ($solveType == 1) $type =  "Strategies";
-			else if ($solveType == 2) $type = "Brute Force";
-			printStat($type, $count, $total);
+				$counts[$clueCount] += $count;
+				if ($solveType == 0) $count0[$clueCount] += $count;
+				if ($solveType == 1) $count1[$clueCount] += $count;
+				if ($solveType == 2) $count2[$clueCount] += $count;
+			}
 		}
+
+		foreach ($counts as $clueCount => $count) printStat($clueCount, $count, $total);
+
+		$counts0 = 0;
+		$counts1 = 0;
+		$counts2 = 0;
+		foreach ($count0 as $clueCount => $count) $counts0 += $count;
+		foreach ($count1 as $clueCount => $count) $counts1 += $count;
+		foreach ($count2 as $clueCount => $count) $counts2 += $count;
+		printStat("Simples", $counts0, $total);
+		foreach ($counts as $clueCount => $count) printStat($clueCount, $count0[$clueCount], $count);
+
+		printStat("Strategies", $counts1, $total);
+		foreach ($counts as $clueCount => $count) printStat($clueCount, $count1[$clueCount], $count);
+
+		printStat("Brute Force", $counts2, $total);
+		foreach ($counts as $clueCount => $count) printStat($clueCount, $count2[$clueCount], $count);
 
 		echo  "<br/>";
 	}
-
-	echo  "Total Puzzles: " . number_format($total) . "<br/>";
-	echo  "<br/>";
 } catch (PDOException $e) {
 	echo "Error: " . $e->getMessage();
 }
