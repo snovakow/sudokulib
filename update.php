@@ -51,6 +51,20 @@ try {
 		if (!isset($post->superpositions)) continue;
 		if (!isset($post->bruteForce)) continue;
 
+		if (!isset($post->has_naked2)) continue;
+		if (!isset($post->has_naked3)) continue;
+		if (!isset($post->has_naked4)) continue;
+		if (!isset($post->has_hidden2)) continue;
+		if (!isset($post->has_hidden3)) continue;
+		if (!isset($post->has_hidden4)) continue;
+		if (!isset($post->has_omissions)) continue;
+		if (!isset($post->has_uniqueRectangle)) continue;
+		if (!isset($post->has_yWing)) continue;
+		if (!isset($post->has_xyzWing)) continue;
+		if (!isset($post->has_xWing)) continue;
+		if (!isset($post->has_swordfish)) continue;
+		if (!isset($post->has_jellyfish)) continue;
+
 		$id = $post->id;
 		$simple = $post->simple;
 		$naked2 = $post->naked2;
@@ -74,19 +88,20 @@ try {
 		if ($simple > 0) $solveType = 0;
 		if ($bruteForce > 0) $solveType = 2;
 
-		$has_naked2 = $naked2 > 0 ? 1 : 0;
-		$has_naked3 = $naked3 > 0 ? 1 : 0;
-		$has_naked4 = $naked4 > 0 ? 1 : 0;
-		$has_hidden2 = $hidden2 > 0 ? 1 : 0;
-		$has_hidden3 = $hidden3 > 0 ? 1 : 0;
-		$has_hidden4 = $hidden4 > 0 ? 1 : 0;
-		$has_omissions = $omissions > 0 ? 1 : 0;
-		$has_yWing = $yWing > 0 ? 1 : 0;
-		$has_xyzWing = $xyzWing > 0 ? 1 : 0;
-		$has_xWing = $xWing > 0 ? 1 : 0;
-		$has_swordfish = $swordfish > 0 ? 1 : 0;
-		$has_jellyfish = $jellyfish > 0 ? 1 : 0;
-		$has_uniqueRectangle = $uniqueRectangle > 0 ? 1 : 0;
+		$has_naked2 = $post->has_naked2;
+		$has_naked3 = $post->has_naked3;
+		$has_naked4 = $post->has_naked4;
+		$has_hidden2 = $post->has_hidden2;
+		$has_hidden3 = $post->has_hidden3;
+		$has_hidden4 = $post->has_hidden4;
+		$has_omissions = $post->has_omissions;
+		$has_uniqueRectangle = $post->has_uniqueRectangle;
+		$has_yWing = $post->has_yWing;
+		$has_xyzWing = $post->has_xyzWing;
+		$has_xWing = $post->has_xWing;
+		$has_swordfish = $post->has_swordfish;
+		$has_jellyfish = $post->has_jellyfish;
+
 		$has_phistomefel = $phistomefel > 0 ? 1 : 0;
 
 		$statement->execute([
