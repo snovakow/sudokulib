@@ -8,14 +8,12 @@ const consoleOut = (result) => {
 	const lines = [];
 	const phistomefelReduced = result.phistomefelReduced;
 	const phistomefelFilled = result.phistomefelFilled;
-	lines.push("Naked Sets: " + result.nakedSetsReduced.length);
-	for (const nakedSet of result.nakedSetsReduced) {
-		lines.push("    Naked " + nakedSet.size);
-	}
-	lines.push("Hidden Sets: " + result.hiddenSetsReduced.length);
-	for (const hiddenSet of result.hiddenSetsReduced) {
-		lines.push("    Hidden " + hiddenSet.size);
-	}
+	lines.push("Naked2: " + result.naked2Reduced);
+	lines.push("Naked3: " + result.naked3Reduced);
+	lines.push("Naked4: " + result.naked4Reduced);
+	lines.push("Hidden2: " + result.hidden2Reduced);
+	lines.push("Hidden3: " + result.hidden3Reduced);
+	lines.push("Hidden4: " + result.hidden4Reduced);
 	lines.push("Omissions: " + result.omissionsReduced);
 	lines.push("Y Wing: " + result.yWingReduced);
 	lines.push("XYZ Wing: " + result.xyzWingReduced);
@@ -76,8 +74,12 @@ const STRATEGIES = [
 Object.freeze(STRATEGIES);
 
 const fillSolve = (cells, solveStrategy = STRATEGY.NONE, isolated = false) => {
-	let nakedSetsReduced = [];
-	let hiddenSetsReduced = [];
+	let naked2Reduced = 0;
+	let naked3Reduced = 0;
+	let naked4Reduced = 0;
+	let hidden2Reduced = 0;
+	let hidden3Reduced = 0;
+	let hidden4Reduced = 0;
 	let omissionsReduced = 0;
 	let yWingReduced = 0;
 	let xyzWingReduced = 0;
@@ -96,21 +98,41 @@ const fillSolve = (cells, solveStrategy = STRATEGY.NONE, isolated = false) => {
 		if (strategy === STRATEGY.NAKED) {
 			const nakedSets = new NakedHiddenGroups(cells);
 			let nakedResult = nakedSets.nakedSet2();
-			if (!nakedResult) nakedResult = nakedSets.nakedSet3();
-			if (!nakedResult) nakedResult = nakedSets.nakedSet4();
 			if (nakedResult) {
-				nakedSetsReduced.push(nakedResult);
+				naked2Reduced++;
 				return true;
+			} else {
+				nakedResult = nakedSets.nakedSet3();
+				if (nakedResult) {
+					naked3Reduced++;
+					return true;
+				} else {
+					nakedResult = nakedSets.nakedSet4();
+					if (nakedResult) {
+						naked4Reduced++;
+						return true;
+					}
+				}
 			}
 		}
 		if (strategy === STRATEGY.HIDDEN) {
 			const hiddenSets = new NakedHiddenGroups(cells);
 			let hiddenResult = hiddenSets.hiddenSet2();
-			if (!hiddenResult) hiddenResult = hiddenSets.hiddenSet3();
-			if (!hiddenResult) hiddenResult = hiddenSets.hiddenSet4();
 			if (hiddenResult) {
-				hiddenSetsReduced.push(hiddenResult);
+				hidden2Reduced++;
 				return true;
+			} else {
+				hiddenResult = hiddenSets.hiddenSet3();
+				if (hiddenResult) {
+					hidden3Reduced++;
+					return true;
+				} else {
+					hiddenResult = hiddenSets.hiddenSet4();
+					if (hiddenResult) {
+						hidden4Reduced++;
+						return true;
+					}
+				}
 			}
 		}
 		if (strategy === STRATEGY.DEADLY_PATTERN) {
@@ -170,13 +192,13 @@ const fillSolve = (cells, solveStrategy = STRATEGY.NONE, isolated = false) => {
 
 		if (solveStrategy === STRATEGY.NONE) continue;
 
-		if(!isolated) {
+		if (!isolated) {
 			for (const strategy of STRATEGIES) {
 				if (strategy === solveStrategy) continue;
 				progress = solvePriority(strategy);
 				if (progress) break;
 			}
-			if (progress) continue;	
+			if (progress) continue;
 		}
 
 		if (solveStrategy !== STRATEGY.ALL) {
@@ -207,8 +229,12 @@ const fillSolve = (cells, solveStrategy = STRATEGY.NONE, isolated = false) => {
 	} while (progress);
 
 	return {
-		nakedSetsReduced,
-		hiddenSetsReduced,
+		naked2Reduced,
+		naked3Reduced,
+		naked4Reduced,
+		hidden2Reduced,
+		hidden3Reduced,
+		hidden4Reduced,
 		omissionsReduced,
 		yWingReduced,
 		xyzWingReduced,
