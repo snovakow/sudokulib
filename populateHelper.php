@@ -24,7 +24,7 @@ try {
 		$sql = "TRUNCATE TABLE `simple`";
 		flushOut($sql);
 		$statement = $pdo->prepare($sql);
-		if ($execute) $statement->exe
+		if ($execute) $statement->execute();
 	} else {
 		$sql = "
 			INSERT INTO `simple` (`puzzle_id`, `table`)
