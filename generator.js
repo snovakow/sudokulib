@@ -47,24 +47,32 @@ const isFinished = (cells) => {
 
 const STRATEGY = {
 	NONE: 0,
-	NAKED: 1,
-	INTERSECTION_REMOVAL: 2,
-	DEADLY_PATTERN: 3,
-	HIDDEN: 4,
-	Y_WING: 5,
-	XYZ_WING: 6,
-	X_WING: 7,
-	SWORDFISH: 8,
-	JELLYFISH: 9,
-	ALL: 10,
+	NAKED_2: 1,
+	NAKED_3: 2,
+	NAKED_4: 3,
+	INTERSECTION_REMOVAL: 4,
+	DEADLY_PATTERN: 5,
+	HIDDEN_2: 6,
+	HIDDEN_3: 7,
+	HIDDEN_4: 8,
+	Y_WING: 9,
+	XYZ_WING: 10,
+	X_WING: 11,
+	SWORDFISH: 12,
+	JELLYFISH: 13,
+	ALL: 14,
 };
 Object.freeze(STRATEGY);
 
 const STRATEGIES = [
-	STRATEGY.NAKED,
+	STRATEGY.NAKED_2,
+	STRATEGY.NAKED_3,
+	STRATEGY.NAKED_4,
 	STRATEGY.INTERSECTION_REMOVAL,
 	STRATEGY.DEADLY_PATTERN,
-	STRATEGY.HIDDEN,
+	STRATEGY.HIDDEN_2,
+	STRATEGY.HIDDEN_3,
+	STRATEGY.HIDDEN_4,
 	STRATEGY.Y_WING,
 	STRATEGY.XYZ_WING,
 	STRATEGY.X_WING,
@@ -95,44 +103,40 @@ const fillSolve = (cells, solveStrategy = STRATEGY.NONE, isolated = false) => {
 	let bruteForceFill = false;
 
 	const solvePriority = (strategy) => {
-		if (strategy === STRATEGY.NAKED) {
-			const nakedSets = new NakedHiddenGroups(cells);
-			let nakedResult = nakedSets.nakedSet2();
-			if (nakedResult) {
+		if (strategy === STRATEGY.NAKED_2) {
+			if ((new NakedHiddenGroups(cells)).nakedSet2()) {
 				naked2Reduced++;
 				return true;
-			} else {
-				nakedResult = nakedSets.nakedSet3();
-				if (nakedResult) {
-					naked3Reduced++;
-					return true;
-				} else {
-					nakedResult = nakedSets.nakedSet4();
-					if (nakedResult) {
-						naked4Reduced++;
-						return true;
-					}
-				}
 			}
 		}
-		if (strategy === STRATEGY.HIDDEN) {
-			const hiddenSets = new NakedHiddenGroups(cells);
-			let hiddenResult = hiddenSets.hiddenSet2();
-			if (hiddenResult) {
+		if (strategy === STRATEGY.NAKED_3) {
+			if ((new NakedHiddenGroups(cells)).nakedSet3()) {
+				naked3Reduced++;
+				return true;
+			}
+		}
+		if (strategy === STRATEGY.NAKED_4) {
+			if ((new NakedHiddenGroups(cells)).nakedSet4()) {
+				naked4Reduced++;
+				return true;
+			}
+		}
+		if (strategy === STRATEGY.HIDDEN_2) {
+			if ((new NakedHiddenGroups(cells)).hiddenSet2()) {
 				hidden2Reduced++;
 				return true;
-			} else {
-				hiddenResult = hiddenSets.hiddenSet3();
-				if (hiddenResult) {
-					hidden3Reduced++;
-					return true;
-				} else {
-					hiddenResult = hiddenSets.hiddenSet4();
-					if (hiddenResult) {
-						hidden4Reduced++;
-						return true;
-					}
-				}
+			}
+		}
+		if (strategy === STRATEGY.HIDDEN_3) {
+			if ((new NakedHiddenGroups(cells)).hiddenSet3()) {
+				hidden3Reduced++;
+				return true;
+			}
+		}
+		if (strategy === STRATEGY.HIDDEN_4) {
+			if ((new NakedHiddenGroups(cells)).hiddenSet4()) {
+				hidden4Reduced++;
+				return true;
 			}
 		}
 		if (strategy === STRATEGY.DEADLY_PATTERN) {
