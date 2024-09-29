@@ -102,19 +102,21 @@ try {
 			$candidates += $jellyfish['count'];
 			$candidates += $uniqueRectangle['count'];
 
-			printStat("Naked 2 (" . $naked2['max'] . ")", $naked2['count'], $candidates);
-			printStat("Naked 3 (" . $naked3['max'] . ")", $naked3['count'], $candidates);
-			printStat("Naked 4 (" . $naked4['max'] . ")", $naked4['count'], $candidates);
-			printStat("Hidden 2 (" . $hidden2['max'] . ")", $hidden2['count'], $candidates);
-			printStat("Hidden 3 (" . $hidden3['max'] . ")", $hidden3['count'], $candidates);
-			printStat("Hidden 4 (" . $hidden4['max'] . ")", $hidden4['count'], $candidates);
-			printStat("Omissions (" . $omissions['max'] . ")", $omissions['count'], $candidates);
-			printStat("yWing (" . $yWing['max'] . ")", $yWing['count'], $candidates);
-			printStat("xyzWing (" . $xyzWing['max'] . ")", $xyzWing['count'], $candidates);
-			printStat("xWing (" . $xWing['max'] . ")", $xWing['count'], $candidates);
-			printStat("swordfish (" . $swordfish['max'] . ")", $swordfish['count'], $candidates);
-			printStat("jellyfish (" . $jellyfish['max'] . ")", $jellyfish['count'], $candidates);
-			printStat("uniqueRectangle (" . $uniqueRectangle['max'] . ")", $uniqueRectangle['count'], $candidates);
+			if($candidates > 0) {
+				printStat("Naked 2 (" . $naked2['max'] . ")", $naked2['count'], $candidates);
+				printStat("Naked 3 (" . $naked3['max'] . ")", $naked3['count'], $candidates);
+				printStat("Naked 4 (" . $naked4['max'] . ")", $naked4['count'], $candidates);
+				printStat("Hidden 2 (" . $hidden2['max'] . ")", $hidden2['count'], $candidates);
+				printStat("Hidden 3 (" . $hidden3['max'] . ")", $hidden3['count'], $candidates);
+				printStat("Hidden 4 (" . $hidden4['max'] . ")", $hidden4['count'], $candidates);
+				printStat("Omissions (" . $omissions['max'] . ")", $omissions['count'], $candidates);
+				printStat("yWing (" . $yWing['max'] . ")", $yWing['count'], $candidates);
+				printStat("xyzWing (" . $xyzWing['max'] . ")", $xyzWing['count'], $candidates);
+				printStat("xWing (" . $xWing['max'] . ")", $xWing['count'], $candidates);
+				printStat("swordfish (" . $swordfish['max'] . ")", $swordfish['count'], $candidates);
+				printStat("jellyfish (" . $jellyfish['max'] . ")", $jellyfish['count'], $candidates);
+				printStat("uniqueRectangle (" . $uniqueRectangle['max'] . ")", $uniqueRectangle['count'], $candidates);					
+			}
 			echo  "<br/>";
 		}
 	}
