@@ -12,11 +12,7 @@ $execute = true;
 function flushOut($message)
 {
 	echo $message . "<br/>";
-	ob_flush();
-	flush();
 }
-
-header('Content-type: text/html; charset=utf-8');
 
 try {
 	$pdo = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
@@ -28,7 +24,7 @@ try {
 		$sql = "TRUNCATE TABLE `simple`";
 		flushOut($sql);
 		$statement = $pdo->prepare($sql);
-		if ($execute) $statement->execute();
+		if ($execute) $statement->exe
 	} else {
 		$sql = "
 			INSERT INTO `simple` (`puzzle_id`, `table`)
