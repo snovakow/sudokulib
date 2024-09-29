@@ -102,7 +102,7 @@ try {
 			$candidates += $jellyfish['count'];
 			$candidates += $uniqueRectangle['count'];
 
-			if($candidates > 0) {
+			if ($candidates > 0) {
 				printStat("Naked 2 (" . $naked2['max'] . ")", $naked2['count'], $candidates);
 				printStat("Naked 3 (" . $naked3['max'] . ")", $naked3['count'], $candidates);
 				printStat("Naked 4 (" . $naked4['max'] . ")", $naked4['count'], $candidates);
@@ -115,7 +115,7 @@ try {
 				printStat("xWing (" . $xWing['max'] . ")", $xWing['count'], $candidates);
 				printStat("swordfish (" . $swordfish['max'] . ")", $swordfish['count'], $candidates);
 				printStat("jellyfish (" . $jellyfish['max'] . ")", $jellyfish['count'], $candidates);
-				printStat("uniqueRectangle (" . $uniqueRectangle['max'] . ")", $uniqueRectangle['count'], $candidates);					
+				printStat("uniqueRectangle (" . $uniqueRectangle['max'] . ")", $uniqueRectangle['count'], $candidates);
 			}
 			echo  "<br/>";
 		}
