@@ -1,14 +1,8 @@
 <?php
 
-function flushSend()
-{
-	ob_flush();
-	flush();
-}
-function flushOut($message, $flush)
+function flushOut($message)
 {
 	echo $message . "<br/>";
-	if ($flush) flushSend();
 }
 
 function percentage($count, $total)
@@ -46,8 +40,6 @@ if (!isset($_GET['mode'])) die;
 $mode = (int)$_GET['mode'];
 if ($mode < -1 || $mode > 5) die;
 
-header('Content-type: text/html; charset=utf-8');
-
 $servername = "localhost";
 $username = "snovakow";
 $password = "kewbac-recge1-Fiwpux";
@@ -68,19 +60,18 @@ try {
 		$stmt->execute();
 		$totalPuzzles = $stmt->fetch()["totalPuzzles"];
 		$total += $totalPuzzles;
-		flushOut($table . ": " . number_format($totalPuzzles), false);
+		flushOut($table . ": " . number_format($totalPuzzles));
 	}
-	if (count($tables) > 1) flushOut("Total Puzzles: " . number_format($total), false);
+	if (count($tables) > 1) flushOut("Total Puzzles: " . number_format($total));
 	echo  "<br/>";
 
 	if ($mode === 1 || $mode === -1) {
 		if ($table == "phistomefel") {
-			flushSend();
 			$phistomefel = queryStrategy($conn, 'phistomefelRing');
 			printStat("Phistomefel Isolated", $phistomefel['count'], $total);
 			echo  "<br/>";
 		} else {
-			flushOut("--- Strategies", true);
+			flushOut("--- Strategies");
 
 			$naked2 = queryStrategy($conn, 'naked2');
 			$naked3 = queryStrategy($conn, 'naked3');
@@ -129,7 +120,7 @@ try {
 	}
 
 	if ($mode === 2 || $mode === -1) {
-		flushOut("--- Clues", true);
+		flushOut("--- Clues");
 		$counts = array();
 		$count0 = array();
 		$count1 = array();
