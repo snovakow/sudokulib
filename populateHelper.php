@@ -7,59 +7,90 @@ $username = "snovakow";
 $password = "kewbac-recge1-Fiwpux";
 $dbname = "sudoku";
 
-$execute = true;
-
 function flushOut($message)
 {
 	echo $message . "<br/>";
+}
+
+function truncate($db, $table)
+{
+	$sql = "TRUNCATE TABLE `" . $table . "`";
+	flushOut($sql);
+	$statement = $db->prepare($sql);
+	$statement->execute();
+
+	$sql = "TRUNCATE TABLE ";
+}
+
+function process($db, $sql, $strategy)
+{
+	flushOut($sql . "<br/>");
+	$statement = $db->prepare($sql);
+	$statement->execute();
+
+	$sql = "SELECT MAX(`id`) AS max_id FROM `" . $strategy . "`";
+	$statement = $db->prepare($sql);
+	$statement->execute();
+	$result = $statement->fetch();
+	$id = $result['max_id'] + 1;
+
+	$sql = "ALTER TABLE `" . $strategy . "` AUTO_INCREMENT=" . $id;
+	$statement = $db->prepare($sql);
+	$statement->execute();
+}
+
+function insert($db, $strategy, $table)
+{
+	$sql = "
+		INSERT INTO `" . $strategy . "` (`puzzle_id`, `table`)
+		SELECT `id`, '" . $table . "'
+		FROM `" . $table . "` WHERE `" . $strategy . "`>0
+	";
+	process($db, $sql, $strategy);
 }
 
 try {
 	$pdo = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
 	$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-	$strategies = array("naked2", "naked3", "naked4", "hidden2", "hidden3", "hidden4", "omissions", "yWing", "xyzWing", "xWing", "swordfish", "jellyfish", "uniqueRectangle");
+	$strategies = array(
+		"naked2",
+		"naked3",
+		"naked4",
+		"hidden2",
+		"hidden3",
+		"hidden4",
+		"omissions",
+		"yWing",
+		"xyzWing",
+		"xWing",
+		"swordfish",
+		"jellyfish",
+		"uniqueRectangle"
+	);
 
 	if ($table === 'truncate') {
-		$sql = "TRUNCATE TABLE `simple`";
-		flushOut($sql);
-		$statement = $pdo->prepare($sql);
-		if ($execute) $statement->execute();
+		truncate($pdo, 'simple');
+		truncate($pdo, 'bruteForce');
 	} else {
-		$sql = "
-			INSERT INTO `simple` (`puzzle_id`, `table`)
-			SELECT `id`, '" . $table . "'
-			FROM `" . $table . "` AS p
-			WHERE p.`simple` > 0
-		";
-		flushOut($sql . "<br/>");
-		$statement = $pdo->prepare($sql);
-		if ($execute) $statement->execute();
+		insert($pdo, 'simple',  $table);
+		insert($pdo, 'bruteForce',  $table);
 	}
 
 	foreach ($strategies as $strategy) {
 		if ($table === 'truncate') {
-			$sql = "TRUNCATE TABLE `" . $strategy . "`";
-			flushOut($sql);
-			$statement = $pdo->prepare($sql);
-			if ($execute) $statement->execute();
+			truncate($pdo, $strategy);
 		} else {
 			$sql = "
 				INSERT INTO `" . $strategy . "` (`puzzle_id`, `count`, `table`)
 				SELECT `id`, `has_" . $strategy . "`, '" . $table . "'
-				FROM `" . $table . "` AS p
-				WHERE  p.`bruteForce`=0  AND p.`has_" . $strategy . "` >0
+				FROM `" . $table . "` WHERE  `bruteForce`=0  AND `has_" . $strategy . "` >0
 			";
 			foreach ($strategies as $name) {
 				// if ($strategy == "jellyfish" && $name == "naked2") continue;
-
-				$sql .= " AND p.`has_" . $name . "`";
-				if ($name == $strategy) $sql .= ">0";
-				else $sql .= "=0";
+				$sql .= " AND `has_" . $name . "`" . ($name == $strategy ? ">0" : "=0");
 			}
-			flushOut($sql . "<br/>");
-			$statement = $pdo->prepare($sql);
-			if ($execute) $statement->execute();
+			process($pdo, $sql, $strategy);
 		}
 	}
 } catch (PDOException $e) {
