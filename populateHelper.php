@@ -16,7 +16,7 @@ function flushOut($message)
 
 function truncate($db, $table, $log)
 {
-	$sql = "TRUNCATE TABLE `" . $table . "`";
+	$sql = "TRUNCATE TABLE `" . $table . "`;";
 	flushOut($sql);
 	if ($log) return;
 
@@ -26,7 +26,7 @@ function truncate($db, $table, $log)
 
 function process($db, $sql, $strategy, $log)
 {
-	flushOut($sql . "<br/>");
+	flushOut($sql . ";<br/>");
 	if ($log) return;
 
 	$statement = $db->prepare($sql);
