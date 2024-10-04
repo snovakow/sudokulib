@@ -54,6 +54,26 @@ try {
 	$conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
 	// $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION, PDO::ATTR_STRINGIFY_FETCHES);
 
+	$countTotal = 0;
+	if ($mode === 1) {
+		$tables = array();
+		$stmt = $conn->prepare("SELECT `table` FROM `tables`");
+		$stmt->execute();
+		$result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+		foreach ($result as $key => $row) {
+			$table = $row['table'];
+			$tables[] = $table;
+
+			$stmt = $conn->prepare("SELECT MAX(id) as count FROM `" . $table . "`");
+			$stmt->execute();
+			$result = $stmt->fetch()["count"];
+			$countTotal +=  $result;
+		}
+	} else {
+		$tables = explode(",", $_GET['table']);
+	}
+
 	if ($mode === 1) {
 		flushOut("--- Strategies");
 
@@ -94,18 +114,35 @@ try {
 			printStat("Hidden 3 (" . $hidden3['max'] . ")", $hidden3['count'], $candidates);
 			printStat("Hidden 4 (" . $hidden4['max'] . ")", $hidden4['count'], $candidates);
 			printStat("Omissions (" . $omissions['max'] . ")", $omissions['count'], $candidates);
+			printStat("uniqueRectangle (" . $uniqueRectangle['max'] . ")", $uniqueRectangle['count'], $candidates);
 			printStat("yWing (" . $yWing['max'] . ")", $yWing['count'], $candidates);
 			printStat("xyzWing (" . $xyzWing['max'] . ")", $xyzWing['count'], $candidates);
 			printStat("xWing (" . $xWing['max'] . ")", $xWing['count'], $candidates);
 			printStat("swordfish (" . $swordfish['max'] . ")", $swordfish['count'], $candidates);
 			printStat("jellyfish (" . $jellyfish['max'] . ")", $jellyfish['count'], $candidates);
-			printStat("uniqueRectangle (" . $uniqueRectangle['max'] . ")", $uniqueRectangle['count'], $candidates);
 		}
 		echo  "<br/>";
-		die;
 	}
 
-	$tables = explode(",", $_GET['table']);
+	if ($mode === 1) {
+		$stmt = $conn->prepare("SELECT MAX(id) as count FROM `simple`");
+		$stmt->execute();
+		$result = $stmt->fetch()["count"];
+		$count0 = $result;
+
+		$stmt = $conn->prepare("SELECT MAX(id) as count FROM `bruteForce`");
+		$stmt->execute();
+		$result = $stmt->fetch()["count"];
+		$count2 = $result;
+
+		$count1 = $countTotal - $count0 - $count2;
+
+		printStat("Simples", $count0, $countTotal);
+		printStat("Strategies", $count1, $countTotal);
+		printStat("Brute Force", $count2, $countTotal);
+
+		echo  "<br/>";
+	}
 
 	$total = 0;
 	$totals = array();
