@@ -26,21 +26,18 @@ function truncate($db, $table, $log)
 
 function process($db, $sql, $strategy, $log)
 {
+	flushOut($sql . ";");
+	if (!$log) {
+		$statement = $db->prepare($sql);
+		$statement->execute();
+	}
+
+	$sql = "ALTER TABLE `" . $strategy . "` AUTO_INCREMENT=1";
 	flushOut($sql . ";<br/>");
-	if ($log) return;
-
-	$statement = $db->prepare($sql);
-	$statement->execute();
-
-	$sql = "SELECT MAX(`id`) AS max_id FROM `" . $strategy . "`";
-	$statement = $db->prepare($sql);
-	$statement->execute();
-	$result = $statement->fetch();
-	$id = $result['max_id'] + 1;
-
-	$sql = "ALTER TABLE `" . $strategy . "` AUTO_INCREMENT=" . $id;
-	$statement = $db->prepare($sql);
-	$statement->execute();
+	if (!$log) {
+		$statement = $db->prepare($sql);
+		$statement->execute();
+	}
 }
 
 function insert($db, $strategy, $table, $log)
