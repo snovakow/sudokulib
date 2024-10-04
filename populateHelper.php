@@ -2,6 +2,8 @@
 if (!isset($_GET['table'])) die();
 $table = $_GET['table'];
 
+$log = isset($_GET['log']);
+
 $servername = "localhost";
 $username = "snovakow";
 $password = "kewbac-recge1-Fiwpux";
@@ -12,19 +14,21 @@ function flushOut($message)
 	echo $message . "<br/>";
 }
 
-function truncate($db, $table)
+function truncate($db, $table, $log)
 {
 	$sql = "TRUNCATE TABLE `" . $table . "`";
 	flushOut($sql);
+	if ($log) return;
+
 	$statement = $db->prepare($sql);
 	$statement->execute();
-
-	$sql = "TRUNCATE TABLE ";
 }
 
-function process($db, $sql, $strategy)
+function process($db, $sql, $strategy, $log)
 {
 	flushOut($sql . "<br/>");
+	if ($log) return;
+
 	$statement = $db->prepare($sql);
 	$statement->execute();
 
@@ -39,14 +43,14 @@ function process($db, $sql, $strategy)
 	$statement->execute();
 }
 
-function insert($db, $strategy, $table)
+function insert($db, $strategy, $table, $log)
 {
 	$sql = "
 		INSERT INTO `" . $strategy . "` (`puzzle_id`, `table`)
 		SELECT `id`, '" . $table . "'
 		FROM `" . $table . "` WHERE `" . $strategy . "`>0
 	";
-	process($db, $sql, $strategy);
+	process($db, $sql, $strategy, $log);
 }
 
 try {
@@ -70,16 +74,16 @@ try {
 	);
 
 	if ($table === 'truncate') {
-		truncate($pdo, 'simple');
-		truncate($pdo, 'bruteForce');
+		truncate($pdo, 'simple', $log);
+		truncate($pdo, 'bruteForce', $log);
 	} else {
-		insert($pdo, 'simple',  $table);
-		insert($pdo, 'bruteForce',  $table);
+		insert($pdo, 'simple',  $table, $log);
+		insert($pdo, 'bruteForce',  $table, $log);
 	}
 
 	foreach ($strategies as $strategy) {
 		if ($table === 'truncate') {
-			truncate($pdo, $strategy);
+			truncate($pdo, $strategy, $log);
 		} else {
 			$sql = "
 				INSERT INTO `" . $strategy . "` (`puzzle_id`, `count`, `table`)
@@ -90,7 +94,7 @@ try {
 				// if ($strategy == "jellyfish" && $name == "naked2") continue;
 				$sql .= " AND `has_" . $name . "`" . ($name == $strategy ? ">0" : "=0");
 			}
-			process($pdo, $sql, $strategy);
+			process($pdo, $sql, $strategy, $log);
 		}
 	}
 } catch (PDOException $e) {
