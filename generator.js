@@ -102,39 +102,46 @@ const fillSolve = (cells, solveStrategy = STRATEGY.NONE, isolated = false) => {
 
 	let bruteForceFill = false;
 
+	let nakedHiddenGroups = null;
 	const solvePriority = (strategy) => {
 		if (strategy === STRATEGY.NAKED_2) {
-			if ((new NakedHiddenGroups(cells)).nakedSet2()) {
+			if (!nakedHiddenGroups) nakedHiddenGroups = new NakedHiddenGroups(cells);
+			if (nakedHiddenGroups.nakedSet2()) {
 				naked2Reduced++;
 				return true;
 			}
 		}
 		if (strategy === STRATEGY.NAKED_3) {
-			if ((new NakedHiddenGroups(cells)).nakedSet3()) {
+			if (!nakedHiddenGroups) nakedHiddenGroups = new NakedHiddenGroups(cells);
+			if (nakedHiddenGroups.nakedSet3()) {
 				naked3Reduced++;
 				return true;
 			}
 		}
 		if (strategy === STRATEGY.NAKED_4) {
-			if ((new NakedHiddenGroups(cells)).nakedSet4()) {
+			if (!nakedHiddenGroups) nakedHiddenGroups = new NakedHiddenGroups(cells);
+			if (nakedHiddenGroups.nakedSet4()) {
 				naked4Reduced++;
 				return true;
 			}
 		}
 		if (strategy === STRATEGY.HIDDEN_2) {
-			if ((new NakedHiddenGroups(cells)).hiddenSet2()) {
+			if (!nakedHiddenGroups) nakedHiddenGroups = new NakedHiddenGroups(cells);
+			if (nakedHiddenGroups.hiddenSet2()) {
 				hidden2Reduced++;
 				return true;
 			}
 		}
 		if (strategy === STRATEGY.HIDDEN_3) {
-			if ((new NakedHiddenGroups(cells)).hiddenSet3()) {
+			if (!nakedHiddenGroups) nakedHiddenGroups = new NakedHiddenGroups(cells);
+			if (nakedHiddenGroups.hiddenSet3()) {
 				hidden3Reduced++;
 				return true;
 			}
 		}
 		if (strategy === STRATEGY.HIDDEN_4) {
-			if ((new NakedHiddenGroups(cells)).hiddenSet4()) {
+			if (!nakedHiddenGroups) nakedHiddenGroups = new NakedHiddenGroups(cells);
+			if (nakedHiddenGroups.hiddenSet4()) {
 				hidden4Reduced++;
 				return true;
 			}
@@ -195,6 +202,8 @@ const fillSolve = (cells, solveStrategy = STRATEGY.NONE, isolated = false) => {
 		if (progress) continue;
 
 		if (solveStrategy === STRATEGY.NONE) continue;
+
+		nakedHiddenGroups = null;
 
 		if (!isolated) {
 			for (const strategy of STRATEGIES) {
