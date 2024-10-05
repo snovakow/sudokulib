@@ -147,12 +147,20 @@ try {
 	$total = 0;
 	$totals = array();
 	foreach ($tables as $table) {
-		$stmt = $conn->prepare("
-				SELECT MAX(id) as totalPuzzles FROM `" . $table . "`
-			");
+		$stmt = $conn->prepare("SELECT MAX(id) as totalPuzzles FROM `" . $table . "`");
 		$stmt->execute();
 		$totalPuzzles = $stmt->fetch()["totalPuzzles"];
-		$total += $totalPuzzles;
+		if ($totalPuzzles === NULL) {
+			$stmt = $conn->prepare("
+				SELECT table_name FROM information_schema.tables WHERE table_schema = 'sudoku' AND table_name = '" . $table . "' LIMIT 1;
+			");
+			$stmt->execute();
+			if ($stmt->fetch()["table_name"] === NULL) $totalPuzzles = "-1";
+			else $totalPuzzles = "0";
+		} else {
+			$total += $totalPuzzles;
+		}
+
 		$totals[] =  $table . "=" . $totalPuzzles;
 		if ($mode !== 0) flushOut($table . ": " . number_format($totalPuzzles));
 	}
