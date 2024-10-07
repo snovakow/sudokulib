@@ -32,10 +32,10 @@ class Board {
 		this.canvas = canvas;
 
 		this.cells = new Grid();
-		for (const index of Grid.indices) this.cells[index] = new CellCandidate(index);
+		for (let i = 0; i < 81; i++) this.cells[i] = new CellCandidate(i);
 
 		this.startCells = new Grid();
-		for (const index of Grid.indices) this.startCells[index] = new Cell(index);
+		for (let i = 0; i < 81; i++) this.startCells[i] = new Cell(i);
 	}
 	setGrid(cells) {
 		for (let i = 0; i < 81; i++) {
