@@ -38,11 +38,8 @@ class Board {
 		for (const index of Grid.indices) this.startCells[index] = new Cell(index);
 	}
 	setGrid(cells) {
-		for (let r = 0, index = 0; r < 9; r++) {
-			const row = cells[r];
-			for (let c = 0; c < 9; c++, index++) {
-				this.startCells[index].fromStore(row[c]);
-			}
+		for (let i = 0; i < 81; i++) {
+			this.startCells[i].fromStore(cells[i]);
 		}
 		for (const startCell of this.startCells) {
 			const cell = this.cells[startCell.index];
@@ -211,6 +208,7 @@ const storageToCells = (data) => {
 		} else {
 			startCell.symbol = 0;
 			cell.setSymbol(dataCell.symbol);
+			if (dataCell.symbol === 0) cell.mask = dataCell.mask;
 		}
 	}
 	return data.metadata;
@@ -224,9 +222,11 @@ const cellsToStorage = (metadata) => {
 			const cell = board.cells[i];
 			data.clue = false;
 			data.symbol = cell.symbol;
+			data.mask = cell.mask;
 		} else {
 			data.clue = true;
 			data.symbol = startCell.symbol;
+			data.mask = 0x0;
 		}
 		dataCells.push(data);
 	}
