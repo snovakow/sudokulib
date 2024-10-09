@@ -1,27 +1,4 @@
-import { Grid, GridCell, Candidate } from "./Grid.js";
-
-const openSingles = (grid) => {
-	let candidate = new Candidate();
-	for (const group of Grid.groupTypes) {
-		let gridIndex = -1;
-		candidate.clear();
-		for (const index of group) {
-			const symbol = grid[index];
-			if (symbol === 0) {
-				if (gridIndex === -1) { gridIndex = index; }
-				else { gridIndex = -1; break; }
-			} else {
-				candidate.delete(symbol);
-			}
-		}
-		if (gridIndex !== -1) {
-			assert(candidate.size === 1, "Invalid remainder for candidate size " + candidate.size);
-			grid[gridIndex] = candidate.remainder;
-			return true;
-		}
-	}
-	return false;
-}
+import { Grid } from "./Grid.js";
 
 const candidates = (cells) => {
 	for (const cell of cells) {
@@ -1043,7 +1020,7 @@ const superposition = (cells) => {
 	const superSymbols = (targetSize, pairs) => {
 		const masterSymbols = [];
 		for (let x = 1; x <= 9; x++) {
-			for (const group of GridCell.groupTypes) {
+			for (const group of Grid.groupTypes) {
 				const symbolCells = [];
 				for (const i of group) {
 					const cell = cells[i];
