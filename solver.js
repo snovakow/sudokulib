@@ -15,8 +15,10 @@ const candidates = (cells) => {
 const nakedSingles = (cells) => {
 	let reduced = false;
 	for (const cell of cells) {
-		if (cell.symbol !== 0 || cell.size !== 1) continue;
-		cell.setSymbol(cell.remainder);
+		if (cell.symbol !== 0) continue;
+		const remainder = cell.remainder;
+		if (remainder === 0) continue;
+		cell.setSymbol(remainder);
 		reduced = true;
 	}
 	return reduced;
