@@ -46,15 +46,12 @@ class Board {
 			cell.setSymbol(startCell.symbol);
 		}
 		for (const cell of this.cells) {
-			cell.show = false;
-
 			const startCell = this.startCells[cell.index];
 			cell.setSymbol(startCell.symbol);
 		}
 	}
 	resetGrid() {
 		for (const cell of this.cells) {
-			cell.show = false;
 			cell.setSymbol(this.startCells[cell.index].symbol);
 		}
 	}
@@ -151,7 +148,7 @@ class Board {
 			for (let c = 0; c < GRID_SIDE; c++, coff += unitSize) {
 				const index = r * 9 + c;
 				const cell = this.cells[index];
-				if (cell.size > 0 && cell.show) {
+				if (cell.symbol === 0) {
 					ctx.font = pixAlign(unitSize * 0.7 * 1 / 3) + "px " + FONT.marker;
 
 					if (!measureCandidate) measureCandidate = ctx.measureText("0");
@@ -169,9 +166,6 @@ class Board {
 					}
 				} else {
 					const startCell = board.startCells[index];
-					const symbol = cell.symbol;
-					if (symbol === 0) continue;
-
 					const font = startCell.symbol > 0 ? FONT.default : FONT.marker;
 					const fontSize = pixAlign(unitSize * 0.7);
 					ctx.font = fontSize + "px " + font;
@@ -187,7 +181,7 @@ class Board {
 
 					const x = pixAlign(coff);
 					const y = pixAlign(roff + (measured.actualBoundingBoxAscent * 0.5 - measured.actualBoundingBoxDescent * 0.5));
-					ctx.fillText(symbol, x, y);
+					ctx.fillText(cell.symbol, x, y);
 				}
 			}
 		}
@@ -226,7 +220,7 @@ const cellsToStorage = (metadata) => {
 		} else {
 			data.clue = true;
 			data.symbol = startCell.symbol;
-			data.mask = 0x0;
+			data.mask = 0x0000;
 		}
 		dataCells.push(data);
 	}
