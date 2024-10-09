@@ -125,9 +125,6 @@ export class CellCandidate extends Cell {
 	constructor(index) {
 		super(index);
 
-		this.reset();
-		this.show = false;
-
 		const baseCell = baseCells[index];
 		this.row = baseCell.row;
 		this.col = baseCell.col;
@@ -138,159 +135,83 @@ export class CellCandidate extends Cell {
 		this.groupBox = baseCell.groupBox;
 		this.group = baseCell.group;
 		this.groupSet = baseCell.groupSet;
+
+		this._symbol = 0;
+		this._mask = 0x0000;
+	}
+
+	get symbol() {
+		return this._symbol;
+	}
+	get mask() {
+		return this._mask;
+	}
+	get size() {
+		let size = 0;
+		for (let x = 1; x <= 9; x++) size += (this._mask >> x) & 0x0001;
+		return size;
+	}
+	get remainder() {
+		let remainder = 0;
+		for (let x = 1; x <= 9; x++) {
+			if ((this._mask >> x) & 0x0001 === 0x0001) {
+				if (remainder === 0) remainder = x;
+				else return 0;
+			}
+		}
+		return remainder;
+	}
+
+	set symbol(x) {
+		this._symbol = x;
+	}
+	set mask(mask) {
+		this._mask = mask;
+	}
+
+	fill() {
+		this.mask = 0x03FE; // 0000 0011 1111 1110
 	}
 
 	toData() {
 		return {
 			symbol: this.symbol,
-			mask: this.mask,
-			size: this.size,
-			remainder: this.remainder,
+			mask: this.mask
 		};
 	}
 	fromData(data) {
 		this.symbol = data.symbol;
 		this.mask = data.mask;
-		this.size = data.size;
-		this.remainder = data.remainder;
 	}
 	toStorage() {
 		return {
 			symbol: this.symbol,
-			mask: this.mask,
-			size: this.size,
-			remainder: this.remainder,
-			show: this.show
+			mask: this.mask
 		};
 	}
 	fromStorage(data) {
 		this.symbol = data.symbol;
 		this.mask = data.mask;
-		this.size = data.size;
-		this.remainder = data.remainder;
-		this.show = data.show;
 	}
 
 	setSymbol(symbol) {
 		this.symbol = symbol;
-		if (symbol === 0) {
-			this.mask = 0x03fe;
-			this.size = 9;
-			this.remainder = 45;
-		} else {
-			this.mask = 0x0;
-			this.size = 0;
-			this.remainder = 0;
-		}
+		this.mask = 0x0000;
 	}
 	has(value) {
-		return ((this.mask >> value) & 0x1) === 0x1;
+		return ((this.mask >> value) & 0x0001) === 0x0001;
 	}
 	delete(value) {
 		const mask = this.mask;
-		this.mask &= ~(0x1 << value);
+		this.mask &= ~(0x0001 << value);
 		if (mask === this.mask) return false;
-		this.size--;
-		this.remainder -= value;
 		return true;
 	}
 	clear() {
-		this.mask = 0x0;
-		this.size = 0;
-		this.remainder = 0;
-	}
-	reset() {
-		this.symbol = 0;
-		this.mask = 0x03fe; // 0000 0011 1111 1110
-		this.size = 9;
-		this.remainder = 45; // 1+2+3+4+5+6+7+8+9	
+		this.mask = 0x0000;
 	}
 	add(value) {
-		this.mask |= 0x1 << value;
-		this.size++;
-		this.remainder += value;
-	}
-}
-
-class Candidate {
-	constructor() {
-		this.clear();
-	}
-	clear() {
-		this.mask = 0x03fe; // 0000 0011 1111 1110
-		this.size = 9;
-		this.remainder = 45; // 1+2+3+4+5+6+7+8+9	
-	}
-
-	has(symbol) {
-		return ((this.mask >> symbol) & 0x0001) === 0x0001;
-	}
-	delete(symbol) {
-		const mask = this.mask;
-		this.mask &= ~(0x0001 << symbol);
-		if (mask === this.mask) return false;
-		this.size--;
-		this.remainder -= symbol;
-		return true;
-	}
-	add(symbol) {
-		const mask = this.mask;
-		this.mask |= 0x0001 << symbol;
-		if (mask === this.mask) return false;
-		this.size++;
-		this.remainder += symbol;
-		return true;
-	}
-}
-
-class GridCell {
-	static groupRows = groupRows;
-	static groupCols = groupCols;
-	static groupBoxs = groupBoxs;
-	static groupTypes = groupTypes;
-
-	constructor(symbol) {
-		if (symbol !== undefined) this.setSymbol(symbol);
-	}
-	setSymbol(symbol) {
-		this.symbol = symbol;
-		if (symbol === 0) {
-			this.clear();
-		} else {
-			this.symbol = symbol;
-			// this.mask = 0x0000;
-			// this.size = 0;
-			// this.remainder = 0;
-
-			// this.mask = 0x0001 << symbol;
-			// this.size = 1;
-			// this.remainder = symbol;
-		}
-	}
-	has(symbol) {
-		return ((this.mask >> symbol) & 0x0001) === 0x0001;
-	}
-	delete(symbol) {
-		const mask = this.mask;
-		this.mask &= ~(0x0001 << symbol);
-		if (mask === this.mask) return false;
-		this.size--;
-		this.remainder -= symbol;
-		return true;
-	}
-	add(symbol) {
-		const mask = this.mask;
-		this.mask |= 0x0001 << symbol;
-		if (mask === this.mask) return false;
-		this.size++;
-		this.remainder += symbol;
-		return true;
-	}
-	clear() {
-		this.symbol = 0;
-		this.mask = 0x03fe; // 0000 0011 1111 1110
-		this.size = 9;
-		this.remainder = 45; // 1+2+3+4+5+6+7+8+9	
+		this.mask |= 0x0001 << value;
 	}
 }
 
@@ -338,4 +259,4 @@ class Grid extends Array {
 	}
 }
 
-export { Grid, GridCell, Candidate };
+export { Grid };
