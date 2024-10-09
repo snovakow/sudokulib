@@ -74,9 +74,9 @@ export const canvasDraw = (font, canvas) => {
 		}
 	}
 };
-export const pickerDraw = (font) => {
+export const pickerDraw = (font, fontMarker) => {
 	canvasDraw(font, picker);
-	canvasDraw(font, pickerMarker);
+	canvasDraw(fontMarker, pickerMarker);
 };
 
 export { picker, pickerMarker };
