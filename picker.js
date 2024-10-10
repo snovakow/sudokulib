@@ -1,18 +1,6 @@
 const picker = document.createElement('canvas');
 const pickerMarker = document.createElement('canvas');
 
-picker.style.position = 'fixed';
-picker.style.width = '192px';
-picker.style.height = '192px';
-picker.style.bottom = '0px';
-picker.style.right = '0px';
-
-pickerMarker.style.position = 'fixed';
-pickerMarker.style.width = '192px';
-pickerMarker.style.height = '192px';
-pickerMarker.style.bottom = '0px';
-pickerMarker.style.left = '0px';
-
 const LINE_THIN = 2;
 
 export const pixAlign = (val) => {
