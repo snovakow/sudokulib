@@ -60,7 +60,8 @@ const STRATEGY = {
 	X_WING: 11,
 	SWORDFISH: 12,
 	JELLYFISH: 13,
-	ALL: 14,
+	ALL_STRICT: 14,
+	ALL: 15,
 };
 Object.freeze(STRATEGY);
 
@@ -207,6 +208,7 @@ const fillSolve = (cells, solveStrategy = STRATEGY.NONE, isolated = false) => {
 
 		if (!isolated) {
 			for (const strategy of STRATEGIES) {
+				if (solveStrategy === STRATEGY.ALL_STRICT && strategy === STRATEGY.DEADLY_PATTERN) continue;
 				if (strategy === solveStrategy) continue;
 				progress = solvePriority(strategy);
 				if (progress) break;
@@ -214,7 +216,7 @@ const fillSolve = (cells, solveStrategy = STRATEGY.NONE, isolated = false) => {
 			if (progress) continue;
 		}
 
-		if (solveStrategy !== STRATEGY.ALL) {
+		if (solveStrategy !== STRATEGY.ALL && solveStrategy !== STRATEGY.ALL_STRICT) {
 			progress = solvePriority(solveStrategy);
 			if (progress) continue;
 		}
