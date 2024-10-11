@@ -60,8 +60,7 @@ const STRATEGY = {
 	X_WING: 11,
 	SWORDFISH: 12,
 	JELLYFISH: 13,
-	ALL_STRICT: 14,
-	ALL: 15,
+	ALL: 14,
 };
 Object.freeze(STRATEGY);
 
