@@ -207,7 +207,6 @@ const fillSolve = (cells, solveStrategy = STRATEGY.NONE, isolated = false) => {
 
 		if (!isolated) {
 			for (const strategy of STRATEGIES) {
-				if (solveStrategy === STRATEGY.ALL_STRICT && strategy === STRATEGY.DEADLY_PATTERN) continue;
 				if (strategy === solveStrategy) continue;
 				progress = solvePriority(strategy);
 				if (progress) break;
@@ -215,7 +214,7 @@ const fillSolve = (cells, solveStrategy = STRATEGY.NONE, isolated = false) => {
 			if (progress) continue;
 		}
 
-		if (solveStrategy !== STRATEGY.ALL && solveStrategy !== STRATEGY.ALL_STRICT) {
+		if (solveStrategy !== STRATEGY.ALL) {
 			progress = solvePriority(solveStrategy);
 			if (progress) continue;
 		}
