@@ -1,6 +1,9 @@
 const picker = document.createElement('canvas');
 const pickerMarker = document.createElement('canvas');
 
+export const cellSize = 64;
+export const cellsSize = cellSize * 3;
+
 const LINE_THIN = 2;
 
 export const pixAlign = (val) => {
@@ -8,8 +11,8 @@ export const pixAlign = (val) => {
 };
 
 export const canvasDraw = (font, canvas) => {
-	canvas.width = 64 * 3 * window.devicePixelRatio;
-	canvas.height = 64 * 3 * window.devicePixelRatio;
+	canvas.width = cellSize * 3 * window.devicePixelRatio;
+	canvas.height = cellSize * 3 * window.devicePixelRatio;
 
 	const symbols = [
 		[1, 2, 3],
