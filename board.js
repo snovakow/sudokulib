@@ -81,7 +81,7 @@ class Board {
 		base = LINE_THICK_HALF * window.devicePixelRatio;
 		const pixBase = pixAlign(base);
 		if (pickerVisible) {
-			ctx.fillStyle = 'cyan';
+			ctx.fillStyle = 'rgba(127,255,255)';
 			ctx.fillRect(size * selectedCol / 9 + pixBase, pixAlign(size * selectedRow / 9) + pixBase, pixAlign(unitSize), pixAlign(unitSize));
 		}
 

@@ -1,7 +1,7 @@
 const picker = document.createElement('canvas');
 const pickerMarker = document.createElement('canvas');
 
-export const cellSize = 64;
+export const cellSize = 56;
 export const cellsSize = cellSize * 3;
 
 const LINE_THIN = 2;
@@ -10,7 +10,7 @@ export const pixAlign = (val) => {
 	return Math.round(val) + 0.5;
 };
 
-export const canvasDraw = (font, canvas) => {
+const canvasDraw = (selected, font, canvas) => {
 	canvas.width = cellSize * 3 * window.devicePixelRatio;
 	canvas.height = cellSize * 3 * window.devicePixelRatio;
 
@@ -30,6 +30,19 @@ export const canvasDraw = (font, canvas) => {
 	// ctx.clearRect(0, 0, canvas.width, canvas.height);
 
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+	{
+		ctx.fillStyle = 'rgba(127,255,255)';
+		let roff = off;
+		for (let x = 0; x < 3; x++, roff += inc) {
+			let coff = off;
+			for (let y = 0; y < 3; y++, coff += inc) {
+				if (!selected.has(x * 3 + y + 1)) continue;
+				// ctx.fillText(symbols[x][y], pixAlign(coff), pixAlign(roff + (measure.actualBoundingBoxAscent * 0.5 - measure.actualBoundingBoxDescent * 0.5)));
+				ctx.fillRect(unitSize * y + 0, pixAlign(unitSize * x) + 0, pixAlign(unitSize), pixAlign(unitSize));
+			}
+		}
+	}
 
 	ctx.lineWidth = LINE_THIN * window.devicePixelRatio;
 
@@ -65,9 +78,9 @@ export const canvasDraw = (font, canvas) => {
 		}
 	}
 };
-export const pickerDraw = (font, fontMarker) => {
-	canvasDraw(font, picker);
-	canvasDraw(fontMarker, pickerMarker);
+export const pickerDraw = (selected, font, fontMarker) => {
+	canvasDraw(selected, font, picker);
+	canvasDraw(selected, fontMarker, pickerMarker);
 };
 
 export { picker, pickerMarker };
