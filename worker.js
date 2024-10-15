@@ -186,12 +186,19 @@ const step = () => {
 		processStrategy('swordfishReduced', 'has_swordfish', STRATEGY.SWORDFISH);
 		processStrategy('jellyfishReduced', 'has_jellyfish', STRATEGY.JELLYFISH);
 
-		setNaked2 += data.has_naked2;
-		setNaked3 += data.has_naked3;
-		setNaked4 += data.has_naked4;
-		setHidden2 += data.has_hidden2;
-		setHidden3 += data.has_hidden3;
-		setHidden4 += data.has_hidden4;
+		setNaked2 += result.naked2Reduced;
+		setNaked3 += result.naked3Reduced;
+		setNaked4 += result.naked4Reduced;
+		setHidden2 += result.hidden2Reduced;
+		setHidden3 += result.hidden3Reduced;
+		setHidden4 += result.hidden4Reduced;
+		omissionsReduced += result.omissionsReduced;
+		yWingReduced += result.yWingReduced;
+		xyzWingReduced += result.xyzWingReduced;
+		xWingReduced += result.xWingReduced;
+		swordfishReduced += result.swordfishReduced;
+		jellyfishReduced += result.jellyfishReduced;
+		uniqueRectangleReduced += result.uniqueRectangleReduced;
 
 		data.naked2 += result.naked2Reduced;
 		data.naked3 += result.naked3Reduced;
@@ -199,26 +206,12 @@ const step = () => {
 		data.hidden2 += result.hidden2Reduced;
 		data.hidden3 += result.hidden3Reduced;
 		data.hidden4 += result.hidden4Reduced;
-
-		omissionsReduced += data.has_omissions;
 		data.omissions += result.omissionsReduced;
-
-		yWingReduced += data.has_yWing;
 		data.yWing += result.yWingReduced;
-
-		xyzWingReduced += data.has_xyzWing;
 		data.xyzWing += result.xyzWingReduced;
-
-		xWingReduced += data.has_xWing;
 		data.xWing += result.xWingReduced;
-
-		swordfishReduced += data.has_swordfish;
 		data.swordfish += result.swordfishReduced;
-
-		jellyfishReduced += data.has_jellyfish;
 		data.jellyfish += result.jellyfishReduced;
-
-		uniqueRectangleReduced += data.has_uniqueRectangle;
 		data.uniqueRectangle += result.uniqueRectangleReduced;
 
 		if (phistomefelResult) phistomefelCount++;
