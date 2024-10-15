@@ -7,6 +7,12 @@
 	<meta name="viewport" content="width=device-width,initial-scale=1">
 
 	<script type="module">
+		const generateButton = document.createElement('button');
+		generateButton.style.top = '8px';
+		generateButton.style.right = '8px';
+		generateButton.style.position = 'absolute';
+		generateButton.style.height = '32px';
+
 		let table = null;
 		let tablesProcessing = true;
 		let tablesIndex = 1;
@@ -50,14 +56,7 @@
 		}
 
 		const body = document.createElement('div');
-
 		body.style.fontFamily = "'Courier New', monospace";
-
-		const generateButton = document.createElement('button');
-		generateButton.style.top = '8px';
-		generateButton.style.right = '8px';
-		generateButton.style.position = 'absolute';
-		generateButton.style.height = '32px';
 
 		const setMessage = (message) => {
 			while (body.firstChild) body.removeChild(body.lastChild);
