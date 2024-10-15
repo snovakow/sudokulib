@@ -212,7 +212,8 @@ try {
 				$count = $result['count'];
 				$counts[$strategy] += $count;
 				$candidates += $count;
-				$maxs[$strategy] +=  $result['max'];
+
+				$maxs[$strategy] =  max($maxs[$strategy], $result['max']);
 			}
 		}
 
