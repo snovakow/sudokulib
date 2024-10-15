@@ -1,0 +1,199 @@
+<!doctype html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<title>Generate</title>
+	<meta name="viewport" content="width=device-width,initial-scale=1">
+
+	<script type="module">
+		let table = null;
+		let tablesProcessing = true;
+		let tablesIndex = 1;
+		const tablesFind = () => {
+			const xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = () => {
+				if (xhttp.readyState != 4 || xhttp.status != 200) return;
+				if (xhttp.responseText.length > 0) {
+					const result = xhttp.responseText.split("=");
+					if (result.length === 2) {
+						const count = parseInt(result[1]);
+						const nan = isNaN(count);
+						if (!nan && count >= 0) {
+							if (count >= 1e7) {
+								tablesIndex++;
+								tablesFind();
+							} else {
+								table = "puzzles" + tablesIndex;
+
+								while (generateButton.firstChild) generateButton.removeChild(generateButton.firstChild);
+								generateButton.appendChild(document.createTextNode(table));
+
+								tablesProcessing = false;
+							}
+						}
+					}
+				}
+			};
+			const url = "https://snovakow.dev/sudokulib/feed.php?mode=0&table=puzzles" + tablesIndex;
+			xhttp.open("GET", url, true);
+			xhttp.send();
+		};
+
+		const searchParams = new URLSearchParams(window.location.search);
+		table = searchParams.get("table");
+		if (table) {
+			generateButton.appendChild(document.createTextNode(table));
+			tablesProcessing = false;
+		} else {
+			tablesFind();
+		}
+
+		const body = document.createElement('div');
+
+		body.style.fontFamily = "'Courier New', monospace";
+
+		const generateButton = document.createElement('button');
+		generateButton.style.top = '8px';
+		generateButton.style.right = '8px';
+		generateButton.style.position = 'absolute';
+		generateButton.style.height = '32px';
+
+		const setMessage = (message) => {
+			while (body.firstChild) body.removeChild(body.lastChild);
+			for (const line of message) {
+				const stat = document.createElement('div');
+				stat.appendChild(document.createTextNode(line));
+				body.appendChild(stat);
+			}
+		};
+
+		const sentDisplay = document.createElement('span');
+		sentDisplay.style.position = 'absolute';
+		sentDisplay.style.top = '48px';
+		sentDisplay.style.right = '8px';
+		sentDisplay.style.fontFamily = 'Courier New';
+		sentDisplay.style.visibility = 'hidden';
+		sentDisplay.textContent = "Sent: 0";
+		document.body.appendChild(sentDisplay);
+
+		let worker = null;
+		const toggleWorker = () => {
+			if (worker) {
+				worker.terminate();
+				worker = null;
+				return;
+			}
+			worker = new Worker("worker.js", { type: "module" });
+		};
+
+		const sendDataStack = [];
+		let sendDataSending = false;
+		let sendDataSent = 0;
+		const sendData = (currentData) => {
+			if (tablesProcessing) return;
+			if (currentData) sendDataStack.push(currentData);
+			if (sendDataSending) return;
+
+			const data = sendDataStack.shift();
+
+			let url = 'https://snovakow.dev/sudokulib/generate.php?version=1';
+			url += '&puzzleClues=' + data.puzzleClues;
+			url += '&puzzleFilled=' + data.puzzleFilled;
+			url += '&clueCount=' + data.clueCount;
+			url += '&simple=' + data.simple;
+			url += '&naked2=' + data.naked2;
+			url += '&naked3=' + data.naked3;
+			url += '&naked4=' + data.naked4;
+			url += '&hidden2=' + data.hidden2;
+			url += '&hidden3=' + data.hidden3;
+			url += '&hidden4=' + data.hidden4;
+			url += '&omissions=' + data.omissions;
+			url += '&uniqueRectangle=' + data.uniqueRectangle;
+			url += '&yWing=' + data.yWing;
+			url += '&xyzWing=' + data.xyzWing;
+			url += '&xWing=' + data.xWing;
+			url += '&swordfish=' + data.swordfish;
+			url += '&jellyfish=' + data.jellyfish;
+			url += '&phistomefel=' + data.phistomefel;
+			url += '&superpositions=' + data.superpositions;
+			url += '&bruteForce=' + data.bruteForce;
+
+			url += '&has_naked2=' + data.has_naked2;
+			url += '&has_naked3=' + data.has_naked3;
+			url += '&has_naked4=' + data.has_naked4;
+			url += '&has_hidden2=' + data.has_hidden2;
+			url += '&has_hidden3=' + data.has_hidden3;
+			url += '&has_hidden4=' + data.has_hidden4;
+			url += '&has_omissions=' + data.has_omissions;
+			url += '&has_uniqueRectangle=' + data.has_uniqueRectangle;
+			url += '&has_yWing=' + data.has_yWing;
+			url += '&has_xyzWing=' + data.has_xyzWing;
+			url += '&has_xWing=' + data.has_xWing;
+			url += '&has_swordfish=' + data.has_swordfish;
+			url += '&has_jellyfish=' + data.has_jellyfish;
+
+			url += '&table=' + table;
+
+			fetch(url).then(response => {
+				response.text().then((string) => {
+					const count = parseInt(string);
+					const nan = isNaN(count);
+					if (nan || count < 0) {
+						if (worker) toggleWorker();
+						return;
+					}
+					if (count > 0) {
+						localStorage.setItem(table, count);
+
+						sendDataSent++;
+						sentDisplay.textContent = "Sent: " + sendDataSent;
+					} else {
+						sendDataStack.unshift(data);
+					}
+					if (count === 0 || count >= 1e7) {
+						tablesIndex++;
+						table = "puzzles" + tablesIndex;
+
+						while (generateButton.firstChild) generateButton.removeChild(generateButton.firstChild);
+						generateButton.appendChild(document.createTextNode(table));
+					}
+
+					sendDataSending = false;
+					if (sendDataStack.length > 0) sendData();
+				});
+			});
+		};
+
+		const processGenerate = (grids) => {
+			sentDisplay.style.visibility = 'visible';
+
+			const workerData = {};
+			workerData.run = true;
+			workerData.grids = grids;
+
+			worker.onmessage = (e) => {
+				const data = e.data;
+				if (data.message) setMessage(data.message);
+				sendData(data);
+			};
+
+			worker.postMessage(workerData);
+		};
+
+		generateButton.addEventListener('click', () => {
+			if (tablesProcessing) return;
+			toggleWorker();
+			if (worker) processGenerate();
+		});
+
+		document.body.appendChild(generateButton);
+
+		document.body.appendChild(body);
+	</script>
+
+</head>
+
+<body></body>
+
+</html>
