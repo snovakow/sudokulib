@@ -89,7 +89,8 @@ try {
 			";
 			foreach ($strategies as $name) {
 				// if ($strategy == "jellyfish" && $name == "naked2") continue;
-				$sql .= " AND `has_" . $name . "`" . ($name == $strategy ? ">0" : "=0");
+				if ($name == $strategy) continue;
+				$sql .= " AND `has_" . $name . "`=0";
 			}
 			process($pdo, $sql, $strategy, $log);
 		}
