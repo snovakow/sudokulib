@@ -116,6 +116,7 @@
 			updateDataStack.splice(0, readyDataSend.length);
 
 			fetch(url, {
+				cache: "no-store",
 				method: "POST",
 				body: JSON.stringify(readyDataSend),
 			}).then(response => {
@@ -151,39 +152,38 @@
 			};
 
 			const sendRequest = () => {
-				const xhttp = new XMLHttpRequest();
-				xhttp.onreadystatechange = () => {
-					// if (xhttp.readyState == 3) fillContent(xhttp.responseText, '... ' + diffTime());
-					if (xhttp.readyState == 4 && xhttp.status == 200) {
-						if (!worker) return;
-
-						const options = {
-							weekday: "long",
-							year: "numeric",
-							month: "long",
-							day: "numeric",
-							hour: "numeric",
-							minute: "numeric",
-							second: "numeric",
-						};
-						const json = JSON.parse(xhttp.responseText);
-						// fillContent(json.length, time);
-
-						start += json.length;
-
-						receiveDisplay.textContent = "Received: " + start;
-
-						const workerData = {};
-						workerData.run = true;
-						workerData.grids = json;
-						worker.postMessage(workerData);
-
-						if (json.length === inc) sendRequest();
-					}
-				};
 				const url = `https://snovakow.dev/sudokulib/feedSudoku.php?start=${start}&end=${start + inc}&table=${table}`;
-				xhttp.open("GET", url, true);
-				xhttp.send();
+				fetch(url, {
+					cache: "no-store",
+					method: "GET"
+				}).then(response => {
+					if (!worker) return;
+					response.json().then(
+						(json) => {
+							const options = {
+								weekday: "long",
+								year: "numeric",
+								month: "long",
+								day: "numeric",
+								hour: "numeric",
+								minute: "numeric",
+								second: "numeric",
+							};
+							// fillContent(json.length, time);
+
+							start += json.length;
+
+							receiveDisplay.textContent = "Received: " + start;
+
+							const workerData = {};
+							workerData.run = true;
+							workerData.grids = json;
+							worker.postMessage(workerData);
+
+							if (json.length === inc) sendRequest();
+						}
+					);
+				});
 			}
 			sendRequest();
 		};
