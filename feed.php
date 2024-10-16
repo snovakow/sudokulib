@@ -23,7 +23,7 @@ function printStat($title, $count, $total)
 
 function queryStrategy($conn, $table)
 {
-	$stmt = $conn->prepare("SELECT COUNT(*) as count, MAX(count) as max FROM `" . $table . "`");
+	$stmt = $conn->prepare("SELECT COUNT(*) as count, MAX(`count`) as max FROM `" . $table . "`");
 	$stmt->execute();
 	$result = $stmt->fetch();
 	return $result;
@@ -122,9 +122,7 @@ try {
 			printStat("jellyfish (" . $jellyfish['max'] . ")", $jellyfish['count'], $candidates);
 		}
 		echo  "<br/>";
-	}
 
-	if ($mode === 1) {
 		$stmt = $conn->prepare("SELECT MAX(id) as count FROM `simple`");
 		$stmt->execute();
 		$result = $stmt->fetch()["count"];
