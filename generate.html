@@ -134,7 +134,7 @@
 
 			url += '&table=' + table;
 
-			fetch(url).then(response => {
+			fetch(url, { cache: "no-store" }).then(response => {
 				response.text().then((string) => {
 					const count = parseInt(string);
 					const nan = isNaN(count);
