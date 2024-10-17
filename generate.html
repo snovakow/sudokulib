@@ -41,7 +41,7 @@
 					}
 				}
 			};
-			const url = "https://snovakow.dev/sudokulib/feed.php?mode=0&table=puzzles" + tablesIndex;
+			const url = "./feed.php?mode=0&table=puzzles" + tablesIndex;
 			xhttp.open("GET", url, true);
 			xhttp.send();
 		};
@@ -96,7 +96,7 @@
 
 			const data = sendDataStack.shift();
 
-			let url = 'https://snovakow.dev/sudokulib/generate.php?version=1';
+			let url = './generate.php?version=1';
 			url += '&puzzleClues=' + data.puzzleClues;
 			url += '&puzzleFilled=' + data.puzzleFilled;
 			url += '&clueCount=' + data.clueCount;
