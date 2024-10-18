@@ -134,6 +134,7 @@
 
 			url += '&table=' + table;
 
+			const currentTablesIndex = tablesIndex;
 			fetch(url, { cache: "no-store" }).then(response => {
 				response.text().then((string) => {
 					const count = parseInt(string);
@@ -151,11 +152,13 @@
 						sendDataStack.unshift(data);
 					}
 					if (count === 0 || count >= 1e7) {
-						tablesIndex++;
-						table = "puzzles" + tablesIndex;
+						if (tablesIndex === currentTablesIndex) {
+							tablesIndex = currentTablesIndex + 1;
+							table = "puzzles" + tablesIndex;
 
-						while (generateButton.firstChild) generateButton.removeChild(generateButton.firstChild);
-						generateButton.appendChild(document.createTextNode(table));
+							while (generateButton.firstChild) generateButton.removeChild(generateButton.firstChild);
+							generateButton.appendChild(document.createTextNode(table));
+						}
 					}
 
 					sendDataSending = false;
