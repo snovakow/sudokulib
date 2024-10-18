@@ -149,6 +149,7 @@
 						sendDataSent++;
 						sentDisplay.textContent = "Sent: " + sendDataSent;
 					} else {
+						localStorage.setItem(table, 1e7);
 						sendDataStack.unshift(data);
 					}
 					if (count === 0 || count >= 1e7) {
