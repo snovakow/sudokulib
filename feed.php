@@ -35,14 +35,13 @@ if (!isset($_GET['mode'])) die;
 
 // 0 = Count
 // 1 = Strategies Isolated
-// 2 = Strategies
 // 3 = Clues
 
 $mode = (int)$_GET['mode'];
-if ($mode !== 0 && $mode !== 1 && $mode !== 2 && $mode !== 3) die;
+if ($mode !== 0 && $mode !== 1 && $mode !== 2) die;
 
 if (!isset($_GET['table'])) {
-	if ($mode === 0 || $mode === 2 || $mode === 3) die;
+	if ($mode === 0 || $mode === 2) die;
 }
 
 $servername = "localhost";
@@ -170,63 +169,6 @@ try {
 	}
 
 	if ($mode === 2) {
-		flushOut("--- Strategies");
-
-		$strategies = array(
-			"naked2",
-			"naked3",
-			"naked4",
-			"hidden2",
-			"hidden3",
-			"hidden4",
-			"omissions",
-			"uniqueRectangle",
-			"yWing",
-			"xyzWing",
-			"xWing",
-			"swordfish",
-			"jellyfish"
-		);
-
-		$counts = array();
-		$maxs = array();
-		$candidates = 0;
-
-		foreach ($strategies as $strategy) {
-			$counts[$strategy] = 0;
-			$maxs[$strategy] = 0;
-		}
-
-		foreach ($tables as $table) {
-			foreach ($strategies as $strategy) {
-				$sql = "
-					SELECT MAX(`" . $strategy . "`) AS max, COUNT(`" . $strategy . "`) AS count
-					FROM `" . $table . "` WHERE  `bruteForce`=0  AND `" . $strategy . "` >0
-				";
-				$stmt = $conn->prepare($sql);
-				$stmt->execute();
-				$result = $stmt->fetch();
-
-				$count = $result['count'];
-				$counts[$strategy] += $count;
-				$candidates += $count;
-
-				$maxs[$strategy] =  max($maxs[$strategy], $result['max']);
-			}
-		}
-
-		if ($candidates > 0) {
-			foreach ($strategies as $strategy) {
-				$count = $counts[$strategy];
-				$max = $maxs[$strategy];
-				printStat($strategy . " (" . $max . ")", $count, $candidates);
-			}
-		}
-
-		echo  "<br/>";
-	}
-
-	if ($mode === 3) {
 		flushOut("--- Clues");
 		$counts = array();
 		$count0 = array();
