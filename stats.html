@@ -63,7 +63,7 @@
 			xhttp.send();
 		};
 
-		if (mode === "0" || mode === "2" || mode === "3") {
+		if (mode === "0" || mode === "2") {
 			const tables = [];
 			const tableSizes = new Map();
 
@@ -145,6 +145,9 @@
 				}
 			};
 
+			let updated = false;
+			const button = document.createElement('button');
+
 			const populate = () => {
 				if (processStartTime === 0) {
 					processStartTime = Date.now();
@@ -206,6 +209,9 @@
 					if (mode === "0") {
 						populate();
 						window.addEventListener("storage", (event) => {
+							if (button.parentElement) document.body.removeChild(button);
+							updated = true;
+
 							const int = parseInt(event.newValue);
 							const nan = isNaN(int);
 							if (nan) return;
@@ -220,6 +226,17 @@
 				xhttp.open("GET", url, true);
 				xhttp.send();
 			};
+
+			button.appendChild(document.createTextNode("Update"));
+			button.style.position = 'absolute';
+			button.style.top = '8px';
+			button.style.left = '50%';
+			button.style.transform = 'translateX(-50%)';
+			document.body.appendChild(button);
+			button.addEventListener("click", (event) => {
+				tablesFind();
+			});
+
 			tablesFind();
 		} else if (mode === "1") {
 			refresh(window.location.search);
