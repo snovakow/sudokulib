@@ -94,6 +94,9 @@
 			if (currentData) sendDataStack.push(currentData);
 			if (sendDataSending) return;
 
+			const currentTablesIndex = tablesIndex;
+			const currentTable = table;
+
 			const data = sendDataStack.shift();
 
 			let url = './generate.php?version=1';
@@ -132,9 +135,8 @@
 			url += '&has_swordfish=' + data.has_swordfish;
 			url += '&has_jellyfish=' + data.has_jellyfish;
 
-			url += '&table=' + table;
+			url += '&table=' + currentTable;
 
-			const currentTablesIndex = tablesIndex;
 			fetch(url, { cache: "no-store" }).then(response => {
 				response.text().then((string) => {
 					const count = parseInt(string);
@@ -144,21 +146,21 @@
 						return;
 					}
 					if (count > 0) {
-						localStorage.setItem(table, count);
+						localStorage.setItem(currentTable, count);
 
 						sendDataSent++;
 						sentDisplay.textContent = "Sent: " + sendDataSent;
 					} else {
-						localStorage.setItem(table, 1e7);
+						localStorage.setItem(currentTable, 1e7);
 						sendDataStack.unshift(data);
 					}
 					if (count === 0 || count >= 1e7) {
 						if (tablesIndex === currentTablesIndex) {
 							tablesIndex = currentTablesIndex + 1;
-							table = "puzzles" + tablesIndex;
+							currentTable = "puzzles" + tablesIndex;
 
 							while (generateButton.firstChild) generateButton.removeChild(generateButton.firstChild);
-							generateButton.appendChild(document.createTextNode(table));
+							generateButton.appendChild(document.createTextNode(currentTable));
 						}
 					}
 
