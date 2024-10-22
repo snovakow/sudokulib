@@ -148,7 +148,12 @@
 					addLine(formatTime(ms) + " remaining");
 					const ms7 = recordedTime * 1e7 / recordedCount;
 					addLine(formatTime(ms7) + " total");
+					estimateContainer.appendChild(document.createElement('br'));
 				}
+
+				const fpsRes = 0.01;
+				const fps = Math.floor(recordedTime/fpsRes/1000/recordedCount)*fpsRes;
+				addLine(fps + " puzzles per second");
 			};
 
 			const button = document.createElement('button');
