@@ -130,9 +130,11 @@
 					estimateContainer.appendChild(document.createElement('br'));
 				};
 
-				// const dateNow = new Date().toLocaleString(undefined, options);
-				// addLine(dateNow, "Time");
-				// estimateContainer.appendChild(document.createElement('br'));
+				if (triggeredMode) {
+					const dateNow = new Date().toLocaleString(undefined, options);
+					addLine(dateNow, "Time");
+					estimateContainer.appendChild(document.createElement('br'));
+				}
 
 				const dateStart = new Date(processStartTime).toLocaleString(undefined, options);
 				addLine(dateStart, "Start");
