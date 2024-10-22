@@ -155,8 +155,9 @@
 						processStartCount += count;
 					}
 				} else {
-					if (updated && processTimer === 0) {
-						window.requestAnimationFrame(createEstimate);
+					if (processTimer === 0) {
+						if (updated) window.requestAnimationFrame(createEstimate);
+						else createEstimate();
 					}
 				}
 
