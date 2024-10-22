@@ -82,10 +82,10 @@
 
 			let triggeredMode = false;
 			const createEstimate = () => {
-				if (processTimer !== 0) window.requestAnimationFrame(createEstimate);
-
 				const now = Date.now();
-				if (processTimer !== 0) {
+
+				if (triggeredMode) {
+					if (processTimer === 0) window.requestAnimationFrame(createEstimate);
 					const seconds = Math.floor(now / 1000);
 					if (seconds === processTimer) return;
 					processTimer = seconds;
@@ -219,7 +219,6 @@
 								if (nan) return;
 								setTableSize(event.key, int);
 								populate();
-								createEstimate();
 							});
 						} else {
 							createEstimate();
