@@ -76,16 +76,13 @@
 			estimateContainer.style.fontFamily = "'Courier New', monospace";
 			estimateContainer.style.textAlign = "right";
 			estimateContainer.style.position = "absolute";
-			estimateContainer.style.top = "8px";
+			estimateContainer.style.top = 8 + 48 + "px";
 			estimateContainer.style.right = "8px";
 			document.body.appendChild(estimateContainer);
 
 			const createEstimate = () => {
-				window.requestAnimationFrame(createEstimate);
-
-				const now = Math.floor(Date.now() / 1000);
-				if (now === processTimer) return;
-				processTimer = now;
+				const now = Date.now();
+				processTimer = Math.floor(now / 1000);
 
 				const formatTime = (ms) => {
 					const secondsTotal = Math.ceil(ms / 1000);
@@ -156,8 +153,7 @@
 					}
 				} else {
 					if (processTimer === 0) {
-						if (updated) window.requestAnimationFrame(createEstimate);
-						else createEstimate();
+						createEstimate();
 					}
 				}
 
@@ -231,7 +227,7 @@
 			button.appendChild(document.createTextNode("Update"));
 			button.style.position = 'absolute';
 			button.style.top = '8px';
-			button.style.left = '50%';
+			button.style.right = '8px';
 			button.style.transform = 'translateX(-50%)';
 			document.body.appendChild(button);
 			button.addEventListener("click", (event) => {
