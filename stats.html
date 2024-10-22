@@ -152,7 +152,7 @@
 				}
 
 				const fpsRes = 0.01;
-				const fps = Math.floor(recordedCount * fpsRes / 1000 / recordedTime) / fpsRes;
+				const fps = Math.floor(recordedCount / fpsRes / 1000 / recordedTime) * fpsRes;
 				addLine(fps + " puzzles per second");
 			};
 
