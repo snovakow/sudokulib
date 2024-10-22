@@ -70,17 +70,26 @@
 			let processStartTime = 0;
 			let processStartCount = 0;
 			let processCurrentCount = 0;
+			let processTimer = 0;
 
 			const estimateContainer = document.createElement('div');
 			estimateContainer.style.fontFamily = "'Courier New', monospace";
 			estimateContainer.style.textAlign = "right";
 			estimateContainer.style.position = "absolute";
-			estimateContainer.style.top = 8 + 48 + "px";
+			estimateContainer.style.top = 8 + 36 + "px";
 			estimateContainer.style.right = "8px";
 			document.body.appendChild(estimateContainer);
 
+			let triggeredMode = false;
 			const createEstimate = () => {
+				if (processTimer !== 0) window.requestAnimationFrame(createEstimate);
+
 				const now = Date.now();
+				if (processTimer !== 0) {
+					const seconds = Math.floor(now / 1000);
+					if (seconds === processTimer) return;
+					processTimer = seconds;
+				}
 
 				const formatTime = (ms) => {
 					const secondsTotal = Math.ceil(ms / 1000);
@@ -199,6 +208,12 @@
 							}
 
 							window.addEventListener("storage", (event) => {
+								triggeredMode = true;
+								if (processTimer === 0) {
+									if (button.parentElement) button.parentElement.removeChild(button);
+									estimateContainer.style.top = 8 + "px";
+									window.requestAnimationFrame(createEstimate);
+								}
 								const int = parseInt(event.newValue);
 								const nan = isNaN(int);
 								if (nan) return;
