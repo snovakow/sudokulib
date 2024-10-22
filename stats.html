@@ -85,7 +85,7 @@
 				const now = Date.now();
 
 				if (triggeredMode) {
-					if (processTimer === 0) window.requestAnimationFrame(createEstimate);
+					window.requestAnimationFrame(createEstimate);
 					const seconds = Math.floor(now / 1000);
 					if (seconds === processTimer) return;
 					processTimer = seconds;
