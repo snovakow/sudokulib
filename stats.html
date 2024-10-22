@@ -70,7 +70,6 @@
 			let processStartTime = 0;
 			let processStartCount = 0;
 			let processCurrentCount = 0;
-			let processTimer = 0;
 
 			const estimateContainer = document.createElement('div');
 			estimateContainer.style.fontFamily = "'Courier New', monospace";
@@ -82,7 +81,6 @@
 
 			const createEstimate = () => {
 				const now = Date.now();
-				processTimer = Math.floor(now / 1000);
 
 				const formatTime = (ms) => {
 					const secondsTotal = Math.ceil(ms / 1000);
@@ -123,9 +121,9 @@
 					estimateContainer.appendChild(document.createElement('br'));
 				};
 
-				const dateNow = new Date().toLocaleString(undefined, options);
-				addLine(dateNow, "Time");
-				estimateContainer.appendChild(document.createElement('br'));
+				// const dateNow = new Date().toLocaleString(undefined, options);
+				// addLine(dateNow, "Time");
+				// estimateContainer.appendChild(document.createElement('br'));
 
 				const dateStart = new Date(processStartTime).toLocaleString(undefined, options);
 				addLine(dateStart, "Start");
@@ -142,21 +140,9 @@
 				}
 			};
 
-			let updated = false;
 			const button = document.createElement('button');
 
 			const populate = () => {
-				if (processStartTime === 0) {
-					processStartTime = Date.now();
-					for (const count of tableSizes.values()) {
-						processStartCount += count;
-					}
-				} else {
-					if (processTimer === 0) {
-						createEstimate();
-					}
-				}
-
 				const content = [];
 				let total = 0;
 				for (const table of tables) {
@@ -205,16 +191,24 @@
 					}
 					if (mode === "0") {
 						populate();
-						window.addEventListener("storage", (event) => {
-							if (button.parentElement) document.body.removeChild(button);
-							updated = true;
 
-							const int = parseInt(event.newValue);
-							const nan = isNaN(int);
-							if (nan) return;
-							setTableSize(event.key, int);
-							populate();
-						});
+						if (processStartTime === 0) {
+							processStartTime = Date.now();
+							for (const count of tableSizes.values()) {
+								processStartCount += count;
+							}
+
+							window.addEventListener("storage", (event) => {
+								const int = parseInt(event.newValue);
+								const nan = isNaN(int);
+								if (nan) return;
+								setTableSize(event.key, int);
+								populate();
+								createEstimate();
+							});
+						} else {
+							createEstimate();
+						}
 					} else {
 						refresh("?mode=" + mode + "&table=" + tables.join(","));
 					}
@@ -228,7 +222,6 @@
 			button.style.position = 'absolute';
 			button.style.top = '8px';
 			button.style.right = '8px';
-			button.style.transform = 'translateX(-50%)';
 			document.body.appendChild(button);
 			button.addEventListener("click", (event) => {
 				tablesFind();
