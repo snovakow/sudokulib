@@ -151,9 +151,8 @@
 					estimateContainer.appendChild(document.createElement('br'));
 				}
 
-				const fpsRes = 100;
 				const fps = recordedCount * 1000 / recordedTime;
-				addLine(Math.floor(fps * fpsRes) / fpsRes + " puzzles per second");
+				addLine(fps.toFixed(1) + " puzzles per second");
 			};
 
 			const button = document.createElement('button');
