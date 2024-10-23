@@ -238,14 +238,16 @@
 				xhttp.send();
 			};
 
-			button.appendChild(document.createTextNode("Update"));
-			button.style.position = 'absolute';
-			button.style.top = '8px';
-			button.style.right = '8px';
-			document.body.appendChild(button);
-			button.addEventListener("click", (event) => {
-				tablesFind();
-			});
+			if (mode === "0") {
+				button.appendChild(document.createTextNode("Update"));
+				button.style.position = 'absolute';
+				button.style.top = '8px';
+				button.style.right = '8px';
+				document.body.appendChild(button);
+				button.addEventListener("click", (event) => {
+					tablesFind();
+				});
+			}
 
 			tablesFind();
 		} else if (mode === "1") {
