@@ -155,13 +155,15 @@
 						sendDataStack.unshift(data);
 					}
 					if (count === 0 || count >= 1e7) {
-						if (tablesIndex === currentTablesIndex) {
-							tablesIndex = currentTablesIndex + 1;
-							currentTable = "puzzles" + tablesIndex;
+						if (worker) toggleWorker();
+						return;
+						// if (tablesIndex === currentTablesIndex) {
+						// 	tablesIndex = currentTablesIndex + 1;
+						// 	currentTable = "puzzles" + tablesIndex;
 
-							while (generateButton.firstChild) generateButton.removeChild(generateButton.firstChild);
-							generateButton.appendChild(document.createTextNode(currentTable));
-						}
+						// 	while (generateButton.firstChild) generateButton.removeChild(generateButton.firstChild);
+						// 	generateButton.appendChild(document.createTextNode(currentTable));
+						// }
 					}
 
 					sendDataSending = false;
