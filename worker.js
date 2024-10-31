@@ -319,7 +319,11 @@ const step = () => {
 	lines.push("Candidates: " + percent(candidates) + " - " + candidates);
 	// lines.push("Superpositions: " + percent(superpositions) + " - " + superpositions);
 	lines.push("BruteForceFill: " + percent(bruteForceFill) + " - " + bruteForceFill);
-	lines.push("Time Avg: " + totalTime / 1000 / totalPuzzles + " Max: " + maxTime / 1000);
+
+	const timeAvg = totalTime / 1000 / totalPuzzles;
+	const timeMax = maxTime / 1000;
+	lines.push("Time Avg: " + timeAvg.toFixed(3) + " Max: " + timeMax.toFixed(3));
+
 	lines.push("Puzzles: " + totalPuzzles);
 
 	data.message = lines;
