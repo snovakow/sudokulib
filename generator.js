@@ -208,6 +208,27 @@ const fillSolve = (cells, solveStrategy = STRATEGY.NONE, isolated = false) => {
 		if (!isolated) {
 			for (const strategy of STRATEGIES) {
 				if (strategy === solveStrategy) continue;
+
+				if (solveStrategy === STRATEGY.NAKED_2 && strategy === STRATEGY.NAKED_3) continue;
+				if (solveStrategy === STRATEGY.NAKED_2 && strategy === STRATEGY.NAKED_4) continue;
+				if (solveStrategy === STRATEGY.NAKED_2 && strategy === STRATEGY.HIDDEN_2) continue;
+				if (solveStrategy === STRATEGY.NAKED_2 && strategy === STRATEGY.HIDDEN_3) continue;
+				if (solveStrategy === STRATEGY.NAKED_2 && strategy === STRATEGY.HIDDEN_4) continue;
+
+				if (solveStrategy === STRATEGY.NAKED_3 && strategy === STRATEGY.NAKED_4) continue;
+				if (solveStrategy === STRATEGY.NAKED_3 && strategy === STRATEGY.HIDDEN_2) continue;
+				if (solveStrategy === STRATEGY.NAKED_3 && strategy === STRATEGY.HIDDEN_3) continue;
+				if (solveStrategy === STRATEGY.NAKED_3 && strategy === STRATEGY.HIDDEN_4) continue;
+
+				if (solveStrategy === STRATEGY.NAKED_4 && strategy === STRATEGY.HIDDEN_2) continue;
+				if (solveStrategy === STRATEGY.NAKED_4 && strategy === STRATEGY.HIDDEN_3) continue;
+				if (solveStrategy === STRATEGY.NAKED_4 && strategy === STRATEGY.HIDDEN_4) continue;
+
+				// if (solveStrategy === STRATEGY.HIDDEN_2 && strategy === STRATEGY.HIDDEN_3) continue;
+				// if (solveStrategy === STRATEGY.HIDDEN_2 && strategy === STRATEGY.HIDDEN_4) continue;
+
+				// if (solveStrategy === STRATEGY.HIDDEN_3 && strategy === STRATEGY.HIDDEN_4) continue;
+
 				progress = solvePriority(strategy);
 				if (progress) break;
 			}
