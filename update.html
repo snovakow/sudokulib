@@ -70,7 +70,7 @@
 			if (updateDataSending) return;
 			updateDataSending = true;
 
-			const url = 'https://snovakow.dev/sudokulib/update.php?version=1&table=' + table;
+			const url = './update.php?version=1&table=' + table;
 
 			const readyDataSend = [];
 			let readyDataSent = 0;
@@ -152,7 +152,7 @@
 			};
 
 			const sendRequest = () => {
-				const url = `https://snovakow.dev/sudokulib/feedSudoku.php?start=${start}&end=${start + inc}&table=${table}`;
+				const url = `./feedSudoku.php?start=${start}&end=${start + inc}&table=${table}`;
 				fetch(url, {
 					cache: "no-store",
 					method: "GET"
