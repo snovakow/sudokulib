@@ -102,13 +102,13 @@ try {
 		$candidates += $uniqueRectangle['count'];
 
 		if ($candidates > 0) {
-			printStat("Naked 2 (" . $naked2['max'] . ")", $naked2['count'], $candidates);
-			printStat("Naked 3 (" . $naked3['max'] . ")", $naked3['count'], $candidates);
-			printStat("Naked 4 (" . $naked4['max'] . ")", $naked4['count'], $candidates);
-			printStat("Hidden 2 (" . $hidden2['max'] . ")", $hidden2['count'], $candidates);
-			printStat("Hidden 3 (" . $hidden3['max'] . ")", $hidden3['count'], $candidates);
-			printStat("Hidden 4 (" . $hidden4['max'] . ")", $hidden4['count'], $candidates);
-			printStat("Omissions (" . $omissions['max'] . ")", $omissions['count'], $candidates);
+			printStat("naked2 (" . $naked2['max'] . ")", $naked2['count'], $candidates);
+			printStat("naked3 (" . $naked3['max'] . ")", $naked3['count'], $candidates);
+			printStat("naked4 (" . $naked4['max'] . ")", $naked4['count'], $candidates);
+			printStat("hidden2 (" . $hidden2['max'] . ")", $hidden2['count'], $candidates);
+			printStat("hidden3 (" . $hidden3['max'] . ")", $hidden3['count'], $candidates);
+			printStat("hidden4 (" . $hidden4['max'] . ")", $hidden4['count'], $candidates);
+			printStat("omissions (" . $omissions['max'] . ")", $omissions['count'], $candidates);
 			printStat("uniqueRectangle (" . $uniqueRectangle['max'] . ")", $uniqueRectangle['count'], $candidates);
 			printStat("yWing (" . $yWing['max'] . ")", $yWing['count'], $candidates);
 			printStat("xyzWing (" . $xyzWing['max'] . ")", $xyzWing['count'], $candidates);
@@ -117,56 +117,18 @@ try {
 			printStat("jellyfish (" . $jellyfish['max'] . ")", $jellyfish['count'], $candidates);
 		}
 		echo  "<br/>";
-
-		$stmt = $conn->prepare("SELECT MAX(id) as count FROM `simple`");
-		$stmt->execute();
-		$result = $stmt->fetch()["count"];
-		$count0 = $result;
-
-		$stmt = $conn->prepare("SELECT MAX(id) as count FROM `bruteForce`");
-		$stmt->execute();
-		$result = $stmt->fetch()["count"];
-		$count2 = $result;
-
-		$count1 = $countTotal - $count0 - $count2;
-
-		printStat("Simples", $count0, $countTotal);
-		printStat("Strategies", $count1, $countTotal);
-		printStat("Brute Force", $count2, $countTotal);
-
-		echo  "<br/>";
 	} else {
 		$tables = explode(",", $_GET['table']);
 	}
 
-	$total = 0;
-	$totals = array();
-	foreach ($tables as $table) {
-		$stmt = $conn->prepare("SELECT MAX(id) as totalPuzzles FROM `" . $table . "`");
-		$stmt->execute();
-		$totalPuzzles = $stmt->fetch()["totalPuzzles"];
-		if ($totalPuzzles === NULL) {
-			$stmt = $conn->prepare("
-				SELECT table_name FROM information_schema.tables WHERE table_schema = 'sudoku' AND table_name = '" . $table . "' LIMIT 1;
-			");
+	if ($mode === 2) {
+		foreach ($tables as $table) {
+			$stmt = $conn->prepare("SELECT MAX(id) as count FROM `" . $table . "`");
 			$stmt->execute();
-			if ($stmt->fetch()["table_name"] === NULL) $totalPuzzles = "-1";
-			else $totalPuzzles = "0";
-		} else {
-			$total += $totalPuzzles;
+			$result = $stmt->fetch()["count"];
+			$countTotal +=  $result;
 		}
 
-		$totals[] =  $table . "=" . $totalPuzzles;
-		if ($mode !== 0) flushOut($table . ": " . number_format($totalPuzzles));
-	}
-	if ($mode === 0) {
-		echo implode(",", $totals);
-	} else {
-		if (count($tables) > 1) flushOut("Total Puzzles: " . number_format($total));
-		echo  "<br/>";
-	}
-
-	if ($mode === 2) {
 		flushOut("--- Strategies");
 
 		$strategies = array(
@@ -220,6 +182,53 @@ try {
 			}
 		}
 
+		echo  "<br/>";
+	}
+
+	if ($mode === 1 || $mode === 2) {
+		$stmt = $conn->prepare("SELECT MAX(id) as count FROM `simple`");
+		$stmt->execute();
+		$result = $stmt->fetch()["count"];
+		$count0 = $result;
+
+		$stmt = $conn->prepare("SELECT MAX(id) as count FROM `bruteForce`");
+		$stmt->execute();
+		$result = $stmt->fetch()["count"];
+		$count2 = $result;
+
+		$count1 = $countTotal - $count0 - $count2;
+
+		printStat("Simples", $count0, $countTotal);
+		printStat("Strategies", $count1, $countTotal);
+		printStat("Brute Force", $count2, $countTotal);
+
+		echo  "<br/>";
+	}
+
+	$total = 0;
+	$totals = array();
+	foreach ($tables as $table) {
+		$stmt = $conn->prepare("SELECT MAX(id) as totalPuzzles FROM `" . $table . "`");
+		$stmt->execute();
+		$totalPuzzles = $stmt->fetch()["totalPuzzles"];
+		if ($totalPuzzles === NULL) {
+			$stmt = $conn->prepare("
+				SELECT table_name FROM information_schema.tables WHERE table_schema = 'sudoku' AND table_name = '" . $table . "' LIMIT 1;
+			");
+			$stmt->execute();
+			if ($stmt->fetch()["table_name"] === NULL) $totalPuzzles = "-1";
+			else $totalPuzzles = "0";
+		} else {
+			$total += $totalPuzzles;
+		}
+
+		$totals[] =  $table . "=" . $totalPuzzles;
+		if ($mode !== 0 && $mode !== 3) flushOut($table . ": " . number_format($totalPuzzles));
+	}
+	if ($mode === 0) {
+		echo implode(",", $totals);
+	} else if ($mode !== 3) {
+		if (count($tables) > 1) flushOut("Total Puzzles: " . number_format($total));
 		echo  "<br/>";
 	}
 
