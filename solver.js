@@ -260,8 +260,7 @@ class NakedHiddenGroups {
 		const union = new SetUnion();
 		for (const sets of this.groupSets) {
 			const len = sets.length;
-			if (len < 9) continue;
-			// if (len <= 2) continue;
+			if (len <= 2) continue;
 
 			const len_1 = len - 1;
 
@@ -293,8 +292,7 @@ class NakedHiddenGroups {
 		const union = new SetUnion();
 		for (const sets of this.groupSets) {
 			const len = sets.length;
-			if (len < 9) continue;
-			// if (len <= 3) continue;
+			if (len <= 3) continue;
 
 			const len_1 = len - 1;
 			const len_2 = len - 2;
@@ -331,8 +329,7 @@ class NakedHiddenGroups {
 		const union = new SetUnion();
 		for (const sets of this.groupSets) {
 			const len = sets.length;
-			if (len < 9) continue;
-			// if (len <= 4) continue;
+			if (len <= 4) continue;
 
 			const len_1 = len - 1;
 			const len_2 = len - 2;
