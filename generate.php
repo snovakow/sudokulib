@@ -91,6 +91,8 @@ try {
 	$pdo = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
 	// $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
+	$pdo->exec("LOCK TABLES `" . $table . "` WRITE");
+
 	$sql = "SELECT MAX(id) as totalPuzzles FROM `" . $table . "`";
 	$statement = $pdo->prepare($sql);
 	$statement->execute();
@@ -156,6 +158,9 @@ try {
 		'bruteForce' => $bruteForce,
 		'solveType' => $solveType
 	]);
+
+	$pdo->exec('UNLOCK TABLES');
+
 	echo ($count + 1);
 } catch (PDOException $e) {
 	// echo "Connection failed: " . $e->getMessage();
