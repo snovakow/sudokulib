@@ -172,12 +172,57 @@ const step = () => {
 				}
 			}
 		}
-		processStrategy('naked2Reduced', 'has_naked2', STRATEGY.NAKED_2);
-		processStrategy('naked3Reduced', 'has_naked3', STRATEGY.NAKED_3);
-		processStrategy('naked4Reduced', 'has_naked4', STRATEGY.NAKED_4);
-		processStrategy('hidden2Reduced', 'has_hidden2', STRATEGY.HIDDEN_2);
-		processStrategy('hidden3Reduced', 'has_hidden3', STRATEGY.HIDDEN_3);
-		processStrategy('hidden4Reduced', 'has_hidden4', STRATEGY.HIDDEN_4);
+		const processSets = () => {
+			if (result.naked2Reduced === 0 && result.naked3Reduced === 0 && result.naked4Reduced === 0 &&
+				result.hidden2Reduced === 0 && result.hidden3Reduced === 0 && result.hidden4Reduced === 0) return;
+
+			cells.fromData(save);
+			const strategyResult = fillSolve(cells, STRATEGY.NAKED_HIDDEN, false);
+
+			const naked2ResultValue = strategyResult.naked2Reduced;
+			result.naked2Reduced = naked2ResultValue;
+
+			const naked3ResultValue = strategyResult.naked3Reduced;
+			result.naked3Reduced = naked3ResultValue;
+
+			const naked4ResultValue = strategyResult.naked4Reduced;
+			result.naked4Reduced = naked4ResultValue;
+
+			const hidden2ResultValue = strategyResult.hidden2Reduced;
+			result.hidden2Reduced = hidden2ResultValue;
+
+			const hidden3ResultValue = strategyResult.hidden3Reduced;
+			result.hidden3Reduced = hidden3ResultValue;
+
+			const hidden4ResultValue = strategyResult.hidden4Reduced;
+			result.hidden4Reduced = hidden4ResultValue;
+
+			if (naked2ResultValue === 0 && naked3ResultValue === 0 && naked4ResultValue === 0 &&
+				hidden2ResultValue === 0 && hidden3ResultValue === 0 && hidden4ResultValue === 0) return;
+
+			cells.fromData(save);
+			const resultIsolated = fillSolve(cells, STRATEGY.NAKED_HIDDEN, true);
+			if (resultIsolated.bruteForceFill) return;
+
+			const naked2IsolatedValue = resultIsolated.naked2Reduced;
+			if (naked2IsolatedValue <= naked2ResultValue) data.has_naked2 = naked2IsolatedValue;
+
+			const naked3IsolatedValue = resultIsolated.naked3Reduced;
+			if (naked3IsolatedValue <= naked3ResultValue) data.has_naked3 = naked3IsolatedValue;
+
+			const naked4IsolatedValue = resultIsolated.naked4Reduced;
+			if (naked4IsolatedValue <= naked4ResultValue) data.has_naked4 = naked4IsolatedValue;
+
+			const hidden2IsolatedValue = resultIsolated.hidden2Reduced;
+			if (hidden2IsolatedValue <= hidden2ResultValue) data.has_hidden2 = hidden2IsolatedValue;
+
+			const hidden3IsolatedValue = resultIsolated.hidden3Reduced;
+			if (hidden3IsolatedValue <= hidden3ResultValue) data.has_hidden3 = hidden3IsolatedValue;
+
+			const hidden4IsolatedValue = resultIsolated.hidden4Reduced;
+			if (hidden4IsolatedValue <= hidden4ResultValue) data.has_hidden4 = hidden4IsolatedValue;
+		}
+		processSets();
 		processStrategy('omissionsReduced', 'has_omissions', STRATEGY.INTERSECTION_REMOVAL);
 		processStrategy('uniqueRectangleReduced', 'has_uniqueRectangle', STRATEGY.DEADLY_PATTERN);
 		processStrategy('yWingReduced', 'has_yWing', STRATEGY.Y_WING);
