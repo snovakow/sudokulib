@@ -398,14 +398,6 @@ class NakedHiddenGroups {
 		return null;
 	}
 	nakedHiddenSets() {
-		// 9  4 4 = 8 53
-		// 8  4 3 = 7 52
-		// 7  4 2 = 6
-		// 6  4 0 = 4 41
-		// 5  3 0 = 3 41
-		// 4  2 0 = 2 31
-		// 3  0 0 = 0 21
-
 		let reduced;
 		reduced = this.nakedPair();
 		if (reduced) return reduced;
@@ -413,7 +405,6 @@ class NakedHiddenGroups {
 		if (reduced) return reduced;
 		reduced = this.nakedQuad();
 		if (reduced) return reduced;
-
 		reduced = this.hiddenPair();
 		if (reduced) return reduced;
 		reduced = this.hiddenTriple();
@@ -422,6 +413,26 @@ class NakedHiddenGroups {
 		if (reduced) return reduced;
 		return null;
 	}
+	// nakedSets() {
+	// 	let reduced;
+	// 	reduced = this.nakedPair();
+	// 	if (reduced) return reduced;
+	// 	reduced = this.nakedTriple();
+	// 	if (reduced) return reduced;
+	// 	reduced = this.nakedQuad();
+	// 	if (reduced) return reduced;
+	// 	return null;
+	// }
+	// hiddenSets() {
+	// 	let reduced;
+	// 	reduced = this.hiddenPair();
+	// 	if (reduced) return reduced;
+	// 	reduced = this.hiddenTriple();
+	// 	if (reduced) return reduced;
+	// 	reduced = this.hiddenQuad();
+	// 	if (reduced) return reduced;
+	// 	return null;
+	// }
 }
 
 const xWing = (cells) => {
