@@ -47,32 +47,22 @@ const isFinished = (cells) => {
 
 const STRATEGY = {
 	NONE: 0,
-	NAKED_2: 1,
-	NAKED_3: 2,
-	NAKED_4: 3,
-	INTERSECTION_REMOVAL: 4,
-	DEADLY_PATTERN: 5,
-	HIDDEN_2: 6,
-	HIDDEN_3: 7,
-	HIDDEN_4: 8,
-	Y_WING: 9,
-	XYZ_WING: 10,
-	X_WING: 11,
-	SWORDFISH: 12,
-	JELLYFISH: 13,
-	ALL: 14,
+	NAKED_HIDDEN: 1,
+	INTERSECTION_REMOVAL: 2,
+	DEADLY_PATTERN: 3,
+	Y_WING: 4,
+	XYZ_WING: 5,
+	X_WING: 6,
+	SWORDFISH: 7,
+	JELLYFISH: 8,
+	ALL: 9,
 };
 Object.freeze(STRATEGY);
 
 const STRATEGIES = [
-	STRATEGY.NAKED_2,
-	STRATEGY.NAKED_3,
-	STRATEGY.NAKED_4,
+	STRATEGY.NAKED_HIDDEN,
 	STRATEGY.INTERSECTION_REMOVAL,
 	STRATEGY.DEADLY_PATTERN,
-	STRATEGY.HIDDEN_2,
-	STRATEGY.HIDDEN_3,
-	STRATEGY.HIDDEN_4,
 	STRATEGY.Y_WING,
 	STRATEGY.XYZ_WING,
 	STRATEGY.X_WING,
@@ -104,45 +94,16 @@ const fillSolve = (cells, solveStrategy = STRATEGY.NONE, isolated = false) => {
 
 	let nakedHiddenGroups = null;
 	const solvePriority = (strategy) => {
-		if (strategy === STRATEGY.NAKED_2) {
+		if (strategy === STRATEGY.NAKED_HIDDEN) {
 			if (!nakedHiddenGroups) nakedHiddenGroups = new NakedHiddenGroups(cells);
-			if (nakedHiddenGroups.nakedSet2()) {
-				naked2Reduced++;
-				return true;
-			}
-		}
-		if (strategy === STRATEGY.NAKED_3) {
-			if (!nakedHiddenGroups) nakedHiddenGroups = new NakedHiddenGroups(cells);
-			if (nakedHiddenGroups.nakedSet3()) {
-				naked3Reduced++;
-				return true;
-			}
-		}
-		if (strategy === STRATEGY.NAKED_4) {
-			if (!nakedHiddenGroups) nakedHiddenGroups = new NakedHiddenGroups(cells);
-			if (nakedHiddenGroups.nakedSet4()) {
-				naked4Reduced++;
-				return true;
-			}
-		}
-		if (strategy === STRATEGY.HIDDEN_2) {
-			if (!nakedHiddenGroups) nakedHiddenGroups = new NakedHiddenGroups(cells);
-			if (nakedHiddenGroups.hiddenSet2()) {
-				hidden2Reduced++;
-				return true;
-			}
-		}
-		if (strategy === STRATEGY.HIDDEN_3) {
-			if (!nakedHiddenGroups) nakedHiddenGroups = new NakedHiddenGroups(cells);
-			if (nakedHiddenGroups.hiddenSet3()) {
-				hidden3Reduced++;
-				return true;
-			}
-		}
-		if (strategy === STRATEGY.HIDDEN_4) {
-			if (!nakedHiddenGroups) nakedHiddenGroups = new NakedHiddenGroups(cells);
-			if (nakedHiddenGroups.hiddenSet4()) {
-				hidden4Reduced++;
+			const result = nakedHiddenGroups.nakedHiddenSets();
+			if (result) {
+				if (result.nakedSize === 2) naked2Reduced++;
+				else if (result.nakedSize === 3) naked3Reduced++;
+				else if (result.nakedSize === 4) naked4Reduced++;
+				else if (result.hiddenSize === 2) hidden2Reduced++;
+				else if (result.hiddenSize === 3) hidden3Reduced++;
+				else if (result.hiddenSize === 4) hidden4Reduced++;
 				return true;
 			}
 		}
@@ -208,27 +169,6 @@ const fillSolve = (cells, solveStrategy = STRATEGY.NONE, isolated = false) => {
 		if (!isolated) {
 			for (const strategy of STRATEGIES) {
 				if (strategy === solveStrategy) continue;
-
-				if (solveStrategy === STRATEGY.NAKED_2 && strategy === STRATEGY.NAKED_3) continue;
-				if (solveStrategy === STRATEGY.NAKED_2 && strategy === STRATEGY.NAKED_4) continue;
-				if (solveStrategy === STRATEGY.NAKED_2 && strategy === STRATEGY.HIDDEN_2) continue;
-				if (solveStrategy === STRATEGY.NAKED_2 && strategy === STRATEGY.HIDDEN_3) continue;
-				if (solveStrategy === STRATEGY.NAKED_2 && strategy === STRATEGY.HIDDEN_4) continue;
-
-				if (solveStrategy === STRATEGY.NAKED_3 && strategy === STRATEGY.NAKED_4) continue;
-				if (solveStrategy === STRATEGY.NAKED_3 && strategy === STRATEGY.HIDDEN_2) continue;
-				if (solveStrategy === STRATEGY.NAKED_3 && strategy === STRATEGY.HIDDEN_3) continue;
-				if (solveStrategy === STRATEGY.NAKED_3 && strategy === STRATEGY.HIDDEN_4) continue;
-
-				if (solveStrategy === STRATEGY.NAKED_4 && strategy === STRATEGY.HIDDEN_2) continue;
-				if (solveStrategy === STRATEGY.NAKED_4 && strategy === STRATEGY.HIDDEN_3) continue;
-				if (solveStrategy === STRATEGY.NAKED_4 && strategy === STRATEGY.HIDDEN_4) continue;
-
-				// if (solveStrategy === STRATEGY.HIDDEN_2 && strategy === STRATEGY.HIDDEN_3) continue;
-				// if (solveStrategy === STRATEGY.HIDDEN_2 && strategy === STRATEGY.HIDDEN_4) continue;
-
-				// if (solveStrategy === STRATEGY.HIDDEN_3 && strategy === STRATEGY.HIDDEN_4) continue;
-
 				progress = solvePriority(strategy);
 				if (progress) break;
 			}
