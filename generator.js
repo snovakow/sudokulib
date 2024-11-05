@@ -92,10 +92,9 @@ const fillSolve = (cells, solveStrategy = STRATEGY.NONE, isolated = false) => {
 
 	let bruteForceFill = false;
 
-	let nakedHiddenGroups = null;
 	const solvePriority = (strategy) => {
 		if (strategy === STRATEGY.NAKED_HIDDEN) {
-			if (!nakedHiddenGroups) nakedHiddenGroups = new NakedHiddenGroups(cells);
+			const nakedHiddenGroups = new NakedHiddenGroups(cells);
 			const result = nakedHiddenGroups.nakedHiddenSets();
 			if (result) {
 				if (result.nakedSize === 2) naked2Reduced++;
@@ -163,8 +162,6 @@ const fillSolve = (cells, solveStrategy = STRATEGY.NONE, isolated = false) => {
 		if (progress) continue;
 
 		if (solveStrategy === STRATEGY.NONE) continue;
-
-		nakedHiddenGroups = null;
 
 		if (!isolated) {
 			for (const strategy of STRATEGIES) {
@@ -640,5 +637,5 @@ const generateFromSeed = (puzzleString, transform) => {
 	return puzzle;
 };
 
-export { totalPuzzles, generateFromSeed, generateTransform, STRATEGY, STRATEGIES };
+export { totalPuzzles, generateFromSeed, generateTransform, STRATEGY };
 export { sudokuGenerator, fillSolve, consoleOut };
