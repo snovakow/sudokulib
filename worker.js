@@ -175,30 +175,36 @@ const step = () => {
 		const processSets = () => {
 			const strategies = ['naked2Reduced', 'naked3Reduced', 'naked4Reduced', 'hidden2Reduced', 'hidden3Reduced', 'hidden4Reduced'];
 			const hasMap = ['has_naked2', 'has_naked3', 'has_naked4', 'has_hidden2', 'has_hidden3', 'has_hidden4'];
-			const zeroes = () => {
-				for (const strategy of strategies) {
-					if (result[strategy] === 0) continue;
-					return false;
-				}
-				return true;
+			const maxSetIndex = (result) => {
+				let i = strategies.length - 1;
+				do {
+					if (result[strategies[i]] > 0) return i;
+					i--;
+				} while (i >= 0);
+				return i;
 			}
 
-			if (zeroes()) return;
+			if (maxSetIndex(result) < 0) return;
 
 			cells.fromData(save);
 			const strategyResult = fillSolve(cells, STRATEGY.NAKED_HIDDEN, false);
 
 			for (const strategy of strategies) result[strategy] = strategyResult[strategy];
 
-			if (zeroes()) return;
+			if (maxSetIndex(result) < 0) return;
 
 			cells.fromData(save);
 			const resultIsolated = fillSolve(cells, STRATEGY.NAKED_HIDDEN, true);
 			if (resultIsolated.bruteForceFill) return;
 
+			const maxIsolated = maxSetIndex(resultIsolated);
 			for (const i in strategies) {
 				const strategy = strategies[i];
-				if (resultIsolated[strategy] <= strategyResult[strategy]) data[hasMap[i]] = resultIsolated[strategy];
+				const isolatedValue = resultIsolated[strategy];
+				if (isolatedValue > 0) {
+					if (i < maxIsolated) break;
+					if (isolatedValue <= strategyResult[strategy]) data[hasMap[i]] = isolatedValue;
+				}
 			}
 		}
 		processSets();
