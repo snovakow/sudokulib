@@ -175,6 +175,7 @@ const step = () => {
 		const processSets = () => {
 			const strategies = ['naked2Reduced', 'naked3Reduced', 'naked4Reduced', 'hidden2Reduced', 'hidden3Reduced', 'hidden4Reduced'];
 			const hasMap = ['has_naked2', 'has_naked3', 'has_naked4', 'has_hidden2', 'has_hidden3', 'has_hidden4'];
+			const strategType = [STRATEGY.NAKED_2, STRATEGY.NAKED_3, STRATEGY.NAKED_4, STRATEGY.HIDDEN_2, STRATEGY.HIDDEN_3, STRATEGY.HIDDEN_4];
 			const maxSetIndex = (result) => {
 				let i = strategies.length - 1;
 				do {
@@ -191,10 +192,11 @@ const step = () => {
 
 			for (const strategy of strategies) result[strategy] = strategyResult[strategy];
 
-			if (maxSetIndex(result) < 0) return;
+			const maxStrategy = maxSetIndex(result);
+			if (maxStrategy < 0) return;
 
 			cells.fromData(save);
-			const resultIsolated = fillSolve(cells, STRATEGY.NAKED_HIDDEN, true);
+			const resultIsolated = fillSolve(cells, strategType[maxStrategy], true);
 			if (resultIsolated.bruteForceFill) return;
 
 			const maxIsolated = maxSetIndex(resultIsolated);
