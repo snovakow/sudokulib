@@ -48,14 +48,20 @@ const isFinished = (cells) => {
 const STRATEGY = {
 	NONE: 0,
 	NAKED_HIDDEN: 1,
-	INTERSECTION_REMOVAL: 2,
-	DEADLY_PATTERN: 3,
-	Y_WING: 4,
-	XYZ_WING: 5,
-	X_WING: 6,
-	SWORDFISH: 7,
-	JELLYFISH: 8,
-	ALL: 9,
+	NAKED_2: 2,
+	NAKED_3: 3,
+	NAKED_4: 4,
+	HIDDEN_2: 5,
+	HIDDEN_3: 6,
+	HIDDEN_4: 7,
+	INTERSECTION_REMOVAL: 8,
+	DEADLY_PATTERN: 9,
+	Y_WING: 10,
+	XYZ_WING: 11,
+	X_WING: 12,
+	SWORDFISH: 13,
+	JELLYFISH: 14,
+	ALL: 15,
 };
 Object.freeze(STRATEGY);
 
@@ -103,6 +109,42 @@ const fillSolve = (cells, solveStrategy = STRATEGY.NONE, isolated = false) => {
 				else if (result.hiddenSize === 2) hidden2Reduced++;
 				else if (result.hiddenSize === 3) hidden3Reduced++;
 				else if (result.hiddenSize === 4) hidden4Reduced++;
+				return true;
+			}
+		}
+		if (strategy === STRATEGY.NAKED_2) {
+			if (new NakedHiddenGroups(cells).nakedPair()) {
+				naked2Reduced++;
+				return true;
+			}
+		}
+		if (strategy === STRATEGY.NAKED_3) {
+			if (new NakedHiddenGroups(cells).nakedTriple()) {
+				naked3Reduced++;
+				return true;
+			}
+		}
+		if (strategy === STRATEGY.NAKED_4) {
+			if (new NakedHiddenGroups(cells).nakedQuad()) {
+				naked4Reduced++;
+				return true;
+			}
+		}
+		if (strategy === STRATEGY.HIDDEN_2) {
+			if (new NakedHiddenGroups(cells).hiddenPair()) {
+				hidden2Reduced++;
+				return true;
+			}
+		}
+		if (strategy === STRATEGY.HIDDEN_3) {
+			if (new NakedHiddenGroups(cells).hiddenTriple()) {
+				hidden3Reduced++;
+				return true;
+			}
+		}
+		if (strategy === STRATEGY.HIDDEN_4) {
+			if (new NakedHiddenGroups(cells).hiddenQuad()) {
+				hidden4Reduced++;
 				return true;
 			}
 		}
