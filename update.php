@@ -19,14 +19,13 @@ try {
 	// $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
 	$sql = "UPDATE `" . $table . "` SET simple=:simple, naked2=:naked2, naked3=:naked3, naked4=:naked4, 
-	hidden2=:hidden2, hidden3=:hidden3, hidden4=:hidden4, omissions=:omissions,
-	yWing=:yWing, xyzWing=:xyzWing, xWing=:xWing, swordfish=:swordfish, jellyfish=:jellyfish, 
-	uniqueRectangle=:uniqueRectangle, phistomefel=:phistomefel, 
+	hidden2=:hidden2, hidden3=:hidden3, hidden4=:hidden4, omissions=:omissions, yWing=:yWing, xyzWing=:xyzWing, 
+	xWing=:xWing, swordfish=:swordfish, jellyfish=:jellyfish, uniqueRectangle=:uniqueRectangle, 
 	has_naked2=:has_naked2, has_naked3=:has_naked3, has_naked4=:has_naked4, 
 	has_hidden2=:has_hidden2, has_hidden3=:has_hidden3, has_hidden4=:has_hidden4, has_omissions=:has_omissions, 
 	has_yWing=:has_yWing, has_xyzWing=:has_xyzWing, has_xWing=:has_xWing, has_swordfish=:has_swordfish, 
-	has_jellyfish=:has_jellyfish, has_uniqueRectangle=:has_uniqueRectangle, has_phistomefel=:has_phistomefel, 
-	superpositions=:superpositions, bruteForce=:bruteForce, solveType=:solveType 
+	has_jellyfish=:has_jellyfish, has_uniqueRectangle=:has_uniqueRectangle, 
+	bruteForce=:bruteForce, solveType=:solveType 
 	WHERE id=:id";
 
 	$statement = $pdo->prepare($sql);
@@ -47,8 +46,6 @@ try {
 		if (!isset($post->swordfish)) continue;
 		if (!isset($post->jellyfish)) continue;
 		if (!isset($post->uniqueRectangle)) continue;
-		if (!isset($post->phistomefel)) continue;
-		if (!isset($post->superpositions)) continue;
 		if (!isset($post->bruteForce)) continue;
 
 		if (!isset($post->has_naked2)) continue;
@@ -80,8 +77,6 @@ try {
 		$swordfish = $post->swordfish;
 		$jellyfish = $post->jellyfish;
 		$uniqueRectangle = $post->uniqueRectangle;
-		$phistomefel = $post->phistomefel;
-		$superpositions = $post->superpositions;
 		$bruteForce = $post->bruteForce;
 
 		$solveType = 1;
@@ -102,8 +97,6 @@ try {
 		$has_swordfish = $post->has_swordfish;
 		$has_jellyfish = $post->has_jellyfish;
 
-		$has_phistomefel = $phistomefel > 0 ? 1 : 0;
-
 		$statement->execute([
 			'simple' => $simple,
 			'naked2' => $naked2,
@@ -119,7 +112,6 @@ try {
 			'swordfish' => $swordfish,
 			'jellyfish' => $jellyfish,
 			'uniqueRectangle' => $uniqueRectangle,
-			'phistomefel' => $phistomefel,
 			'has_naked2' => $has_naked2,
 			'has_naked3' => $has_naked3,
 			'has_naked4' => $has_naked4,
@@ -133,8 +125,6 @@ try {
 			'has_swordfish' => $has_swordfish,
 			'has_jellyfish' => $has_jellyfish,
 			'has_uniqueRectangle' => $has_uniqueRectangle,
-			'has_phistomefel' => $has_phistomefel,
-			'superpositions' => $superpositions,
 			'bruteForce' => $bruteForce,
 			'solveType' => $solveType,
 			'id' => $id
