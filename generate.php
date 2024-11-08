@@ -20,8 +20,6 @@ if (!isset($_GET['xWing'])) die();
 if (!isset($_GET['swordfish'])) die();
 if (!isset($_GET['jellyfish'])) die();
 if (!isset($_GET['uniqueRectangle'])) die();
-if (!isset($_GET['phistomefel'])) die();
-if (!isset($_GET['superpositions'])) die();
 if (!isset($_GET['bruteForce'])) die();
 
 if (!isset($_GET['has_naked2'])) die();
@@ -58,8 +56,6 @@ $xWing = $_GET['xWing'];
 $swordfish = $_GET['swordfish'];
 $jellyfish = $_GET['jellyfish'];
 $uniqueRectangle = $_GET['uniqueRectangle'];
-$phistomefel = $_GET['phistomefel'];
-$superpositions = $_GET['superpositions'];
 $bruteForce = $_GET['bruteForce'];
 
 $servername = "localhost";
@@ -84,8 +80,6 @@ $has_xyzWing = $_GET['has_xyzWing'];
 $has_xWing = $_GET['has_xWing'];
 $has_swordfish = $_GET['has_swordfish'];
 $has_jellyfish = $_GET['has_jellyfish'];
-
-$has_phistomefel = $phistomefel;
 
 try {
 	$pdo = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
@@ -113,11 +107,11 @@ try {
 	}
 
 	$sql = "INSERT INTO `" . $table . "` (puzzleClues, puzzleFilled, clueCount, simple, naked2, naked3, naked4, hidden2, hidden3, hidden4, omissions, 
-			yWing, xyzWing, xWing, swordfish, jellyfish, uniqueRectangle, phistomefel, has_naked2, has_naked3, has_naked4, has_hidden2, has_hidden3, has_hidden4, has_omissions, 
-			has_yWing, has_xyzWing, has_xWing, has_swordfish, has_jellyfish, has_uniqueRectangle, has_phistomefel, superpositions, bruteForce, solveType) 
+			yWing, xyzWing, xWing, swordfish, jellyfish, uniqueRectangle, has_naked2, has_naked3, has_naked4, has_hidden2, has_hidden3, has_hidden4, has_omissions, 
+			has_yWing, has_xyzWing, has_xWing, has_swordfish, has_jellyfish, has_uniqueRectangle, bruteForce, solveType) 
 			VALUES (:puzzleClues, :puzzleFilled, :clueCount, :simple, :naked2, :naked3, :naked4, :hidden2, :hidden3, :hidden4, :omissions, 
-			:yWing, :xyzWing, :xWing, :swordfish, :jellyfish, :uniqueRectangle, :phistomefel, :has_naked2, :has_naked3, :has_naked4, :has_hidden2, :has_hidden3, :has_hidden4, :has_omissions, 
-			:has_yWing, :has_xyzWing, :has_xWing, :has_swordfish, :has_jellyfish, :has_uniqueRectangle, :has_phistomefel, :superpositions, :bruteForce, :solveType)";
+			:yWing, :xyzWing, :xWing, :swordfish, :jellyfish, :uniqueRectangle, :has_naked2, :has_naked3, :has_naked4, :has_hidden2, :has_hidden3, :has_hidden4, :has_omissions, 
+			:has_yWing, :has_xyzWing, :has_xWing, :has_swordfish, :has_jellyfish, :has_uniqueRectangle, :bruteForce, :solveType)";
 
 	$statement = $pdo->prepare($sql);
 
@@ -139,7 +133,6 @@ try {
 		'swordfish' => $swordfish,
 		'jellyfish' => $jellyfish,
 		'uniqueRectangle' => $uniqueRectangle,
-		'phistomefel' => $phistomefel,
 		'has_naked2' => $has_naked2,
 		'has_naked3' => $has_naked3,
 		'has_naked4' => $has_naked4,
@@ -153,8 +146,6 @@ try {
 		'has_swordfish' => $has_swordfish,
 		'has_jellyfish' => $has_jellyfish,
 		'has_uniqueRectangle' => $has_uniqueRectangle,
-		'has_phistomefel' => $has_phistomefel,
-		'superpositions' => $superpositions,
 		'bruteForce' => $bruteForce,
 		'solveType' => $solveType
 	]);
