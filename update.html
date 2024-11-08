@@ -92,8 +92,6 @@
 					swordfish: ready.swordfish,
 					jellyfish: ready.jellyfish,
 					uniqueRectangle: ready.uniqueRectangle,
-					phistomefel: ready.phistomefel,
-					superpositions: ready.superpositions,
 					bruteForce: ready.bruteForce,
 
 					has_naked2: ready.has_naked2,
@@ -157,9 +155,10 @@
 					cache: "no-store",
 					method: "GET"
 				}).then(response => {
-					if (!worker) return;
 					response.json().then(
 						(json) => {
+							if (!worker) return;
+
 							const options = {
 								weekday: "long",
 								year: "numeric",
