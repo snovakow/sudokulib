@@ -85,7 +85,7 @@ try {
 			$sql = "
 				INSERT INTO `" . $strategy . "` (`puzzle_id`, `count`, `table`)
 				SELECT `id`, `has_" . $strategy . "`, '" . $table . "'
-				FROM `" . $table . "` WHERE  `bruteForce`=0  AND `has_" . $strategy . "` >0
+				FROM `" . $table . "` WHERE  `bruteForce`=0  AND `has_" . $strategy . "`>0
 			";
 			foreach ($strategies as $name) {
 				// if ($strategy == "jellyfish" && $name == "naked2") continue;
@@ -95,6 +95,8 @@ try {
 			process($pdo, $sql, $strategy, $log);
 		}
 	}
+	if ($log && $table !== 'truncate') flushOut("SELECT COUNT(`id`) AS 'Puzzles' FROM `" . $table . "`;<br/>");	
+
 } catch (PDOException $e) {
 	echo "Connection failed: " . $e->getMessage();
 }
