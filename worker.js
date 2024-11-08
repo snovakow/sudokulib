@@ -21,11 +21,6 @@ let xWingReduced = 0;
 let swordfishReduced = 0;
 let jellyfishReduced = 0;
 let uniqueRectangleReduced = 0;
-let phistomefelCount = 0;
-
-let superpositions = 0;
-let superpositionReduced = new Map();
-
 let bruteForceFill = 0;
 
 let maxTime = 0;
@@ -56,7 +51,7 @@ const step = () => {
 		cells.fromString(puzzle);
 		mode = -1;
 	}
-	const clueCount = sudokuGenerator(cells, mode);
+	const [clueCount, puzzleFilled] = sudokuGenerator(cells, mode);
 
 	const clueValue = clueCounter.get(clueCount);
 	if (clueValue) {
@@ -79,7 +74,7 @@ const step = () => {
 	const result = fillSolve(cells, STRATEGY.ALL);
 
 	data.puzzleClues = data.puzzle;
-	data.puzzleFilled = cells.string();
+	data.puzzleFilled = puzzleFilled.join('');
 	data.clueCount = clueCount;
 
 	data.simple = 0;
@@ -96,27 +91,12 @@ const step = () => {
 	data.swordfish = 0;
 	data.jellyfish = 0;
 	data.uniqueRectangle = 0;
-	data.phistomefel = 0;
-	data.superpositions = 0;
 	data.bruteForce = 0;
-
-	const elapsed = performance.now() - time;
-	if (maxTime === 0) {
-		maxTime = elapsed;
-	} else {
-		if (elapsed > maxTime) {
-			maxTime = elapsed;
-		}
-	}
-
-	totalTime += elapsed;
 
 	if (result.bruteForceFill) {
 		data.bruteForce = 1;
 		bruteForceFill++;
 	}
-
-	const phistomefelResult = (result.phistomefelReduced > 0 || result.phistomefelFilled > 0);
 
 	let simple = true;
 	simple &&= result.naked2Reduced === 0;
@@ -132,8 +112,6 @@ const step = () => {
 	simple &&= result.swordfishReduced === 0;
 	simple &&= result.jellyfishReduced === 0;
 	simple &&= result.uniqueRectangleReduced === 0;
-	simple &&= result.superpositionReduced.length === 0;
-	simple &&= !phistomefelResult;
 	simple &&= !result.bruteForceFill;
 
 	data.simple = simple ? 1 : 0;
@@ -246,27 +224,24 @@ const step = () => {
 		data.jellyfish += result.jellyfishReduced;
 		data.uniqueRectangle += result.uniqueRectangleReduced;
 
-		if (phistomefelResult) phistomefelCount++;
-		if (phistomefelResult) data.phistomefel++;
+		// if (result.superpositionReduced.length > 0) {
+		// 	const once = new Set();
+		// 	for (const superpositionResult of result.superpositionReduced) {
+		// 		const key = superpositionResult.type + " " + superpositionResult.size;
+		// 		if (once.has(key)) continue;
 
-		if (result.superpositionReduced.length > 0) {
-			const once = new Set();
-			for (const superpositionResult of result.superpositionReduced) {
-				const key = superpositionResult.type + " " + superpositionResult.size;
-				if (once.has(key)) continue;
+		// 		once.add(key);
 
-				once.add(key);
-
-				const count = superpositionReduced.get(key);
-				if (count) {
-					superpositionReduced.set(key, count + 1);
-				} else {
-					superpositionReduced.set(key, 1);
-				}
-			}
-			superpositions++;
-			data.superpositions++;
-		}
+		// 		const count = superpositionReduced.get(key);
+		// 		if (count) {
+		// 			superpositionReduced.set(key, count + 1);
+		// 		} else {
+		// 			superpositionReduced.set(key, 1);
+		// 		}
+		// 	}
+		// 	superpositions++;
+		// 	data.superpositions++;
+		// }
 
 		if (!result.bruteForceFill) candidates++;
 	}
@@ -290,12 +265,9 @@ const step = () => {
 	candidateTotal += swordfishReduced;
 	candidateTotal += jellyfishReduced;
 	candidateTotal += uniqueRectangleReduced;
-	candidateTotal += phistomefelCount;
 
-	let superTotal = 0;
-	for (const value of superpositionReduced.values()) {
-		superTotal += value;
-	}
+	// let superTotal = 0;
+	// for (const value of superpositionReduced.values()) superTotal += value;
 
 	const printLine = (title, val, total) => {
 		lines.push(title + ": " + percent(val, total) + " - " + val);
@@ -313,20 +285,20 @@ const step = () => {
 		printLine(clue[0], clue[1], totalPuzzles);
 	}
 
-	if (superTotal > 0) {
-		lines.push("--- Superpositions");
-		const ordered = [];
-		const entries = superpositionReduced.entries();
-		for (const [key, value] of entries) {
-			ordered.push({ key, value });
-		}
-		ordered.sort((a, b) => {
-			return b.value - a.value;
-		});
-		for (const result of ordered) {
-			printLine(result.key, result.value, superTotal);
-		}
-	}
+	// if (superTotal > 0) {
+	// 	lines.push("--- Superpositions");
+	// 	const ordered = [];
+	// 	const entries = superpositionReduced.entries();
+	// 	for (const [key, value] of entries) {
+	// 		ordered.push({ key, value });
+	// 	}
+	// 	ordered.sort((a, b) => {
+	// 		return b.value - a.value;
+	// 	});
+	// 	for (const result of ordered) {
+	// 		printLine(result.key, result.value, superTotal);
+	// 	}
+	// }
 	if (candidateTotal > 0) {
 		lines.push("--- Candidates");
 		printLine("Naked2", setNaked2, candidateTotal);
@@ -343,8 +315,18 @@ const step = () => {
 		printLine("xWing", xWingReduced, candidateTotal);
 		printLine("Swordfish", swordfishReduced, candidateTotal);
 		printLine("Jellyfish", jellyfishReduced, candidateTotal);
-		if (mode === 2) printLine("Phistomefel", phistomefelCount, candidateTotal);
 	}
+
+	const elapsed = performance.now() - time;
+	if (maxTime === 0) {
+		maxTime = elapsed;
+	} else {
+		if (elapsed > maxTime) {
+			maxTime = elapsed;
+		}
+	}
+
+	totalTime += elapsed;
 
 	lines.push("--- Totals");
 	lines.push("Simples: " + percent(simples) + " - " + simples);
@@ -365,12 +347,12 @@ const step = () => {
 	return true;
 };
 
-onmessage = (e) => {
-	puzzleString = e.data.grid ?? null;
+onmessage = (event) => {
+	puzzleString = event.data.grid ?? null;
 	stepMode = 0; // (searchParams.get("table") == "phistomefel") ? 2 : 0;
-	if (e.data.grids) {
+	if (event.data.grids) {
 		if (!puzzleStrings) puzzleStrings = [];
-		for (const data of e.data.grids) {
+		for (const data of event.data.grids) {
 			puzzleStrings.push(data);
 		}
 	}
