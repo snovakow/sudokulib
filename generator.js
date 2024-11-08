@@ -1,13 +1,10 @@
 import {
-	candidates, nakedSingles, hiddenSingles, omissions, NakedHiddenGroups,
-	uniqueRectangle, yWing, xyzWing, xWing, swordfish, jellyfish,
-	bruteForce, phistomefel, aCells, bCells, superposition,
+	candidates, nakedSingles, hiddenSingles, omissions, NakedHiddenGroups, uniqueRectangle,
+	yWing, xyzWing, xWing, swordfish, jellyfish, aCells, bCells, bruteForce
 } from "./solver.js";
 
 const consoleOut = (result) => {
 	const lines = [];
-	const phistomefelReduced = result.phistomefelReduced;
-	const phistomefelFilled = result.phistomefelFilled;
 	lines.push("Naked2: " + result.naked2Reduced);
 	lines.push("Naked3: " + result.naked3Reduced);
 	lines.push("Naked4: " + result.naked4Reduced);
@@ -90,12 +87,7 @@ const fillSolve = (cells, solveStrategy = STRATEGY.NONE, isolated = false) => {
 	let xWingReduced = 0;
 	let swordfishReduced = 0;
 	let jellyfishReduced = 0;
-
 	let uniqueRectangleReduced = 0;
-	let phistomefelReduced = 0;
-	let phistomefelFilled = 0;
-	let superpositionReduced = [];
-
 	let bruteForceFill = false;
 
 	const solvePriority = (strategy) => {
@@ -219,7 +211,7 @@ const fillSolve = (cells, solveStrategy = STRATEGY.NONE, isolated = false) => {
 			if (progress) continue;
 		}
 
-		// if (table == "phistomefel") {
+		// if (table == "puzzlesPhistomefel") {
 		// 	const { reduced, filled } = phistomefel(cells);
 		// 	progress = reduced > 0 || filled > 0;
 		// 	if (progress) {
@@ -255,9 +247,6 @@ const fillSolve = (cells, solveStrategy = STRATEGY.NONE, isolated = false) => {
 		swordfishReduced,
 		jellyfishReduced,
 		uniqueRectangleReduced,
-		phistomefelReduced,
-		phistomefelFilled,
-		superpositionReduced,
 		bruteForceFill
 	};
 }
@@ -371,9 +360,6 @@ const solutionCount = (grid, baseIndex, baseSymbol) => {
 	return true;
 }
 
-const savedGrid = new Uint8Array(81);
-const rndi = makeArray(81);
-
 const sudokuGenerator = (cells, target = 0) => {
 	if (target === -1) {
 		for (let i = 0; i < 81; i++) grid[i] = cells[i].symbol;
@@ -383,11 +369,14 @@ const sudokuGenerator = (cells, target = 0) => {
 		sodokoSolver(grid);
 	}
 
-	if (!isValidGrid(grid)) {
-		console.log("INVALID!");
-		return;
-	}
+	// if (!isValidGrid(grid)) {
+	// 	console.log("INVALID!");
+	// 	return null;
+	// }
 
+	const savedGrid = new Uint8Array(81);
+	const puzzleFilled = grid.slice(9);
+	const rndi = makeArray(81);
 	randomize(rndi);
 
 	if (target === 0) {
@@ -527,7 +516,7 @@ const sudokuGenerator = (cells, target = 0) => {
 		cell.setSymbol(grid[i]);
 	}
 
-	return clueCount;
+	return [clueCount, puzzleFilled];
 }
 
 const swapCell = (array, i1, i2) => {
