@@ -105,7 +105,7 @@ $pdo = null;
 
 /*
 SELECT `id`, `phistomefel`
-FROM `phistomefel` AS p
 WHERE p.`naked2`=0 AND p.`naked3`=0 AND p.`naked4`=0 AND p.`hidden2`=0 AND p.`hidden3`=0 AND p.`hidden4`=0 AND p.`omissions`=0 AND p.`yWing`=0 AND p.`xyzWing`=0 AND p.`xWing`=0 AND p.`swordfish`=0 AND p.`jellyfish`=0 AND p.`uniqueRectangle`=0 AND p.`phistomefel`>0 AND p.`bruteForce`=0
 INSERT INTO `phistomefel` (`puzzle_id`, `count`)
+FROM `puzzlesPhistomefel` AS p
 */
