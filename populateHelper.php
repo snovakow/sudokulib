@@ -94,12 +94,20 @@ try {
 			process($pdo, $sql, $strategy, $log);
 		}
 	}
-	if ($log && $table !== 'truncate') flushOut("SELECT COUNT(`id`) AS 'Count', MAX(`id`) AS 'Max' FROM `" . $table . "`;<br/>");
 } catch (PDOException $e) {
 	echo "Connection failed: " . $e->getMessage();
 }
 
 echo "Complete!<br/>";
+
+if ($log && $table !== 'truncate') {
+	flushOut("<br/>SELECT COUNT(`id`) AS 'Count', MAX(`id`) AS 'Max' FROM `" . $table . "`;");
+	$sql =
+		"SELECT t1.id+1 AS Missing FROM `" . $table . "` t1 LEFT JOIN `" . $table . "` t2 ON t2.id = t1.id+1
+		WHERE t2.id IS NULL ORDER BY t1.id";
+	flushOut($sql . ";");
+	flushOut("ALTER TABLE `" . $table . "` AUTO_INCREMENT=1;");
+}
 
 $pdo = null;
 
