@@ -88,17 +88,17 @@ try {
 	$pdo->exec("LOCK TABLES `" . $table . "` WRITE");
 
 	$sql = "SELECT MAX(id) as totalPuzzles FROM `" . $table . "`";
-	$statement = $pdo->prepare($sql);
-	$statement->execute();
-	$result = $statement->fetch();
+	$stmt = $pdo->prepare($sql);
+	$stmt->execute();
+	$result = $stmt->fetch();
 	$count = $result['totalPuzzles'];
 
 	if ($count === NULL) {
-		$statement = $pdo->prepare("
+		$stmt = $pdo->prepare("
 			SELECT table_name FROM information_schema.tables WHERE table_schema = 'sudoku' AND table_name = '" . $table . "' LIMIT 1;
 		");
-		$statement->execute();
-		if ($statement->fetch()["table_name"] === NULL) exit("-1");
+		$stmt->execute();
+		if ($stmt->fetch()["table_name"] === NULL) exit("-1");
 		$count = 0;
 	}
 
