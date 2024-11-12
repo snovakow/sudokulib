@@ -1,6 +1,6 @@
 import {
 	candidates, nakedSingles, hiddenSingles, omissions, NakedHiddenGroups, uniqueRectangle,
-	yWing, xyzWing, xWing, swordfish, jellyfish, aCells, bCells, bruteForce
+	yWing, xyzWing, xWing, swordfish, jellyfish, aCells, bCells
 } from "./solver.js";
 
 const consoleOut = (result) => {
