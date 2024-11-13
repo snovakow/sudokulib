@@ -61,7 +61,7 @@ try {
 	$result = $stmt->fetch();
 
 	$stmt = $conn->prepare(
-		"SELECT `id`, `puzzleClues`, `puzzleFilled` FROM `" . $result['table'] . "` WHERE `id`=" . $result['puzzle_id']
+		"SELECT `id`, HEX(`puzzleClues`) AS 'puzzleClues', HEX(`puzzleFilled`) AS 'puzzleFilled' FROM `" . $result['table'] . "` WHERE `id`=" . $result['puzzle_id']
 	);
 
 	$stmt->execute();
