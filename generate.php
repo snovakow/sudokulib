@@ -106,49 +106,52 @@ try {
 		exit("0");
 	}
 
-	$sql = "INSERT INTO `" . $table . "` (puzzleClues, puzzleFilled, clueCount, simple, naked2, naked3, naked4, hidden2, hidden3, hidden4, omissions, 
-			yWing, xyzWing, xWing, swordfish, jellyfish, uniqueRectangle, has_naked2, has_naked3, has_naked4, has_hidden2, has_hidden3, has_hidden4, has_omissions, 
-			has_yWing, has_xyzWing, has_xWing, has_swordfish, has_jellyfish, has_uniqueRectangle, bruteForce, solveType) 
-			VALUES (:puzzleClues, :puzzleFilled, :clueCount, :simple, :naked2, :naked3, :naked4, :hidden2, :hidden3, :hidden4, :omissions, 
-			:yWing, :xyzWing, :xWing, :swordfish, :jellyfish, :uniqueRectangle, :has_naked2, :has_naked3, :has_naked4, :has_hidden2, :has_hidden3, :has_hidden4, :has_omissions, 
-			:has_yWing, :has_xyzWing, :has_xWing, :has_swordfish, :has_jellyfish, :has_uniqueRectangle, :bruteForce, :solveType)";
+	$sql = "INSERT INTO `" . $table . "` (puzzleClues, puzzleFilled, clueCount, 
+			simple, naked2, naked3, naked4, hidden2, hidden3, hidden4, omissions, 
+			yWing, xyzWing, xWing, swordfish, jellyfish, uniqueRectangle, 
+			has_naked2, has_naked3, has_naked4, has_hidden2, has_hidden3, has_hidden4, has_omissions, 
+			has_yWing, has_xyzWing, has_xWing, has_swordfish, has_jellyfish, has_uniqueRectangle, 
+			bruteForce, solveType) 
+			VALUES (X'" . $puzzleClues . "', X'" . $puzzleFilled . "', :clueCount, :simple, 
+			:naked2, :naked3, :naked4, :hidden2, :hidden3, :hidden4, :omissions, 
+			:yWing, :xyzWing, :xWing, :swordfish, :jellyfish, :uniqueRectangle, 
+			:has_naked2, :has_naked3, :has_naked4, :has_hidden2, :has_hidden3, :has_hidden4, :has_omissions, 
+			:has_yWing, :has_xyzWing, :has_xWing, :has_swordfish, :has_jellyfish, :has_uniqueRectangle, 
+			:bruteForce, :solveType)";
+	$stmt = $pdo->prepare($sql);
 
-	$statement = $pdo->prepare($sql);
+	$stmt->bindValue('clueCount', $clueCount, PDO::PARAM_INT);
+	$stmt->bindValue('simple', $simple, PDO::PARAM_INT);
+	$stmt->bindValue('naked2', $naked2, PDO::PARAM_INT);
+	$stmt->bindValue('naked3', $naked3, PDO::PARAM_INT);
+	$stmt->bindValue('naked4', $naked4, PDO::PARAM_INT);
+	$stmt->bindValue('hidden2', $hidden2, PDO::PARAM_INT);
+	$stmt->bindValue('hidden3', $hidden3, PDO::PARAM_INT);
+	$stmt->bindValue('hidden4', $hidden4, PDO::PARAM_INT);
+	$stmt->bindValue('omissions', $omissions, PDO::PARAM_INT);
+	$stmt->bindValue('yWing', $yWing, PDO::PARAM_INT);
+	$stmt->bindValue('xyzWing', $xyzWing, PDO::PARAM_INT);
+	$stmt->bindValue('xWing', $xWing, PDO::PARAM_INT);
+	$stmt->bindValue('swordfish', $swordfish, PDO::PARAM_INT);
+	$stmt->bindValue('jellyfish', $jellyfish, PDO::PARAM_INT);
+	$stmt->bindValue('uniqueRectangle', $uniqueRectangle, PDO::PARAM_INT);
+	$stmt->bindValue('has_naked2', $has_naked2, PDO::PARAM_INT);
+	$stmt->bindValue('has_naked3', $has_naked3, PDO::PARAM_INT);
+	$stmt->bindValue('has_naked4', $has_naked4, PDO::PARAM_INT);
+	$stmt->bindValue('has_hidden2', $has_hidden2, PDO::PARAM_INT);
+	$stmt->bindValue('has_hidden3', $has_hidden3, PDO::PARAM_INT);
+	$stmt->bindValue('has_hidden4', $has_hidden4, PDO::PARAM_INT);
+	$stmt->bindValue('has_omissions', $has_omissions, PDO::PARAM_INT);
+	$stmt->bindValue('has_yWing', $has_yWing, PDO::PARAM_INT);
+	$stmt->bindValue('has_xyzWing', $has_xyzWing, PDO::PARAM_INT);
+	$stmt->bindValue('has_xWing', $has_xWing, PDO::PARAM_INT);
+	$stmt->bindValue('has_swordfish', $has_swordfish, PDO::PARAM_INT);
+	$stmt->bindValue('has_jellyfish', $has_jellyfish, PDO::PARAM_INT);
+	$stmt->bindValue('has_uniqueRectangle', $has_uniqueRectangle, PDO::PARAM_INT);
+	$stmt->bindValue('bruteForce', $bruteForce, PDO::PARAM_INT);
+	$stmt->bindValue('solveType', $solveType, PDO::PARAM_INT);
 
-	$statement->execute([
-		'puzzleClues' => $puzzleClues,
-		'puzzleFilled' => $puzzleFilled,
-		'clueCount' => $clueCount,
-		'simple' => $simple,
-		'naked2' => $naked2,
-		'naked3' => $naked3,
-		'naked4' => $naked4,
-		'hidden2' => $hidden2,
-		'hidden3' => $hidden3,
-		'hidden4' => $hidden4,
-		'omissions' => $omissions,
-		'yWing' => $yWing,
-		'xyzWing' => $xyzWing,
-		'xWing' => $xWing,
-		'swordfish' => $swordfish,
-		'jellyfish' => $jellyfish,
-		'uniqueRectangle' => $uniqueRectangle,
-		'has_naked2' => $has_naked2,
-		'has_naked3' => $has_naked3,
-		'has_naked4' => $has_naked4,
-		'has_hidden2' => $has_hidden2,
-		'has_hidden3' => $has_hidden3,
-		'has_hidden4' => $has_hidden4,
-		'has_omissions' => $has_omissions,
-		'has_yWing' => $has_yWing,
-		'has_xyzWing' => $has_xyzWing,
-		'has_xWing' => $has_xWing,
-		'has_swordfish' => $has_swordfish,
-		'has_jellyfish' => $has_jellyfish,
-		'has_uniqueRectangle' => $has_uniqueRectangle,
-		'bruteForce' => $bruteForce,
-		'solveType' => $solveType
-	]);
+	$stmt->execute();
 
 	$pdo->exec('UNLOCK TABLES');
 
