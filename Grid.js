@@ -148,13 +148,13 @@ export class CellCandidate extends Cell {
 	}
 	get size() {
 		let size = 0;
-		for (let x = 1; x <= 9; x++) size += (this._mask >> x) & 0x0001;
+		for (let x = 1; x <= 9; x++) size += (this._mask >>> x) & 0x0001;
 		return size;
 	}
 	get remainder() {
 		let remainder = 0;
 		for (let x = 1; x <= 9; x++) {
-			if ((this._mask >> x) & 0x0001 === 0x0001) {
+			if ((this._mask >>> x) & 0x0001 === 0x0001) {
 				if (remainder === 0) remainder = x;
 				else return 0;
 			}
@@ -199,7 +199,7 @@ export class CellCandidate extends Cell {
 		this.mask = 0x0000;
 	}
 	has(value) {
-		return ((this.mask >> value) & 0x0001) === 0x0001;
+		return ((this.mask >>> value) & 0x0001) === 0x0001;
 	}
 	delete(value) {
 		const mask = this.mask;
