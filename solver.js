@@ -916,7 +916,7 @@ const superposition = (cells) => {
 					// 			let reduction = false;
 					// 			if (validCell.symbol === 0) {
 					// 				for (let x = 1; x <= 9; x++) {
-					// 					if (cell.has(x) && ((validCell.mask >>> x) & 0x0001 === 0x0000)) {
+					// 					if (cell.has(x) && (((validCell.mask >>> x) & 0x0001) === 0x0000)) {
 					// 						console.log("!!!1");
 					// 						reduced.push(new Result(type, x, cell, size));
 					// 						reduction = true;
@@ -936,7 +936,7 @@ const superposition = (cells) => {
 					// 	}
 					// }
 					for (let x = 1; x <= 9; x++) {
-						if ((resultCell.mask >>> x) & 0x0001 === 0x001) {
+						if (((resultCell.mask >>> x) & 0x0001) === 0x001) {
 							symbolSet.add(x);
 						}
 					}
