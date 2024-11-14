@@ -111,9 +111,9 @@
 		}
 		const puzzleGridHex = (filled) => {
 			const binaryFilled = [];
-			let index = 0;
-			for (let row = 0; row < 8; row++) {
-				for (let i = 0; i < 9; i++) {
+			for (let row = 1; row < 8; row++) {
+				for (let i = 0; i < 8; i++) {
+					const index = row * 9 + i;
 					const symbol = parseInt(filled[index]) - 1;
 
 					let encode = symbol;
@@ -128,15 +128,13 @@
 					binaryFilled.push(symbolBit3);
 					binaryFilled.push(symbolBit2);
 					binaryFilled.push(symbolBit1);
-
-					index++;
 				}
 			}
-			const gridLength = 72;
+			const gridLength = 56;
 			const bitLength = gridLength * 3;
-			const byteLength = bitLength / 8;
+			const byteLength = bitLength / 8; // 21
 			const hexFilled = new Uint8Array(byteLength);
-			index = 0;
+			let index = 0;
 			for (let i = 0; i < byteLength; i++) {
 				let char = 0x00;
 				for (let offset = 0; offset < 8; offset++) {
@@ -161,9 +159,10 @@
 
 			const data = sendDataStack.shift();
 
+			const puzzleData = puzzleCluesHex(data.puzzleClues) + puzzleGridHex(data.puzzleFilled);
+
 			let url = './generate.php?version=1';
-			url += '&puzzleClues=' + puzzleCluesHex(data.puzzleClues);
-			url += '&puzzleFilled=' + puzzleGridHex(data.puzzleFilled);
+			url += '&puzzleData=' + puzzleData;
 			url += '&clueCount=' + data.clueCount;
 			url += '&simple=' + data.simple;
 			url += '&naked2=' + data.naked2;
