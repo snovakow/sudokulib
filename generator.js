@@ -375,7 +375,8 @@ const sudokuGenerator = (cells, target = 0) => {
 	// }
 
 	const savedGrid = new Uint8Array(81);
-	const puzzleFilled = grid.slice(9);
+	const puzzleFilled = new Uint8Array(81);
+	puzzleFilled.set(grid);
 	const rndi = makeArray(81);
 	randomize(rndi);
 
