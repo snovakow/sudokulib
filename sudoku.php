@@ -61,15 +61,14 @@ try {
 	$result = $stmt->fetch();
 
 	$stmt = $conn->prepare(
-		"SELECT `id`, HEX(`puzzleClues`) AS 'puzzleClues', HEX(`puzzleFilled`) AS 'puzzleFilled' FROM `" . $result['table'] . "` WHERE `id`=" . $result['puzzle_id']
+		"SELECT `id`, HEX(`puzzleData`) AS 'puzzleData' FROM `" . $result['table'] . "` WHERE `id`=" . $result['puzzle_id']
 	);
 
 	$stmt->execute();
 	$result = $stmt->fetch();
 	$id = $result['id'];
-	$puzzleClues = $result['puzzleClues'];
-	$puzzleFilled = $result['puzzleFilled'];
-	echo $id . ":" . $puzzleClues . ":" . $puzzleFilled;
+	$puzzleData = $result['puzzleData'];
+	echo $id . ":" . $puzzleData;
 } catch (PDOException $e) {
 	echo "Error: " . $e->getMessage();
 }
