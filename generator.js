@@ -553,7 +553,7 @@ const generateTransform = () => {
 	const swapBoxGroup = (group) => {
 		randomize(box);
 		randomize(triple);
-		for (let i = 0; i < 3; i++) group[i + 0] = triple[i] + box[0];
+		for (let i = 0; i < 3; i++) group[i] = triple[i] + box[0];
 		randomize(triple);
 		for (let i = 0; i < 3; i++) group[i + 3] = triple[i] + box[1];
 		randomize(triple);
