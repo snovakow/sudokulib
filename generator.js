@@ -267,8 +267,6 @@ const randomize = (array, degree = 1) => {
 	}
 }
 
-let totalPuzzles = 0;
-
 const grid = new Uint8Array(81);
 
 function isValidCell(board, row, col, x) {
@@ -510,7 +508,6 @@ const sudokuGenerator = (cells, target = 0) => {
 			clueCount++;
 		}
 	}
-	totalPuzzles++;
 
 	for (let i = 0; i < 81; i++) {
 		const cell = cells[i];
@@ -669,5 +666,5 @@ const generateFromSeed = (puzzleString, transform) => {
 	return puzzle;
 };
 
-export { totalPuzzles, generateFromSeed, generateTransform, STRATEGY };
+export { generateFromSeed, generateTransform, STRATEGY };
 export { sudokuGenerator, fillSolve, consoleOut };
