@@ -7,8 +7,9 @@
 	<meta name="viewport" content="width=device-width,initial-scale=1">
 
 	<script type="module">
-		const body = document.createElement('div');
+		import * as SudokuProcess from "./process.js";
 
+		const body = document.createElement('div');
 		body.style.fontFamily = "'Courier New', monospace";
 
 		const updateButton = document.createElement('button');
@@ -50,12 +51,14 @@
 		document.body.appendChild(receiveDisplay);
 
 		let worker = null;
+		let strategyCounter = null;
 		const toggleWorker = () => {
 			if (worker) {
 				worker.terminate();
 				worker = null;
 				return;
 			}
+			strategyCounter = new SudokuProcess.StrategyCounter();
 			worker = new Worker("worker.js", { type: "module" });
 		};
 
@@ -145,7 +148,8 @@
 
 			worker.onmessage = (e) => {
 				const data = e.data;
-				if (data.message) setMessage(data.message);
+				strategyCounter.addData(data);
+				setMessage(strategyCounter.lines());
 				updateData(data);
 			};
 
@@ -173,6 +177,14 @@
 							start += json.length;
 
 							receiveDisplay.textContent = "Received: " + start;
+
+							for (const data of json) {
+								const puzzleDataHex = data.puzzleData;
+								if (puzzleDataHex.length !== 64) continue;
+								const [puzzle, grid] = SudokuProcess.puzzleHexGrid(puzzleDataHex);
+								data.puzzleClues = puzzle;
+								data.puzzleFilled = grid;
+							}
 
 							const workerData = {};
 							workerData.run = true;
