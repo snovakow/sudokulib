@@ -71,12 +71,11 @@
 
 			if (data) updateDataStack.push(data);
 			if (updateDataSending) return;
+			if (updateDataStack.length === 0) return;
 			updateDataSending = true;
 
 			const url = './update.php?version=1&table=' + table;
-
 			const readyDataSend = [];
-			let readyDataSent = 0;
 			for (const ready of updateDataStack) {
 				const post = {
 					version: 1,
