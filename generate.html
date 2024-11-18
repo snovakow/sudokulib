@@ -7,6 +7,8 @@
 	<meta name="viewport" content="width=device-width,initial-scale=1">
 
 	<script type="module">
+		import * as SudokuProcess from "./process.js";
+
 		const generateButton = document.createElement('button');
 		generateButton.style.top = '8px';
 		generateButton.style.right = '8px';
@@ -76,75 +78,21 @@
 		sentDisplay.textContent = "Sent: 0";
 		document.body.appendChild(sentDisplay);
 
-		let worker = null;
+		let strategyCounter = null;
+		let workers = null;
 		const toggleWorker = () => {
-			if (worker) {
-				worker.terminate();
-				worker = null;
+			if (workers) {
+				for (const worker of workers) worker.terminate();
+				workers = null;
 				return;
 			}
-			worker = new Worker("worker.js", { type: "module" });
+			workers = [];
+			if (!strategyCounter) strategyCounter = new SudokuProcess.StrategyCounter();
+
+			const coresString = searchParams.get("cores");
+			const cores = (coresString === null) ? 1 : parseInt(coresString);
+			for (let i = 0; i < cores; i++) workers[i] = new Worker("worker.js", { type: "module" });
 		};
-
-		const byteToHex = [];
-		for (let n = 0; n <= 0xff; n++) byteToHex.push(n.toString(16).padStart(2, "0"));
-		const bin2hex = (buff) => {
-			const hexOctets = new Array(buff.length);
-			for (let i = 0; i < buff.length; i++) hexOctets[i] = byteToHex[buff[i]];
-			return hexOctets.join("");
-		}
-
-		const puzzleCluesHex = (clues) => {
-			const hexClues = new Uint8Array(11);
-			if (clues[0] === "0") hexClues[0] = 0x00;
-			else hexClues[0] = 0x01;
-			let index = 1;
-			for (let i = 1; i < 11; i++) {
-				let char = 0x00;
-				for (let offset = 0; offset < 8; offset++) {
-					if (clues[index] !== "0") char |= 0x80 >>> offset;
-					index++;
-				}
-				hexClues[i] = char;
-			}
-			return bin2hex(hexClues);
-		}
-		const puzzleGridHex = (filled) => {
-			const binaryFilled = [];
-			for (let row = 1; row < 8; row++) {
-				for (let i = 0; i < 8; i++) {
-					const index = row * 9 + i;
-					const symbol = parseInt(filled[index]) - 1;
-
-					let encode = symbol;
-					if (i < encode) encode--;
-
-					const symbolBit1 = encode % 2;
-					encode = Math.floor(encode / 2);
-					const symbolBit2 = encode % 2;
-					encode = Math.floor(encode / 2);
-					const symbolBit3 = encode % 2;
-
-					binaryFilled.push(symbolBit3);
-					binaryFilled.push(symbolBit2);
-					binaryFilled.push(symbolBit1);
-				}
-			}
-			const gridLength = 56;
-			const bitLength = gridLength * 3;
-			const byteLength = bitLength / 8; // 21
-			const hexFilled = new Uint8Array(byteLength);
-			let index = 0;
-			for (let i = 0; i < byteLength; i++) {
-				let char = 0x00;
-				for (let offset = 0; offset < 8; offset++) {
-					if (binaryFilled[index] !== 0) char |= 0x80 >>> offset;
-					index++;
-				}
-				hexFilled[i] = char;
-			}
-			return bin2hex(hexFilled);
-		}
 
 		const sendDataStack = [];
 		let sendDataSending = false;
@@ -153,13 +101,13 @@
 			if (tablesProcessing) return;
 			if (currentData) sendDataStack.push(currentData);
 			if (sendDataSending) return;
+			sendDataSending = true;
 
 			const currentTablesIndex = tablesIndex;
 			const currentTable = table;
 
 			const data = sendDataStack.shift();
-
-			const puzzleData = puzzleCluesHex(data.puzzleClues) + puzzleGridHex(data.puzzleFilled);
+			const puzzleData = SudokuProcess.puzzleGridHex(data.puzzleClues, data.puzzleFilled);
 
 			let url = './generate.php?version=1';
 			url += '&puzzleData=' + puzzleData;
@@ -201,7 +149,7 @@
 					const count = parseInt(string);
 					const nan = isNaN(count);
 					if (nan || count < 0) {
-						if (worker) toggleWorker();
+						if (workers) toggleWorker();
 						return;
 					}
 					if (count > 0) {
@@ -229,26 +177,26 @@
 			});
 		};
 
-		const processGenerate = (grids) => {
+		const processGenerate = () => {
 			sentDisplay.style.visibility = 'visible';
 
-			const workerData = {};
-			workerData.run = true;
-			workerData.grids = grids;
-
-			worker.onmessage = (e) => {
-				const data = e.data;
-				if (data.message) setMessage(data.message);
-				sendData(data);
-			};
-
-			worker.postMessage(workerData);
+			for (const worker of workers) {
+				const workerData = {};
+				workerData.run = true;
+				worker.onmessage = (e) => {
+					const data = e.data;
+					strategyCounter.addData(data);
+					setMessage(strategyCounter.lines());
+					sendData(data);
+				};
+				worker.postMessage(workerData);
+			}
 		};
 
 		generateButton.addEventListener('click', () => {
 			if (tablesProcessing) return;
 			toggleWorker();
-			if (worker) processGenerate();
+			if (workers) processGenerate();
 		});
 
 		document.body.appendChild(generateButton);
