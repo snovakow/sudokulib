@@ -35,6 +35,7 @@ if (!isset($_GET['mode'])) die;
 
 // 0 = Count
 // 1 = Strategies Isolated
+// 2 = Strategies
 // 3 = Clues
 
 $mode = (int)$_GET['mode'];
