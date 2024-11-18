@@ -97,69 +97,92 @@
 		const sendDataStack = [];
 		let sendDataSending = false;
 		let sendDataSent = 0;
+		const maxSend = 100;
 		const sendData = (currentData) => {
-			if (tablesProcessing) return;
 			if (currentData) sendDataStack.push(currentData);
+			if (tablesProcessing) return;
 			if (sendDataSending) return;
+			if (sendDataStack.length === 0) return;
 			sendDataSending = true;
 
 			const currentTablesIndex = tablesIndex;
 			const currentTable = table;
 
-			const data = sendDataStack.shift();
-			const puzzleData = SudokuProcess.puzzleGridHex(data.puzzleClues, data.puzzleFilled);
+			const url = './generate.php?version=1&table=' + currentTable;
+			const readyDataSend = [];
+			for (const ready of sendDataStack) {
+				let post = ready;
+				if (!post.puzzleData) {
+					const puzzleData = SudokuProcess.puzzleGridHex(ready.puzzleClues, ready.puzzleFilled);
+					post = {
+						id: ready.id,
+						puzzleData: puzzleData,
+						clueCount: ready.clueCount,
+						simple: ready.simple,
+						naked2: ready.naked2,
+						naked3: ready.naked3,
+						naked4: ready.naked4,
+						hidden2: ready.hidden2,
+						hidden3: ready.hidden3,
+						hidden4: ready.hidden4,
+						omissions: ready.omissions,
+						yWing: ready.yWing,
+						xyzWing: ready.xyzWing,
+						xWing: ready.xWing,
+						swordfish: ready.swordfish,
+						jellyfish: ready.jellyfish,
+						uniqueRectangle: ready.uniqueRectangle,
+						bruteForce: ready.bruteForce,
 
-			let url = './generate.php?version=1';
-			url += '&puzzleData=' + puzzleData;
-			url += '&clueCount=' + data.clueCount;
-			url += '&simple=' + data.simple;
-			url += '&naked2=' + data.naked2;
-			url += '&naked3=' + data.naked3;
-			url += '&naked4=' + data.naked4;
-			url += '&hidden2=' + data.hidden2;
-			url += '&hidden3=' + data.hidden3;
-			url += '&hidden4=' + data.hidden4;
-			url += '&omissions=' + data.omissions;
-			url += '&uniqueRectangle=' + data.uniqueRectangle;
-			url += '&yWing=' + data.yWing;
-			url += '&xyzWing=' + data.xyzWing;
-			url += '&xWing=' + data.xWing;
-			url += '&swordfish=' + data.swordfish;
-			url += '&jellyfish=' + data.jellyfish;
-			url += '&bruteForce=' + data.bruteForce;
+						has_naked2: ready.has_naked2,
+						has_naked3: ready.has_naked3,
+						has_naked4: ready.has_naked4,
+						has_hidden2: ready.has_hidden2,
+						has_hidden3: ready.has_hidden3,
+						has_hidden4: ready.has_hidden4,
+						has_omissions: ready.has_omissions,
+						has_uniqueRectangle: ready.has_uniqueRectangle,
+						has_yWing: ready.has_yWing,
+						has_xyzWing: ready.has_xyzWing,
+						has_xWing: ready.has_xWing,
+						has_swordfish: ready.has_swordfish,
+						has_jellyfish: ready.has_jellyfish,
+					};
+				}
 
-			url += '&has_naked2=' + data.has_naked2;
-			url += '&has_naked3=' + data.has_naked3;
-			url += '&has_naked4=' + data.has_naked4;
-			url += '&has_hidden2=' + data.has_hidden2;
-			url += '&has_hidden3=' + data.has_hidden3;
-			url += '&has_hidden4=' + data.has_hidden4;
-			url += '&has_omissions=' + data.has_omissions;
-			url += '&has_uniqueRectangle=' + data.has_uniqueRectangle;
-			url += '&has_yWing=' + data.has_yWing;
-			url += '&has_xyzWing=' + data.has_xyzWing;
-			url += '&has_xWing=' + data.has_xWing;
-			url += '&has_swordfish=' + data.has_swordfish;
-			url += '&has_jellyfish=' + data.has_jellyfish;
+				readyDataSend.push(post);
+				if (readyDataSend.length === maxSend) break;
+			}
+			sendDataStack.splice(0, readyDataSend.length);
 
-			url += '&table=' + currentTable;
-
-			fetch(url, { cache: "no-store" }).then(response => {
+			fetch(url, {
+				cache: "no-store",
+				method: "POST",
+				body: JSON.stringify(readyDataSend),
+			}).then(response => {
 				response.text().then((string) => {
-					const count = parseInt(string);
-					const nan = isNaN(count);
-					if (nan || count < 0) {
+					const fields = string.split(":");
+					let count = 0;
+					let inserted = -1;
+					if (fields.length === 2) {
+						count = parseInt(fields[0]);
+						if (!isNaN(count) && count >= 0) inserted = parseInt(fields[1]);
+					}
+					if (isNaN(inserted) || inserted < 0) {
 						if (workers) toggleWorker();
 						return;
 					}
 					if (count > 0) {
 						localStorage.setItem(currentTable, count);
 
-						sendDataSent++;
+						sendDataSent += inserted;
 						sentDisplay.textContent = "Sent: " + sendDataSent;
+						if (inserted < readyDataSend.length) {
+							sendDataStack.unshift(...readyDataSend.slice(inserted));
+						}
 					} else {
 						localStorage.setItem(currentTable, 1e7);
-						sendDataStack.unshift(data);
+						sendDataStack.unshift(...readyDataSend);
 					}
 					if (count === 0 || count >= 1e7) {
 						if (tablesIndex === currentTablesIndex) {
@@ -170,7 +193,6 @@
 							generateButton.appendChild(document.createTextNode(table));
 						}
 					}
-
 					sendDataSending = false;
 					if (sendDataStack.length > 0) sendData();
 				});
