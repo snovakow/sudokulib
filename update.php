@@ -1,13 +1,12 @@
 <?php
 $version = 1;
-
 if (!isset($_GET['version'])) die();
 if ($_GET['version'] != $version) die();
 
-$array = json_decode(file_get_contents("php://input"));
-
 if (!isset($_GET['table'])) die();
 $table = $_GET['table'];
+
+$array = json_decode(file_get_contents("php://input"));
 
 $servername = "localhost";
 $username = "snovakow";
