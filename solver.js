@@ -12,16 +12,74 @@ const candidates = (cells) => {
 	}
 }
 
+const simpleNaked = (cells) => {
+	for (const cell of cells) {
+		if (cell.symbol !== 0) continue;
+		let set = 0x0000;
+		for (const index of cell.group) {
+			const symbol = cells[index].symbol;
+			if (symbol === 0) continue;
+			set |= (0x0001 << symbol);
+		}
+		let remainder = 0;
+		for (let symbol = 1; symbol <= 9; symbol++) {
+			if (((set >>> symbol) & 0x001) === 0x000) {
+				if (remainder === 0) {
+					remainder = symbol;
+				} else {
+					remainder = 0;
+					break;
+				}
+			}
+		}
+		if (remainder > 0) {
+			cell.setSymbol(remainder);
+			return true;
+		}
+	}
+	return false;
+}
+
 const nakedSingles = (cells) => {
-	let reduced = false;
 	for (const cell of cells) {
 		if (cell.symbol !== 0) continue;
 		const remainder = cell.remainder;
 		if (remainder === 0) continue;
 		cell.setSymbol(remainder);
-		reduced = true;
+		return true;
 	}
-	return reduced;
+	return false;
+}
+
+const simpleHidden = (cells) => {
+	for (let x = 1; x <= 9; x++) {
+		for (const group of Grid.groupTypes) {
+			let symbolCell = null;
+			for (const index of group) {
+				const cell = cells[index];
+				if (cell.symbol !== 0) continue;
+
+				let valid = true;
+				for (const i of cell.group) {
+					const symbol = cells[i].symbol;
+					if (symbol === 0) continue;
+					if (x === symbol) {
+						valid = false;
+						break;
+					}
+				}
+				if (!valid) continue;
+
+				if (symbolCell === null) symbolCell = cell;
+				else { symbolCell = null; break; }
+			}
+			if (symbolCell !== null) {
+				symbolCell.setSymbol(x);
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
 const hiddenSingles = (cells) => {
@@ -41,6 +99,103 @@ const hiddenSingles = (cells) => {
 			}
 		}
 	}
+	return false;
+}
+
+const simpleOmission = (cells) => {
+	const simpleHiddenSymbol = (x, reduced) => {
+		for (const group of Grid.groupTypes) {
+			let symbolCell = null;
+			for (const index of group) {
+				const cell = cells[index];
+				if (cell.symbol !== 0) continue;
+
+				let valid = true;
+				for (const i of cell.group) {
+					const symbol = cells[i].symbol;
+					if (symbol === 0) continue;
+					if (x === symbol) {
+						valid = false;
+						break;
+					}
+				}
+				if (!valid) continue;
+
+				if (reduced.has(index)) continue;
+
+				if (symbolCell === null) symbolCell = cell;
+				else { symbolCell = null; break; }
+			}
+			if (symbolCell !== null) {
+				symbolCell.setSymbol(x);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	const groupInGroup = (x, srcGroups, srcGroupType, dstGroups, dstGroupType) => {
+		let groupIndex = 0;
+		for (const group of srcGroups) {
+			let groupForGroup = -1;
+			for (const index of group) {
+				const cell = cells[index];
+				if (cell.symbol !== 0) continue;
+
+				let valid = true;
+				for (const i of cell.group) {
+					const symbol = cells[i].symbol;
+					if (symbol === 0) continue;
+					if (x === symbol) {
+						valid = false;
+						break;
+					}
+				}
+				if (!valid) continue;
+
+				const typeIndex = cell[srcGroupType];
+				if (groupForGroup === -1) {
+					groupForGroup = typeIndex;
+				} else if (groupForGroup !== typeIndex) {
+					groupForGroup = -1;
+					break;
+				}
+			}
+
+			const reduced = new Set();
+
+			if (groupForGroup !== -1) {
+				for (const index of dstGroups[groupForGroup]) {
+					const cell = cells[index];
+					if (cell.symbol !== 0) continue;
+					if (cell[dstGroupType] === groupIndex) continue;
+					reduced.add(index);
+				}
+			}
+
+			if (reduced.size > 0) {
+				if (simpleHiddenSymbol(x, reduced)) return true;
+			}
+
+			groupIndex++;
+		}
+		return false;
+	}
+	const groupInBox = (x, groups, groupProperty) => {
+		return groupInGroup(x, groups, 'box', Grid.groupBoxs, groupProperty);
+	}
+	const boxInGroup = (x, groups, groupProperty) => {
+		return groupInGroup(x, Grid.groupBoxs, groupProperty, groups, 'box');
+	}
+
+	for (let x = 1; x <= 9; x++) {
+		if (groupInBox(x, Grid.groupRows, 'row')) return true;
+		if (groupInBox(x, Grid.groupCols, 'col')) return true;
+
+		if (boxInGroup(x, Grid.groupRows, 'row')) return true;
+		if (boxInGroup(x, Grid.groupCols, 'col')) return true;
+	}
+
 	return false;
 }
 
@@ -154,7 +309,7 @@ class NakedHiddenGroups {
 		const union = new SetUnion();
 		for (const sets of this.groupSets) {
 			const len = sets.length;
-			if (len <= 2) continue;
+			if (len < 2) continue;
 
 			const len_1 = len - 1;
 
@@ -186,7 +341,7 @@ class NakedHiddenGroups {
 		const union = new SetUnion();
 		for (const sets of this.groupSets) {
 			const len = sets.length;
-			if (len <= 3) continue;
+			if (len < 3) continue;
 
 			const len_1 = len - 1;
 			const len_2 = len - 2;
@@ -222,7 +377,7 @@ class NakedHiddenGroups {
 		const union = new SetUnion();
 		for (const sets of this.groupSets) {
 			const len = sets.length;
-			if (len <= 4) continue;
+			if (len < 5) continue;
 
 			const len_1 = len - 1;
 			const len_2 = len - 2;
@@ -262,7 +417,7 @@ class NakedHiddenGroups {
 		const union = new SetUnion();
 		for (const sets of this.groupSets) {
 			const len = sets.length;
-			if (len <= 2) continue;
+			if (len < 7) continue;
 
 			const len_1 = len - 1;
 
@@ -294,7 +449,7 @@ class NakedHiddenGroups {
 		const union = new SetUnion();
 		for (const sets of this.groupSets) {
 			const len = sets.length;
-			if (len <= 3) continue;
+			if (len < 8) continue;
 
 			const len_1 = len - 1;
 			const len_2 = len - 2;
@@ -331,7 +486,7 @@ class NakedHiddenGroups {
 		const union = new SetUnion();
 		for (const sets of this.groupSets) {
 			const len = sets.length;
-			if (len <= 4) continue;
+			if (len < 9) continue;
 
 			const len_1 = len - 1;
 			const len_2 = len - 2;
@@ -1352,6 +1507,8 @@ const generate = (cells) => {
 }
 
 export {
-	generate, candidates, nakedSingles, hiddenSingles, omissions, NakedHiddenGroups, yWing, xyzWing, xWing, swordfish, jellyfish,
-	uniqueRectangle, superposition, phistomefel, bruteForce
+	generate, candidates, simpleNaked, simpleHidden, simpleOmission,
+	nakedSingles, hiddenSingles, NakedHiddenGroups, omissions, uniqueRectangle,
+	yWing, xyzWing, xWing, swordfish, jellyfish,
+	superposition, phistomefel, bruteForce
 };
