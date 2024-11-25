@@ -102,38 +102,41 @@ const hiddenSingles = (cells) => {
 	return false;
 }
 
-const simpleOmission = (cells) => {
-	const simpleHiddenSymbol = (x, reduced) => {
-		for (const group of Grid.groupTypes) {
-			let symbolCell = null;
-			for (const index of group) {
-				const cell = cells[index];
-				if (cell.symbol !== 0) continue;
+const simpleHiddenSymbol = (cells, x, reduced) => {
+	for (const group of Grid.groupTypes) {
+		let symbolCell = null;
+		for (const index of group) {
+			const cell = cells[index];
+			if (cell.symbol !== 0) continue;
 
-				let valid = true;
-				for (const i of cell.group) {
-					const symbol = cells[i].symbol;
-					if (symbol === 0) continue;
-					if (x === symbol) {
-						valid = false;
-						break;
-					}
+			let valid = true;
+			for (const i of cell.group) {
+				const symbol = cells[i].symbol;
+				if (symbol === 0) continue;
+				if (x === symbol) {
+					valid = false;
+					break;
 				}
-				if (!valid) continue;
-
-				if (reduced.has(index)) continue;
-
-				if (symbolCell === null) symbolCell = cell;
-				else { symbolCell = null; break; }
 			}
-			if (symbolCell !== null) {
-				symbolCell.setSymbol(x);
-				return true;
-			}
+			if (!valid) continue;
+
+			if (reduced.has(index)) continue;
+
+			if (symbolCell === null) symbolCell = cell;
+			else { symbolCell = null; break; }
 		}
-		return false;
+		if (symbolCell !== null) {
+			symbolCell.setSymbol(x);
+			return true;
+		}
 	}
-
+	return false;
+}
+// type
+// 0 = simple
+// 1 = visible
+// 2 = candidate
+const simpleOmission = (cells) => {
 	const groupInGroup = (x, srcGroups, srcGroupType, dstGroups, dstGroupType) => {
 		let groupIndex = 0;
 		for (const group of srcGroups) {
@@ -174,7 +177,7 @@ const simpleOmission = (cells) => {
 			}
 
 			if (reduced.size > 0) {
-				if (simpleHiddenSymbol(x, reduced)) return true;
+				if (simpleHiddenSymbol(cells, x, reduced)) return true;
 			}
 
 			groupIndex++;
@@ -199,7 +202,7 @@ const simpleOmission = (cells) => {
 	return false;
 }
 
-const omissions = (cells, visible = false) => {
+const omissions = (cells, type = 2) => {
 	const groupInGroup = (x, srcGroups, srcGroupType, dstGroups, dstGroupType) => {
 		let groupIndex = 0;
 		for (const group of srcGroups) {
@@ -207,7 +210,7 @@ const omissions = (cells, visible = false) => {
 			for (const index of group) {
 				const cell = cells[index];
 				if (cell.symbol !== 0) continue;
-				if (visible) {
+				if (type === 0 || type === 1) {
 					let valid = true;
 					for (const i of cell.group) {
 						const symbol = cells[i].symbol;
@@ -218,7 +221,8 @@ const omissions = (cells, visible = false) => {
 						}
 					}
 					if (!valid) continue;
-				} else {
+				}
+				if (type === 2) {
 					if (!cell.has(x)) continue;
 				}
 
