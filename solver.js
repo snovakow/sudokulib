@@ -165,13 +165,13 @@ const simpleOmission = (cells) => {
 				}
 			}
 
-			const reduced = new Set();
-
+			let reduced = false;
 			if (groupForGroup !== -1) {
 				for (const index of dstGroups[groupForGroup]) {
 					const cell = cells[index];
 					if (cell.symbol !== 0) continue;
 					if (cell[dstGroupType] === groupIndex) continue;
+					if (!reduced) reduced = new Set();
 					reduced.add(index);
 				}
 			}
