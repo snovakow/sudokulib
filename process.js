@@ -127,28 +127,98 @@ const puzzleHexGrid = (puzzleDataHex) => {
 	return [puzzle, grid];
 }
 
+class SimpleCounter {
+	constructor() {
+		this.nakedSimple = 0;
+		this.hiddenSimple = 0;
+		this.omissionSimple = 0;
+		this.count = 0;
+	}
+	addData(data) {
+		this.nakedSimple += data.nakedSimple > 0 ? 1 : 0;
+		this.hiddenSimple += data.hiddenSimple > 0 ? 1 : 0;
+		this.omissionSimple += data.omissionSimple > 0 ? 1 : 0;
+		this.count++;
+	}
+}
+class SimpleMinimalCounter {
+	constructor() {
+		this.hiddenSimple = 0;
+		this.omissionSimple = 0;
+		this.naked_omissionSimple = 0;
+		this.nakedSimple = 0;
+		this.nakedIsolateSimple = 0;
+		this.count = 0;
+	}
+	addData(data) {
+		if (data.hiddenSimple > 0 && data.omissionSimple === 0 && data.nakedSimple === 0) this.hiddenSimple++;
+		if (data.hiddenSimple > 0 && data.omissionSimple > 0 && data.nakedSimple === 0) this.omissionSimple++;
+		if (data.hiddenSimple > 0 && data.omissionSimple > 0 && data.nakedSimple > 0) this.naked_omissionSimple++;
+		if (data.hiddenSimple > 0 && data.omissionSimple === 0 && data.nakedSimple > 0) this.nakedSimple++;
+		if (data.hiddenSimple === 0 && data.omissionSimple === 0 && data.nakedSimple > 0) this.nakedIsolateSimple++;
+		this.count++;
+	}
+}
+class VisibleCounter extends SimpleCounter {
+	constructor() {
+		super();
+		this.nakedVisible = 0;
+		this.omissionVisible = 0;
+	}
+	addData(data) {
+		super.addData(data);
+		this.nakedVisible += data.nakedVisible > 0 ? 1 : 0;
+		this.omissionVisible += data.omissionVisible > 0 ? 1 : 0;
+	}
+}
+class CandidateCounter extends VisibleCounter {
+	constructor() {
+		super();
+		this.naked2 = 0;
+		this.naked3 = 0;
+		this.naked4 = 0;
+		this.hidden1 = 0;
+		this.hidden2 = 0;
+		this.hidden3 = 0;
+		this.hidden4 = 0;
+		this.omissions = 0;
+		this.uniqueRectangle = 0;
+		this.yWing = 0;
+		this.xyzWing = 0;
+		this.xWing = 0;
+		this.swordfish = 0;
+		this.jellyfish = 0;
+	}
+	addData(data) {
+		super.addData(data);
+		this.naked2 += data.naked2 > 0 ? 1 : 0;
+		this.naked3 += data.naked3 > 0 ? 1 : 0;
+		this.naked4 += data.naked4 > 0 ? 1 : 0;
+		this.hidden1 += data.hidden1 > 0 ? 1 : 0;
+		this.hidden2 += data.hidden2 > 0 ? 1 : 0;
+		this.hidden3 += data.hidden3 > 0 ? 1 : 0;
+		this.hidden4 += data.hidden4 > 0 ? 1 : 0;
+		this.omissions += data.omissions > 0 ? 1 : 0;
+		this.uniqueRectangle += data.uniqueRectangle > 0 ? 1 : 0;
+		this.yWing += data.yWing > 0 ? 1 : 0;
+		this.xyzWing += data.xyzWing > 0 ? 1 : 0;
+		this.xWing += data.xWing > 0 ? 1 : 0;
+		this.swordfish += data.swordfish > 0 ? 1 : 0;
+		this.jellyfish += data.jellyfish > 0 ? 1 : 0;
+	}
+}
 class StrategyCounter {
 	constructor() {
 		this.totalPuzzles = 0;
 		this.clueCounter = new Map();
 
-		this.simples = 0;
-		this.candidates = 0;
-		this.bruteForceFill = 0;
-
-		this.setNaked2 = 0;
-		this.setNaked3 = 0;
-		this.setNaked4 = 0;
-		this.setHidden2 = 0;
-		this.setHidden3 = 0;
-		this.setHidden4 = 0;
-		this.omissionsReduced = 0;
-		this.yWingReduced = 0;
-		this.xyzWingReduced = 0;
-		this.xWingReduced = 0;
-		this.swordfishReduced = 0;
-		this.jellyfishReduced = 0;
-		this.uniqueRectangleReduced = 0;
+		this.simples = new SimpleCounter();
+		this.simplesMinimal = new SimpleCounter();
+		this.simplesIsolated = new SimpleMinimalCounter();
+		this.candidatesVisible = new VisibleCounter();
+		this.candidates = new CandidateCounter();
+		this.candidatesMinimal = new CandidateCounter();
+		this.unsolvable = new CandidateCounter();
 
 		this.startTime = performance.now();
 		this.totalTime = 0;
@@ -156,89 +226,35 @@ class StrategyCounter {
 	addData(data) {
 		this.totalPuzzles++;
 
-		this.simples += data.simple;
-		if (data.simple === 0 && data.bruteForce === 0) this.candidates++;
+		if (data.solveType === 0 || data.solveType === 1) this.simples.addData(data);
+		if (data.solveType === 1) this.simplesMinimal.addData(data);
+		if (data.solveType === 1) this.simplesIsolated.addData(data);
 
-		this.setNaked2 += data.naked2;
-		this.setNaked3 += data.naked3;
-		this.setNaked4 += data.naked4;
-		this.setHidden2 += data.hidden2;
-		this.setHidden3 += data.hidden3;
-		this.setHidden4 += data.hidden4;
-		this.omissionsReduced += data.omissions;
-		this.yWingReduced += data.yWing;
-		this.xyzWingReduced += data.xyzWing;
-		this.xWingReduced += data.xWing;
-		this.swordfishReduced += data.swordfish;
-		this.jellyfishReduced += data.jellyfish;
-		this.uniqueRectangleReduced += data.uniqueRectangle;
-		this.bruteForceFill += data.bruteForce;
+		if (data.solveType === 2) this.candidatesVisible.addData(data);
+		if (data.solveType === 3 || data.solveType === 4) this.candidates.addData(data);
+		if (data.solveType === 4) this.candidatesMinimal.addData(data);
 
-		let candidateTotal = 0;
-		candidateTotal += this.setNaked2;
-		candidateTotal += this.setNaked3;
-		candidateTotal += this.setNaked4;
-		candidateTotal += this.setHidden2;
-		candidateTotal += this.setHidden3;
-		candidateTotal += this.setHidden4;
-		candidateTotal += this.omissionsReduced;
-		candidateTotal += this.yWingReduced;
-		candidateTotal += this.xyzWingReduced;
-		candidateTotal += this.xWingReduced;
-		candidateTotal += this.swordfishReduced;
-		candidateTotal += this.jellyfishReduced;
-		candidateTotal += this.uniqueRectangleReduced;
+		if (data.solveType === 5) this.unsolvable.addData(data);
 
 		const clueValue = this.clueCounter.get(data.clueCount);
 		if (clueValue) this.clueCounter.set(data.clueCount, clueValue + 1);
 		else this.clueCounter.set(data.clueCount, 1)
-
-		// let superTotal = 0;
-		// for (const value of superpositionReduced.values()) superTotal += value;
-
-		// if (superTotal > 0) {
-		// 	lines.push("--- Superpositions");
-		// 	const ordered = [];
-		// 	const entries = superpositionReduced.entries();
-		// 	for (const [key, value] of entries) {
-		// 		ordered.push({ key, value });
-		// 	}
-		// 	ordered.sort((a, b) => {
-		// 		return b.value - a.value;
-		// 	});
-		// 	for (const result of ordered) {
-		// 		printLine(result.key, result.value, superTotal);
-		// 	}
-		// }
 
 		this.totalTime = performance.now() - this.startTime;
 	}
 	lines() {
 		const res = 10000;
 		const percent = (val, total = this.totalPuzzles) => {
-			return Math.ceil(100 * res * val / total) / res + "%";
+			return ((Math.ceil(100 * res * val / total) / res).toFixed(3) + "%").padStart(7, "0");
 		}
-
-		let candidateTotal = 0;
-		candidateTotal += this.setNaked2;
-		candidateTotal += this.setNaked3;
-		candidateTotal += this.setNaked4;
-		candidateTotal += this.setHidden2;
-		candidateTotal += this.setHidden3;
-		candidateTotal += this.setHidden4;
-		candidateTotal += this.omissionsReduced;
-		candidateTotal += this.yWingReduced;
-		candidateTotal += this.xyzWingReduced;
-		candidateTotal += this.xWingReduced;
-		candidateTotal += this.swordfishReduced;
-		candidateTotal += this.jellyfishReduced;
-		candidateTotal += this.uniqueRectangleReduced;
-
-		// let superTotal = 0;
-		// for (const value of superpositionReduced.values()) superTotal += value;
-
+		const makeLineSimple = (title, val, total) => {
+			return title + ": " + percent(val, total);
+		};
+		const makeLine = (title, val, total) => {
+			return title + ": " + percent(val, total) + " - " + val.toLocaleString();
+		};
 		const printLine = (title, val, total) => {
-			lines.push(title + ": " + percent(val, total) + " - " + val);
+			lines.push(makeLine(title, val, total));
 		};
 
 		const lines = [];
@@ -251,37 +267,73 @@ class StrategyCounter {
 		lines.push("--- Clues");
 		for (const clue of clues) printLine(clue[0], clue[1], this.totalPuzzles);
 
-		if (candidateTotal > 0) {
-			lines.push("--- Candidates");
-			printLine("Naked2", this.setNaked2, candidateTotal);
-			printLine("Naked3", this.setNaked3, candidateTotal);
-			printLine("Naked4", this.setNaked4, candidateTotal);
-			printLine("Hidden2", this.setHidden2, candidateTotal);
-			printLine("Hidden3", this.setHidden3, candidateTotal);
-			printLine("Hidden4", this.setHidden4, candidateTotal);
-
-			printLine("Omissions", this.omissionsReduced, candidateTotal);
-			printLine("UniqueRectangle", this.uniqueRectangleReduced, candidateTotal);
-			printLine("yWing", this.yWingReduced, candidateTotal);
-			printLine("xyzWing", this.xyzWingReduced, candidateTotal);
-			printLine("xWing", this.xWingReduced, candidateTotal);
-			printLine("Swordfish", this.swordfishReduced, candidateTotal);
-			printLine("Jellyfish", this.jellyfishReduced, candidateTotal);
+		if (this.simplesMinimal.count > 0) {
+			lines.push("");
+			lines.push("--- Simples Minimal (H)idden (O)mission (N)aked");
+			const printStrategy = (title, property) => {
+				let line = makeLineSimple(title, this.simplesIsolated[property], this.simplesMinimal.count);
+				line += " - " + this.simplesIsolated[property].toLocaleString();
+				lines.push(line);
+			}
+			printStrategy("H  ", 'hiddenSimple');
+			printStrategy("HO ", 'omissionSimple');
+			printStrategy("HON", 'naked_omissionSimple');
+			printStrategy("HN ", 'nakedSimple');
+			printStrategy("N  ", 'nakedIsolateSimple');
 		}
 
-		lines.push("--- Totals");
-		lines.push("Simples: " + percent(this.simples) + " - " + this.simples);
-		lines.push("Candidates: " + percent(this.candidates) + " - " + this.candidates);
-		// lines.push("Superpositions: " + percent(superpositions) + " - " + superpositions);
-		lines.push("BruteForceFill: " + percent(this.bruteForceFill) + " - " + this.bruteForceFill);
+		if (this.candidatesMinimal.count) {
+			lines.push("");
+			lines.push("--- Candidates Minimal");
 
+			const printStrategy = (title, property) => {
+				const line = makeLineSimple(title, this.candidatesMinimal[property], this.candidatesMinimal.count);
+				lines.push(line + " - " + this.candidatesMinimal[property].toLocaleString());
+			}
+			printStrategy("Naked2", 'naked2');
+			printStrategy("Naked3", 'naked3');
+			printStrategy("Naked4", 'naked4');
+			printStrategy("Hidden1", 'hidden1');
+			printStrategy("Hidden2", 'hidden2');
+			printStrategy("Hidden3", 'hidden3');
+			printStrategy("Hidden4", 'hidden4');
+			printStrategy("Omissions", 'omissions');
+			printStrategy("Unique Rectangle", 'uniqueRectangle');
+			printStrategy("Y-Wing", 'yWing');
+			printStrategy("XYZ-Wing", 'xyzWing');
+			printStrategy("X-Wing", 'xWing');
+			printStrategy("Swordfish", 'swordfish');
+			printStrategy("Jellyfish", 'jellyfish');
+		}
+
+		const candidateCount = this.candidates.count + this.candidatesVisible.count;
+
+		lines.push("");
+		lines.push("--- Totals " + this.totalPuzzles.toLocaleString());
+
+		let line = "Simples: " + percent(this.simples.count);
+		if (this.simples.count > 0) line += " (" + percent(this.simplesMinimal.count, this.simples.count) + " minimal)";
+		lines.push(line);
+
+		line = "Strategies: " + percent(this.candidates.count);
+		if (this.candidates.count > 0) line += " (" + percent(this.candidatesMinimal.count, this.candidates.count) + " minimal)";
+		lines.push(line);
+
+		line = "Candidates: " + percent(candidateCount);
+		if (candidateCount > 0) line += " (" + percent(this.candidatesVisible.count, candidateCount) + " visible)";
+		lines.push(line);
+
+		lines.push("Unsolvable: " + percent(this.unsolvable.count));
+
+		lines.push("");
+		lines.push("--- Rate");
 		const timeAvg = this.totalTime / 1000 / this.totalPuzzles;
 		const timeAvgInv = 1 / timeAvg;
 		lines.push("Time Avg: " + timeAvg.toFixed(3));
 		lines.push("Per Second: " + timeAvgInv.toFixed(1));
 
-		lines.push("Puzzles: " + this.totalPuzzles);
 		return lines;
 	}
 }
+
 export { StrategyCounter, puzzleGridHex, puzzleHexGrid };
