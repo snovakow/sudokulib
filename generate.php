@@ -1,167 +1,129 @@
 <?php
-$version = 1;
 if (!isset($_GET['version'])) die();
-if ($_GET['version'] != $version) die();
+$version = (int)$_GET['version'];
+if ($version !== 2) die();
 
-if (!isset($_GET['table'])) die();
-$table = $_GET['table'];
+function tableName($number)
+{
+	$pad = str_pad($number, 3, "0", STR_PAD_LEFT);
+	return "puzzles$pad";
+}
 
-$servername = "localhost";
-$username = "snovakow";
-$password = "kewbac-recge1-Fiwpux";
-$dbname = "sudoku";
+function addTable($number)
+{
+	$table = tableName($number);
+	return "CREATE TABLE `$table` (
+		`id` int(10) unsigned NOT NULL,
+		`puzzleData` binary(32) NOT NULL DEFAULT '00000000000000000000000000000000',
+		`clueCount` tinyint(2) unsigned NOT NULL,
+		`solveType` tinyint(1) unsigned NOT NULL,
+		`hiddenSimple` tinyint(3) unsigned NOT NULL DEFAULT '0',
+		`omissionSimple` tinyint(3) unsigned NOT NULL DEFAULT '0',
+		`nakedSimple` tinyint(3) unsigned NOT NULL DEFAULT '0',
+		`nakedVisible` tinyint(3) unsigned NOT NULL DEFAULT '0',
+		`omissionVisible` tinyint(3) unsigned NOT NULL DEFAULT '0',
+		`naked2` tinyint(3) unsigned NOT NULL DEFAULT '0',
+		`naked3` tinyint(3) unsigned NOT NULL DEFAULT '0',
+		`naked4` tinyint(3) unsigned NOT NULL DEFAULT '0',
+		`hidden1` tinyint(3) unsigned NOT NULL DEFAULT '0',
+		`hidden2` tinyint(3) unsigned NOT NULL DEFAULT '0',
+		`hidden3` tinyint(3) unsigned NOT NULL DEFAULT '0',
+		`hidden4` tinyint(3) unsigned NOT NULL DEFAULT '0',
+		`omissions` tinyint(3) unsigned NOT NULL DEFAULT '0',
+		`uniqueRectangle` tinyint(3) unsigned NOT NULL DEFAULT '0',
+		`yWing` tinyint(3) unsigned NOT NULL DEFAULT '0',
+		`xyzWing` tinyint(3) unsigned NOT NULL DEFAULT '0',
+		`xWing` tinyint(3) unsigned NOT NULL DEFAULT '0',
+		`swordfish` tinyint(3) unsigned NOT NULL DEFAULT '0',
+		`jellyfish` tinyint(3) unsigned NOT NULL DEFAULT '0',
+		PRIMARY KEY (`id`)
+		) ENGINE=InnoDB DEFAULT CHARSET=ascii COLLATE=ascii_bin";
+}
 
+function insertValues($number, $values)
+{
+	$valueList = implode(",", $values);
+	$table = tableName($number);
+	return "INSERT INTO `$table` (id, puzzleData, clueCount, solveType,
+		hiddenSimple, omissionSimple, nakedSimple, nakedVisible, omissionVisible,
+		naked2, naked3, naked4, hidden1, hidden2, hidden3, hidden4, omissions,
+		uniqueRectangle, yWing, xyzWing, xWing, swordfish, jellyfish) VALUES $valueList";
+}
+
+$maxSize = 10000000;
 $array = json_decode(file_get_contents("php://input"));
 
 try {
-	$pdo = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
-	// $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+	$servername = "localhost";
+	$username = "snovakow";
+	$password = "kewbac-recge1-Fiwpux";
+	$dbname = "sudoku";
+	$db = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
 
-	$pdo->exec("LOCK TABLES `" . $table . "` WRITE");
+	$db->exec("START TRANSACTION");
 
-	$sql = "SELECT MAX(id) as totalPuzzles FROM `" . $table . "`";
-	$stmt = $pdo->prepare($sql);
+	$stmt = $db->prepare("SELECT `tableCount`, `puzzleCount` FROM `tables`");
 	$stmt->execute();
 	$result = $stmt->fetch();
-	$count = $result['totalPuzzles'];
+	$tableCount = (int)$result['tableCount'];
+	$puzzleCount = (int)$result['puzzleCount'];
 
-	if ($count === NULL) {
-		$stmt = $pdo->prepare("
-			SELECT table_name FROM information_schema.tables WHERE table_schema = 'sudoku' AND table_name = '" . $table . "' LIMIT 1;
-		");
-		$stmt->execute();
-		if ($stmt->fetch()["table_name"] === NULL) exit("-1:0");
-		$count = 0;
+	if ($tableCount === 0) {
+		$tableCount++;
+		$db->exec(addTable($tableCount));
 	}
 
-	$maxSize = 10000000;
-	if ($count >= $maxSize) exit("0:0");
-
-	$sql = "INSERT INTO `" . $table . "` (puzzleData, clueCount, 
-			simple, naked2, naked3, naked4, hidden2, hidden3, hidden4, omissions, 
-			yWing, xyzWing, xWing, swordfish, jellyfish, uniqueRectangle, 
-			has_naked2, has_naked3, has_naked4, has_hidden2, has_hidden3, has_hidden4, has_omissions, 
-			has_yWing, has_xyzWing, has_xWing, has_swordfish, has_jellyfish, has_uniqueRectangle, 
-			bruteForce, solveType) VALUES ";
-
-	$inserted = 0;
-	$values = array();
+	$values = [];
 	foreach ($array as $post) {
-		if (!isset($post->puzzleData)) continue;
-		if (!isset($post->clueCount)) continue;
-		if (!isset($post->simple)) continue;
-		if (!isset($post->naked2)) continue;
-		if (!isset($post->naked3)) continue;
-		if (!isset($post->naked4)) continue;
-		if (!isset($post->hidden2)) continue;
-		if (!isset($post->hidden3)) continue;
-		if (!isset($post->hidden4)) continue;
-		if (!isset($post->omissions)) continue;
-		if (!isset($post->yWing)) continue;
-		if (!isset($post->xyzWing)) continue;
-		if (!isset($post->xWing)) continue;
-		if (!isset($post->swordfish)) continue;
-		if (!isset($post->jellyfish)) continue;
-		if (!isset($post->uniqueRectangle)) continue;
-		if (!isset($post->bruteForce)) continue;
+		if ($puzzleCount >= $maxSize) {
+			if (count($values) > 0) {
+				$db->exec(insertValues($tableCount, $values));
+				$values = [];
+			}
 
-		if (!isset($post->has_naked2)) continue;
-		if (!isset($post->has_naked3)) continue;
-		if (!isset($post->has_naked4)) continue;
-		if (!isset($post->has_hidden2)) continue;
-		if (!isset($post->has_hidden3)) continue;
-		if (!isset($post->has_hidden4)) continue;
-		if (!isset($post->has_omissions)) continue;
-		if (!isset($post->has_uniqueRectangle)) continue;
-		if (!isset($post->has_yWing)) continue;
-		if (!isset($post->has_xyzWing)) continue;
-		if (!isset($post->has_xWing)) continue;
-		if (!isset($post->has_swordfish)) continue;
-		if (!isset($post->has_jellyfish)) continue;
+			$tableCount++;
+			$puzzleCount = 0;
+			$db->exec(addTable($tableCount));
+		}
+		$puzzleCount++;
 
-		$puzzleData = $post->puzzleData;
-		$clueCount = $post->clueCount;
-		$simple = $post->simple;
-		$naked2 = $post->naked2;
-		$naked3 = $post->naked3;
-		$naked4 = $post->naked4;
-		$hidden2 = $post->hidden2;
-		$hidden3 = $post->hidden3;
-		$hidden4 = $post->hidden4;
-		$omissions = $post->omissions;
-		$yWing = $post->yWing;
-		$xyzWing = $post->xyzWing;
-		$xWing = $post->xWing;
-		$swordfish = $post->swordfish;
-		$jellyfish = $post->jellyfish;
-		$uniqueRectangle = $post->uniqueRectangle;
-		$bruteForce = $post->bruteForce;
-
-		$solveType = 1;
-		if ($simple > 0) $solveType = 0;
-		if ($bruteForce > 0) $solveType = 2;
-
-		$has_naked2 = $post->has_naked2;
-		$has_naked3 = $post->has_naked3;
-		$has_naked4 = $post->has_naked4;
-		$has_hidden2 = $post->has_hidden2;
-		$has_hidden3 = $post->has_hidden3;
-		$has_hidden4 = $post->has_hidden4;
-		$has_omissions = $post->has_omissions;
-		$has_uniqueRectangle = $post->has_uniqueRectangle;
-		$has_yWing = $post->has_yWing;
-		$has_xyzWing = $post->has_xyzWing;
-		$has_xWing = $post->has_xWing;
-		$has_swordfish = $post->has_swordfish;
-		$has_jellyfish = $post->has_jellyfish;
-
-		$valueList = array(
-			$clueCount,
-			$simple,
-			$naked2,
-			$naked3,
-			$naked4,
-			$hidden2,
-			$hidden3,
-			$hidden4,
-			$omissions,
-			$yWing,
-			$xyzWing,
-			$xWing,
-			$swordfish,
-			$jellyfish,
-			$uniqueRectangle,
-			$has_naked2,
-			$has_naked3,
-			$has_naked4,
-			$has_hidden2,
-			$has_hidden3,
-			$has_hidden4,
-			$has_omissions,
-			$has_yWing,
-			$has_xyzWing,
-			$has_xWing,
-			$has_swordfish,
-			$has_jellyfish,
-			$has_uniqueRectangle,
-			$bruteForce,
-			$solveType
-		);
-		$values[] = "(X'" . $puzzleData . "'," . implode(",", $valueList) . ")";
-
-		$count++;
-		$inserted++;
-		if ($count >= $maxSize) break;
+		$valueList = [
+			$puzzleCount,
+			"X'$post->puzzleData'",
+			$post->clueCount,
+			$post->solveType,
+			$post->hiddenSimple,
+			$post->omissionSimple,
+			$post->nakedSimple,
+			$post->nakedVisible,
+			$post->omissionVisible,
+			$post->naked2,
+			$post->naked3,
+			$post->naked4,
+			$post->hidden1,
+			$post->hidden2,
+			$post->hidden3,
+			$post->hidden4,
+			$post->omissions,
+			$post->uniqueRectangle,
+			$post->yWing,
+			$post->xyzWing,
+			$post->xWing,
+			$post->swordfish,
+			$post->jellyfish,
+		];
+		$flatList = implode(',', $valueList);
+		$values[] = "($flatList)";
 	}
 
-	$sql .= implode(",", $values);
-	$pdo->exec($sql);
+	if (count($values) > 0) $db->exec(insertValues($tableCount, $values));
 
-	$pdo->exec('UNLOCK TABLES');
+	$stmt = $db->prepare("UPDATE `tables` SET `tableCount`=?, `puzzleCount`=?");
+	$stmt->execute([$tableCount, $puzzleCount]);
 
-	echo ($count . ":" . $inserted);
+	$db->exec("COMMIT");
+
+	echo "$tableCount:$puzzleCount";
 } catch (PDOException $e) {
 	// echo "Connection failed: " . $e->getMessage();
 }
-
-$pdo = null;
