@@ -14,9 +14,7 @@ try {
 	$stmt->execute();
 	$result = $stmt->fetch();
 
-	$tableCount = $result["tableCount"];
-	$puzzleCount = $result["puzzleCount"];
-	echo  "$tableCount:$puzzleCount";
+	echo "$result->tableCount:$result->puzzleCount";
 } catch (PDOException $e) {
 	// echo "Error: " . $e->getMessage();
 }
