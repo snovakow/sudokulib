@@ -136,72 +136,6 @@ const simpleHiddenSymbol = (cells, x, reduced) => {
 // 0 = simple
 // 1 = visible
 // 2 = candidate
-const simpleOmission = (cells) => {
-	const groupInGroup = (x, srcGroups, srcGroupType, dstGroups, dstGroupType) => {
-		let groupIndex = 0;
-		for (const group of srcGroups) {
-			let groupForGroup = -1;
-			for (const index of group) {
-				const cell = cells[index];
-				if (cell.symbol !== 0) continue;
-
-				let valid = true;
-				for (const i of cell.group) {
-					const symbol = cells[i].symbol;
-					if (symbol === 0) continue;
-					if (x === symbol) {
-						valid = false;
-						break;
-					}
-				}
-				if (!valid) continue;
-
-				const typeIndex = cell[srcGroupType];
-				if (groupForGroup === -1) {
-					groupForGroup = typeIndex;
-				} else if (groupForGroup !== typeIndex) {
-					groupForGroup = -1;
-					break;
-				}
-			}
-
-			let reduced = false;
-			if (groupForGroup !== -1) {
-				for (const index of dstGroups[groupForGroup]) {
-					const cell = cells[index];
-					if (cell.symbol !== 0) continue;
-					if (cell[dstGroupType] === groupIndex) continue;
-					if (!reduced) reduced = new Set();
-					reduced.add(index);
-				}
-			}
-
-			if (reduced.size > 0) {
-				if (simpleHiddenSymbol(cells, x, reduced)) return true;
-			}
-
-			groupIndex++;
-		}
-		return false;
-	}
-	const groupInBox = (x, groups, groupProperty) => {
-		return groupInGroup(x, groups, 'box', Grid.groupBoxs, groupProperty);
-	}
-	const boxInGroup = (x, groups, groupProperty) => {
-		return groupInGroup(x, Grid.groupBoxs, groupProperty, groups, 'box');
-	}
-
-	for (let x = 1; x <= 9; x++) {
-		if (groupInBox(x, Grid.groupRows, 'row')) return true;
-		if (groupInBox(x, Grid.groupCols, 'col')) return true;
-
-		if (boxInGroup(x, Grid.groupRows, 'row')) return true;
-		if (boxInGroup(x, Grid.groupCols, 'col')) return true;
-	}
-
-	return false;
-}
-
 const omissions = (cells, type = 2) => {
 	const groupInGroup = (x, srcGroups, srcGroupType, dstGroups, dstGroupType) => {
 		let groupIndex = 0;
@@ -210,7 +144,10 @@ const omissions = (cells, type = 2) => {
 			for (const index of group) {
 				const cell = cells[index];
 				if (cell.symbol !== 0) continue;
-				if (type === 0 || type === 1) {
+
+				if (type === 2) {
+					if (!cell.has(x)) continue;
+				} else {
 					let valid = true;
 					for (const i of cell.group) {
 						const symbol = cells[i].symbol;
@@ -222,9 +159,6 @@ const omissions = (cells, type = 2) => {
 					}
 					if (!valid) continue;
 				}
-				if (type === 2) {
-					if (!cell.has(x)) continue;
-				}
 
 				const typeIndex = cell[srcGroupType];
 				if (groupForGroup === -1) {
@@ -236,18 +170,29 @@ const omissions = (cells, type = 2) => {
 			}
 
 			let reduced = false;
-
 			if (groupForGroup !== -1) {
 				for (const index of dstGroups[groupForGroup]) {
 					const cell = cells[index];
 					if (cell.symbol !== 0) continue;
 					if (cell[dstGroupType] === groupIndex) continue;
-					const had = cell.delete(x);
-					if (had) reduced = true;
+
+					if (type === 0) {
+						if (!reduced) reduced = new Set();
+						reduced.add(index);
+					} else {
+						const had = cell.delete(x);
+						if (had) reduced = true;
+					}
 				}
 			}
 
-			if (reduced) return true;
+			if (type === 0) {
+				if (reduced.size > 0) {
+					if (simpleHiddenSymbol(cells, x, reduced)) return true;
+				}
+			} else {
+				if (reduced) return true;
+			}
 
 			groupIndex++;
 		}
@@ -1524,7 +1469,7 @@ const generate = (cells) => {
 }
 
 export {
-	generate, candidates, simpleNaked, simpleHidden, simpleOmission,
+	generate, candidates, simpleNaked, simpleHidden,
 	nakedSingles, hiddenSingles, NakedHiddenGroups, omissions, uniqueRectangle,
 	yWing, xyzWing, xWing, swordfish, jellyfish,
 	superposition, phistomefel, bruteForce
