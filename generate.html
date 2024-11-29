@@ -57,17 +57,40 @@
 			hour12: true,
 		};
 
+		const makeBold = (title) => {
+			const bolded = document.createElement('span');
+			bolded.style.fontWeight = "bold";
+			bolded.appendChild(document.createTextNode(title));
+			return bolded;
+		};
+
+		let timeLineIndex = 0;
+		const addLine = (stat, line, title) => {
+			if (title) {
+				const bolded = makeBold(title + ": ");
+				stat.push(bolded);
+			}
+			stat.push(document.createTextNode(line));
+		};
+
+		const setTimeLine = () => {
+			const dateNow = new Date().toLocaleString(undefined, options);
+			while (statsTotals.length > timeLineIndex) statsTotals.pop();
+			addLine(statsTotals, dateNow, "Time");
+		}
 		const populate = () => {
 			statsTotals = [];
 
-			const total = totalCount.toLocaleString() + " puzzles in " + tableCount.toLocaleString() + " tables";
-			statsTotals.push(document.createTextNode(total));
-			if (!generateMode) {
-				statsTotals.push(document.createElement('br'));
-				statsTotals.push(document.createElement('br'));
-				const date = new Date().toLocaleString(undefined, options);
-				statsTotals.push(document.createTextNode(date));
-			}
+			statsTotals.push(makeBold(totalCount.toLocaleString()));
+			statsTotals.push(document.createTextNode(" puzzles in "));
+			statsTotals.push(makeBold(tableCount.toLocaleString()));
+			statsTotals.push(document.createTextNode(tableCount === 1 ? " table" : " tables"));
+
+			statsTotals.push(document.createElement('br'));
+			statsTotals.push(document.createElement('br'));
+
+			if (timeLineIndex === 0) timeLineIndex = statsTotals.length;
+			setTimeLine();
 		};
 
 		estimateContainer.style.textAlign = "right";
@@ -84,6 +107,12 @@
 				const seconds = Math.floor(now / 1000);
 				if (seconds === processTimer) return;
 				processTimer = seconds;
+			}
+
+			if (processStartTime === 0) {
+				processStartTime = now;
+				processStartCount = totalCount;
+				return;
 			}
 
 			const formatTime = (ms) => {
@@ -103,6 +132,8 @@
 				return `${daysTotal} days ${hoursString}:${minutesString}:${secondsString}`
 			}
 
+			setTimeLine();
+
 			statsEstimate = [];
 
 			const recordedCount = totalCount - processStartCount;
@@ -110,40 +141,30 @@
 
 			const remainingCount = MAX_SIZE - puzzleCount;
 
-			const addLine = (line, title) => {
-				if (title) {
-					const bolded = document.createElement('span');
-					bolded.style.fontWeight = "bold";
-					bolded.appendChild(document.createTextNode(title + ": "));
-					statsEstimate.push(bolded);
-				}
-				statsEstimate.push(document.createTextNode(line));
-				statsEstimate.push(document.createElement('br'));
-			};
-
-			if (generateMode) {
-				const dateNow = new Date().toLocaleString(undefined, options);
-				addLine(dateNow, "Time");
+			const addEstimate = (line, title) => {
+				addLine(statsEstimate, line, title);
 				statsEstimate.push(document.createElement('br'));
 			}
 
 			const dateStart = new Date(processStartTime).toLocaleString(undefined, options);
-			addLine(dateStart, "Start");
-			addLine(formatTime(recordedTime) + " elapsed");
+			addEstimate(dateStart, "Start");
+			addEstimate(formatTime(recordedTime) + " elapsed");
 			statsEstimate.push(document.createElement('br'));
 
 			if (recordedCount > 0) {
 				const ms = recordedTime / recordedCount * remainingCount;
 				const date = new Date(Date.now() + ms).toLocaleString(undefined, options);
-				addLine(date, "10M ETA");
-				addLine(formatTime(ms) + " remaining");
+				addEstimate(date, "10M ETA");
+				addEstimate(formatTime(ms) + " remaining");
 				const ms7 = recordedTime * MAX_SIZE / recordedCount;
-				addLine(formatTime(ms7) + " total");
+				addEstimate(formatTime(ms7) + " total");
 				statsEstimate.push(document.createElement('br'));
 			}
 
 			const fps = recordedCount * 1000 / recordedTime;
-			addLine(fps.toFixed(1) + " puzzles per second");
+			addEstimate(fps.toFixed(1) + " puzzles per second");
+
+			displayStats();
 		};
 
 		let pingCount = 0;
@@ -168,16 +189,17 @@
 					const delay = Math.min(Math.pow(1000, 1 + (pingCount / 100)), maxDelay);
 
 					populate();
-					displayStats();
-
 					const now = Date.now();
-					if (prevPingCount > 0 && (now - prevPingTime > cancelDelay)) {
-						return;
-					}
 					if (prevPingCount !== totalCount) {
+						if (prevPingCount !== 0) createEstimate();
+
 						prevPingTime = now;
 						prevPingCount = totalCount;
+
 					}
+					displayStats();
+
+					if (prevPingCount > 0 && (now - prevPingTime > cancelDelay)) return;
 
 					pingTimer = window.setTimeout(() => {
 						pingTimer = 0;
@@ -198,6 +220,7 @@
 		generateButton.style.top = '8px';
 		generateButton.style.right = '8px';
 		generateButton.style.position = 'absolute';
+		generateButton.style.width = '80px';
 		generateButton.style.height = '32px';
 		generateButton.appendChild(document.createTextNode("Generate"));
 
@@ -218,6 +241,11 @@
 
 			for (let i = 0; i < coreCount; i++) workers[i] = new Worker("worker.js", { type: "module" });
 		};
+
+		const addLineSent = () => {
+			statsSent = [];
+			addLine(statsSent, sendDataSent, "Sent");
+		}
 
 		const sendDataStack = [];
 		let sendDataSending = false;
@@ -289,7 +317,7 @@
 					if (isNaN(puzzleCount)) return;
 
 					sendDataSent += readyDataSend.length;
-					statsSent[0] = document.createTextNode("Sent: " + sendDataSent);
+					addLineSent();
 
 					setCount(tableCount, puzzleCount);
 					populate();
@@ -317,17 +345,15 @@
 
 
 		generateButton.addEventListener('click', () => {
-			if (processStartTime === 0) {
-				processStartTime = Date.now();
-				processStartCount = totalCount;
-				statsSent[0] = document.createTextNode("Sent: 0");
-			}
-
 			toggleWorker();
 			while (generateButton.firstChild) generateButton.removeChild(generateButton.firstChild);
 			if (pingTimer) {
 				window.clearTimeout(pingTimer);
 			}
+			if (!generateMode && sendDataSent === 0) {
+				addLineSent();
+			}
+
 			if (workers) {
 				generateMode = true;
 				processGenerate();
@@ -339,7 +365,6 @@
 
 			populate();
 			createEstimate();
-			displayStats();
 		});
 		document.body.appendChild(generateButton);
 
