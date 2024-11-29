@@ -3,6 +3,14 @@ if (!isset($_GET['version'])) die();
 $version = (int)$_GET['version'];
 if ($version !== 2) die();
 
+const MAX_SIZE = 10000000;
+
+function totalCount($tableCount, $puzzleCount)
+{
+	if ($tableCount === 0) return 0;
+	return (($tableCount - 1) * MAX_SIZE) +  $puzzleCount;
+}
+
 function tableName($number)
 {
 	$pad = str_pad($number, 3, "0", STR_PAD_LEFT);
@@ -12,7 +20,7 @@ function tableName($number)
 function addTable($number)
 {
 	$table = tableName($number);
-	return "CREATE TABLE `$table` (
+	return "CREATE TABLE IF NOT EXISTS `$table` (
 		`id` int(10) unsigned NOT NULL,
 		`puzzleData` binary(32) NOT NULL DEFAULT '00000000000000000000000000000000',
 		`clueCount` tinyint(2) unsigned NOT NULL,
@@ -50,9 +58,6 @@ function insertValues($number, $values)
 		uniqueRectangle, yWing, xyzWing, xWing, swordfish, jellyfish) VALUES $valueList";
 }
 
-$maxSize = 10000000;
-$array = json_decode(file_get_contents("php://input"));
-
 try {
 	$servername = "localhost";
 	$username = "snovakow";
@@ -60,22 +65,51 @@ try {
 	$dbname = "sudoku";
 	$db = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
 
-	$db->exec("START TRANSACTION");
+	$db->exec("LOCK TABLES `tables` WRITE");
+
+	$array = json_decode(file_get_contents("php://input"));
+	$addCount = count($array);
 
 	$stmt = $db->prepare("SELECT `tableCount`, `puzzleCount` FROM `tables`");
 	$stmt->execute();
 	$result = $stmt->fetch();
 	$tableCount = (int)$result['tableCount'];
 	$puzzleCount = (int)$result['puzzleCount'];
+	$totalRequired = totalCount($tableCount, $puzzleCount) + $addCount;
 
-	if ($tableCount === 0) {
-		$tableCount++;
-		$db->exec(addTable($tableCount));
+	$tableAvailable = $tableCount;
+	$totalAvailable = $tableAvailable * MAX_SIZE;
+
+	while ($totalRequired > $totalAvailable) {
+		$db->exec("UNLOCK TABLES");
+
+		$tableAvailable++;
+		$totalAvailable = $tableAvailable * MAX_SIZE;
+		$db->exec(addTable($tableAvailable));
+
+		$db->exec("LOCK TABLES `tables` WRITE");
+		$stmt = $db->prepare("SELECT `tableCount`, `puzzleCount` FROM `tables`");
+		$stmt->execute();
+		$result = $stmt->fetch();
+		$tableCount = (int)$result['tableCount'];
+		$puzzleCount = (int)$result['puzzleCount'];
+		$totalRequired = totalCount($tableCount, $puzzleCount) + $addCount;
+
+		if ($tableCount > $tableAvailable) {
+			$tableAvailable = $tableCount;
+			$totalAvailable = $tableAvailable * MAX_SIZE;
+		}
 	}
+	if ($tableCount === 0) {
+		$tableCount = 1;
+		$puzzleCount = 0;
+	}
+
+	$db->exec("START TRANSACTION");
 
 	$values = [];
 	foreach ($array as $post) {
-		if ($puzzleCount >= $maxSize) {
+		if ($puzzleCount >= MAX_SIZE) {
 			if (count($values) > 0) {
 				$db->exec(insertValues($tableCount, $values));
 				$values = [];
@@ -83,7 +117,6 @@ try {
 
 			$tableCount++;
 			$puzzleCount = 0;
-			$db->exec(addTable($tableCount));
 		}
 		$puzzleCount++;
 
@@ -122,6 +155,7 @@ try {
 	$stmt->execute([$tableCount, $puzzleCount]);
 
 	$db->exec("COMMIT");
+	$db->exec("UNLOCK TABLES");
 
 	echo "$tableCount:$puzzleCount";
 } catch (PDOException $e) {
