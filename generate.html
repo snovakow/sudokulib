@@ -162,7 +162,8 @@
 			}
 
 			const fps = recordedCount * 1000 / recordedTime;
-			addEstimate(fps.toFixed(1) + " puzzles per second");
+			statsEstimate.push(makeBold(fps.toFixed(1)));
+			statsEstimate.push(document.createTextNode(" puzzles per second"));
 
 			displayStats();
 		};
