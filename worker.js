@@ -8,6 +8,50 @@ let puzzleString = null;
 let puzzleStrings = null;
 
 let stepMode = 0; // 1=row 2=phist
+
+const allArray = [];
+
+class StrategyData {
+	constructor(data, strategy, result) {
+		this.strategy = strategy;
+		this.data = result;
+		data.push(this);
+		allArray.push(this);
+	}
+}
+
+const simpleDataArray = [];
+const visibleDataArray = [];
+const strategyDataArray = [];
+
+new StrategyData(simpleDataArray, STRATEGY.SIMPLE_HIDDEN, 'hiddenSimple');
+new StrategyData(simpleDataArray, STRATEGY.SIMPLE_INTERSECTION, 'omissionSimple');
+new StrategyData(simpleDataArray, STRATEGY.SIMPLE_NAKED, 'nakedSimple');
+
+new StrategyData(visibleDataArray, STRATEGY.VISIBLE_NAKED, 'nakedVisible');
+new StrategyData(visibleDataArray, STRATEGY.VISIBLE_INTERSECTION, 'omissionVisible');
+
+new StrategyData(strategyDataArray, STRATEGY.NAKED_2, 'naked2');
+new StrategyData(strategyDataArray, STRATEGY.NAKED_3, 'naked3');
+new StrategyData(strategyDataArray, STRATEGY.NAKED_4, 'naked4');
+new StrategyData(strategyDataArray, STRATEGY.HIDDEN_1, 'hidden1');
+new StrategyData(strategyDataArray, STRATEGY.HIDDEN_2, 'hidden2');
+new StrategyData(strategyDataArray, STRATEGY.HIDDEN_3, 'hidden3');
+new StrategyData(strategyDataArray, STRATEGY.HIDDEN_4, 'hidden4');
+new StrategyData(strategyDataArray, STRATEGY.INTERSECTION_REMOVAL, 'omissions');
+new StrategyData(strategyDataArray, STRATEGY.DEADLY_PATTERN, 'uniqueRectangle');
+new StrategyData(strategyDataArray, STRATEGY.Y_WING, 'yWing');
+new StrategyData(strategyDataArray, STRATEGY.XYZ_WING, 'xyzWing');
+new StrategyData(strategyDataArray, STRATEGY.X_WING, 'xWing');
+new StrategyData(strategyDataArray, STRATEGY.SWORDFISH, 'swordfish');
+new StrategyData(strategyDataArray, STRATEGY.JELLYFISH, 'jellyfish');
+
+const strategies = [...strategyDataArray];
+for (const strategy of strategyDataArray) strategies.push(strategy.strategy);
+
+const simples = [...simpleDataArray];
+for (const strategy of simpleDataArray) simples.push(strategy.strategy);
+
 const step = () => {
 	let mode = stepMode;
 	if (puzzleString) {
@@ -30,166 +74,109 @@ const step = () => {
 	const data = {
 		id,
 		puzzle: cells.string(),
-		cells: cells.toData(),
-		message: null
+		cells: cells.toData()
 	};
 
 	for (const cell of cells) if (cell.symbol === 0) cell.fill();
 	const save = cells.toData();
 
-	const result = fillSolve(cells, STRATEGY.ALL);
-
+	const result = fillSolve(cells, simples, strategies);
 	data.puzzleClues = data.puzzle;
 	data.puzzleFilled = puzzleFilled.join('');
 	data.clueCount = clueCount;
 
-	data.simple = 0;
-	data.naked2 = 0;
-	data.naked3 = 0;
-	data.naked4 = 0;
-	data.hidden2 = 0;
-	data.hidden3 = 0;
-	data.hidden4 = 0;
-	data.omissions = 0;
-	data.yWing = 0;
-	data.xyzWing = 0;
-	data.xWing = 0;
-	data.swordfish = 0;
-	data.jellyfish = 0;
-	data.uniqueRectangle = 0;
-	data.bruteForce = 0;
+	for (const strategy of allArray) data[strategy.data] = 0;
 
-	let simple = true;
-	simple &&= result.naked2Reduced === 0;
-	simple &&= result.naked3Reduced === 0;
-	simple &&= result.naked4Reduced === 0;
-	simple &&= result.hidden2Reduced === 0;
-	simple &&= result.hidden3Reduced === 0;
-	simple &&= result.hidden4Reduced === 0;
-	simple &&= result.omissionsReduced === 0;
-	simple &&= result.yWingReduced === 0;
-	simple &&= result.xyzWingReduced === 0;
-	simple &&= result.xWingReduced === 0;
-	simple &&= result.swordfishReduced === 0;
-	simple &&= result.jellyfishReduced === 0;
-	simple &&= result.uniqueRectangleReduced === 0;
-	simple &&= !result.bruteForceFill;
-
-	if (simple) data.simple = 1;
-	if (result.bruteForceFill) data.bruteForce = 1;
-	data.has_naked2 = 0;
-	data.has_naked3 = 0;
-	data.has_naked4 = 0;
-	data.has_hidden2 = 0;
-	data.has_hidden3 = 0;
-	data.has_hidden4 = 0;
-	data.has_omissions = 0;
-	data.has_uniqueRectangle = 0;
-	data.has_yWing = 0;
-	data.has_xyzWing = 0;
-	data.has_xWing = 0;
-	data.has_swordfish = 0;
-	data.has_jellyfish = 0;
-
-	if (!simple) {
-		const processStrategy = (resultProperty, dataProperty, strategy) => {
-			if (result[resultProperty] === 0) return;
-
-			cells.fromData(save);
-			const strategyResult = fillSolve(cells, strategy, false);
-			const strategyResultValue = strategyResult[resultProperty];
-
-			result[resultProperty] = strategyResultValue;
-			if (strategyResultValue > 0) {
-				cells.fromData(save);
-				const resultIsolated = fillSolve(cells, strategy, true);
-
-				if (!resultIsolated.bruteForceFill) {
-					const isolatedValue = resultIsolated[resultProperty];
-					if (isolatedValue <= strategyResultValue) data[dataProperty] = isolatedValue;
-				}
-			}
+	// solveType
+	// 0 Simple
+	// 1 Simple Minimal
+	// 2 Candidate
+	// 3 Candidate Visible
+	// 3 Candidate Minimal
+	// 4 Incomplete
+	data.solveType = 0;
+	if (!result.simple) {
+		if (result.solved) {
+			data.solveType = 2;
+		} else {
+			data.solveType = 5;
 		}
-		const processSets = () => {
-			const strategies = ['naked2Reduced', 'naked3Reduced', 'naked4Reduced', 'hidden2Reduced', 'hidden3Reduced', 'hidden4Reduced'];
-			const hasMap = ['has_naked2', 'has_naked3', 'has_naked4', 'has_hidden2', 'has_hidden3', 'has_hidden4'];
-			const strategType = [STRATEGY.NAKED_2, STRATEGY.NAKED_3, STRATEGY.NAKED_4, STRATEGY.HIDDEN_2, STRATEGY.HIDDEN_3, STRATEGY.HIDDEN_4];
-			const maxSetIndex = (result) => {
-				let i = strategies.length - 1;
-				do {
-					if (result[strategies[i]] > 0) return i;
-					i--;
-				} while (i >= 0);
-				return i;
-			}
-
-			if (maxSetIndex(result) < 0) return;
-
-			cells.fromData(save);
-			const strategyResult = fillSolve(cells, STRATEGY.NAKED_HIDDEN, false);
-
-			for (const strategy of strategies) result[strategy] = strategyResult[strategy];
-
-			const maxStrategy = maxSetIndex(result);
-			if (maxStrategy < 0) return;
-
-			cells.fromData(save);
-			const resultIsolated = fillSolve(cells, strategType[maxStrategy], true);
-			if (resultIsolated.bruteForceFill) return;
-
-			const maxIsolated = maxSetIndex(resultIsolated);
-			for (const i in strategies) {
-				const strategy = strategies[i];
-				const isolatedValue = resultIsolated[strategy];
-				if (isolatedValue > 0) {
-					if (i < maxIsolated) break;
-					if (isolatedValue <= strategyResult[strategy]) data[hasMap[i]] = isolatedValue;
-				}
-			}
-		}
-		processSets();
-		processStrategy('omissionsReduced', 'has_omissions', STRATEGY.INTERSECTION_REMOVAL);
-		processStrategy('uniqueRectangleReduced', 'has_uniqueRectangle', STRATEGY.DEADLY_PATTERN);
-		processStrategy('yWingReduced', 'has_yWing', STRATEGY.Y_WING);
-		processStrategy('xyzWingReduced', 'has_xyzWing', STRATEGY.XYZ_WING);
-		processStrategy('xWingReduced', 'has_xWing', STRATEGY.X_WING);
-		processStrategy('swordfishReduced', 'has_swordfish', STRATEGY.SWORDFISH);
-		processStrategy('jellyfishReduced', 'has_jellyfish', STRATEGY.JELLYFISH);
-
-		data.naked2 += result.naked2Reduced;
-		data.naked3 += result.naked3Reduced;
-		data.naked4 += result.naked4Reduced;
-		data.hidden2 += result.hidden2Reduced;
-		data.hidden3 += result.hidden3Reduced;
-		data.hidden4 += result.hidden4Reduced;
-		data.omissions += result.omissionsReduced;
-		data.yWing += result.yWingReduced;
-		data.xyzWing += result.xyzWingReduced;
-		data.xWing += result.xWingReduced;
-		data.swordfish += result.swordfishReduced;
-		data.jellyfish += result.jellyfishReduced;
-		data.uniqueRectangle += result.uniqueRectangleReduced;
-
-		// if (result.superpositionReduced.length > 0) {
-		// 	const once = new Set();
-		// 	for (const superpositionResult of result.superpositionReduced) {
-		// 		const key = superpositionResult.type + " " + superpositionResult.size;
-		// 		if (once.has(key)) continue;
-
-		// 		once.add(key);
-
-		// 		const count = superpositionReduced.get(key);
-		// 		if (count) {
-		// 			superpositionReduced.set(key, count + 1);
-		// 		} else {
-		// 			superpositionReduced.set(key, 1);
-		// 		}
-		// 	}
-		// 	superpositions++;
-		// 	data.superpositions++;
-		// }
 	}
 
+	const orderedSolveSimple = () => {
+		// simples = [STRATEGY.SIMPLE_HIDDEN, STRATEGY.SIMPLE_INTERSECTION, STRATEGY.SIMPLE_NAKED];
+		if (result.nakedSimple === 0) {
+			data.solveType = 1;
+			return;
+		}
+
+		cells.fromData(save);
+		const nakedResult = fillSolve(cells, [STRATEGY.SIMPLE_NAKED], []);
+		if (nakedResult.solved) {
+			data.solveType = 1;
+			return;
+		}
+
+		cells.fromData(save);
+		const simples2 = [STRATEGY.SIMPLE_HIDDEN, STRATEGY.SIMPLE_NAKED, STRATEGY.SIMPLE_INTERSECTION];
+		const orderedResult = fillSolve(cells, simples2, []);
+
+		// "X0X" = if simples2 "XX0" then simples
+		// "X0X" = if simples2 "XXX" then simples min
+		// "XXX" = if simples2 "XX0" then simples2 min
+		// "XXX" = if simples2 "XXX" then simples min
+		if (result.omissionSimple > 0) {
+			if (orderedResult.nakedSimple > 0 && orderedResult.omissionSimple > 0) {
+				data.solveType = 1;
+			} else {
+				for (const strategy of simpleDataArray) data[strategy.data] = orderedResult[strategy.data];
+				data.solveType = 1;
+			}
+		} else {
+			if (orderedResult.omissionSimple > 0) {
+				data.solveType = 1;
+			}
+		}
+	}
+	const orderedSolve = () => {
+		const usedData = [];
+		for (const strategy of strategyDataArray) {
+			if (result[strategy.data] > 0) usedData.push(strategy);
+		}
+		const minimal = [];
+		for (let index = 0; index < usedData.length - 1; index++) {
+			const used = usedData[index];
+
+			const priority = [];
+			for (const strategy of usedData) {
+				if (used.strategy === strategy.strategy) continue;
+				priority.push(strategy.strategy);
+			}
+
+			cells.fromData(save);
+			const priorityResult = fillSolve(cells, simples, priority);
+			if (!priorityResult.solved) minimal.push(used.strategy);
+		}
+		minimal.push(usedData[usedData.length - 1].strategy);
+
+		cells.fromData(save);
+		const minimalResult = fillSolve(cells, simples, minimal);
+		if (minimalResult.solved) {
+			data.solveType = 4;
+			for (const strategy of allArray) data[strategy.data] = minimalResult[strategy.data];
+		}
+	}
+
+	for (const strategy of allArray) data[strategy.data] = result[strategy.data];
+	if (data.solveType === 0) {
+		orderedSolveSimple();
+	}
+	if (data.solveType === 2) {
+		if (!result.candidateVisible) {
+			data.solveType = 3;
+			orderedSolve();
+		}
+	}
 	postMessage(data);
 	return true;
 };
