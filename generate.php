@@ -65,12 +65,12 @@ try {
 	$dbname = "sudoku";
 	$db = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
 
-	$db->exec("LOCK TABLES `tables` WRITE");
+	$db->exec("START TRANSACTION");
 
 	$array = json_decode(file_get_contents("php://input"));
 	$addCount = count($array);
 
-	$stmt = $db->prepare("SELECT `tableCount`, `puzzleCount` FROM `tables`");
+	$stmt = $db->prepare("SELECT `tableCount`, `puzzleCount` FROM `tables` FOR UPDATE");
 	$stmt->execute();
 	$result = $stmt->fetch();
 	$tableCount = (int)$result['tableCount'];
@@ -81,35 +81,14 @@ try {
 	$totalAvailable = $tableAvailable * MAX_SIZE;
 
 	while ($totalRequired > $totalAvailable) {
-		$db->exec("UNLOCK TABLES");
-
 		$tableAvailable++;
 		$totalAvailable = $tableAvailable * MAX_SIZE;
 		$db->exec(addTable($tableAvailable));
-
-		$db->exec("LOCK TABLES `tables` WRITE");
-		$stmt = $db->prepare("SELECT `tableCount`, `puzzleCount` FROM `tables`");
-		$stmt->execute();
-		$result = $stmt->fetch();
-		$tableCount = (int)$result['tableCount'];
-		$puzzleCount = (int)$result['puzzleCount'];
-		$totalRequired = totalCount($tableCount, $puzzleCount) + $addCount;
-
-		if ($tableCount > $tableAvailable) {
-			$tableAvailable = $tableCount;
-			$totalAvailable = $tableAvailable * MAX_SIZE;
-		}
 	}
-	if ($tableCount === 0) {
-		$tableCount = 1;
-		$puzzleCount = 0;
-	}
-
-	$db->exec("START TRANSACTION");
 
 	$values = [];
 	foreach ($array as $post) {
-		if ($puzzleCount >= MAX_SIZE) {
+		if ($tableCount === 0 || $puzzleCount >= MAX_SIZE) {
 			if (count($values) > 0) {
 				$db->exec(insertValues($tableCount, $values));
 				$values = [];
@@ -155,7 +134,6 @@ try {
 	$stmt->execute([$tableCount, $puzzleCount]);
 
 	$db->exec("COMMIT");
-	$db->exec("UNLOCK TABLES");
 
 	echo "$tableCount:$puzzleCount";
 } catch (PDOException $e) {
