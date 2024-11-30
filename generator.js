@@ -1,23 +1,33 @@
 import {
-	candidates, nakedSingles, hiddenSingles, omissions, NakedHiddenGroups, uniqueRectangle,
-	yWing, xyzWing, xWing, swordfish, jellyfish, aCells, bCells
+	candidates, nakedSingles, hiddenSingles, NakedHiddenGroups, omissions, uniqueRectangle,
+	yWing, xyzWing, xWing, swordfish, jellyfish, aCells, bCells,
+	simpleNaked, simpleHidden
 } from "./solver.js";
 
 const consoleOut = (result) => {
 	const lines = [];
-	lines.push("Naked2: " + result.naked2Reduced);
-	lines.push("Naked3: " + result.naked3Reduced);
-	lines.push("Naked4: " + result.naked4Reduced);
-	lines.push("Hidden2: " + result.hidden2Reduced);
-	lines.push("Hidden3: " + result.hidden3Reduced);
-	lines.push("Hidden4: " + result.hidden4Reduced);
-	lines.push("Omissions: " + result.omissionsReduced);
-	lines.push("Y Wing: " + result.yWingReduced);
-	lines.push("XYZ Wing: " + result.xyzWingReduced);
-	lines.push("X Wing: " + result.xWingReduced);
-	lines.push("Swordfish: " + result.swordfishReduced);
-	lines.push("Jellyfish: " + result.jellyfishReduced);
-	lines.push("Deadly Pattern Unique Rectangle: " + result.uniqueRectangleReduced);
+	lines.push("Solved: " + (result.solved ? "Yes" : "No"));
+	lines.push("Simple: " + (result.simple ? "Yes" : "No"));
+	lines.push("Visual: " + (result.candidateVisible ? "Yes" : "No"));
+	lines.push("Simple Hidden: " + result.hiddenSimple);
+	lines.push("Simple Omission: " + result.omissionSimple);
+	lines.push("Simple Naked: " + result.nakedSimple);
+	lines.push("Visual Naked: " + result.nakedVisible);
+	lines.push("Visual Omission: " + result.omissionVisible);
+	lines.push("Naked 2: " + result.naked2);
+	lines.push("Naked 3: " + result.naked3);
+	lines.push("Naked 4: " + result.naked4);
+	lines.push("Hidden 1: " + result.hidden1);
+	lines.push("Hidden 2: " + result.hidden2);
+	lines.push("Hidden 3: " + result.hidden3);
+	lines.push("Hidden 4: " + result.hidden4);
+	lines.push("Omissions: " + result.omissions);
+	lines.push("Deadly Pattern (Unique Rectangle): " + result.uniqueRectangle);
+	lines.push("Y Wing: " + result.yWing);
+	lines.push("XYZ Wing: " + result.xyzWing);
+	lines.push("X Wing: " + result.xWing);
+	lines.push("Swordfish: " + result.swordfish);
+	lines.push("Jellyfish: " + result.jellyfish);
 	// lines.push("Phistomefel: " + phistomefelReduced + (phistomefelFilled > 0 ? " + " + phistomefelFilled + " filled" : ""));
 	// if (result.superpositionReduced.length > 0) {
 	// 	const once = new Set();
@@ -30,7 +40,6 @@ const consoleOut = (result) => {
 	// 		lines.push("Superposition: " + key);
 	// 	}
 	// }
-	lines.push("Brute Force: " + result.bruteForceFill);
 	return lines;
 }
 
@@ -41,216 +50,224 @@ const isFinished = (cells) => {
 	}
 	return true;
 }
+const emptyCount = (cells) => {
+	let count = 0;
+	for (let i = 0; i < 81; i++) {
+		const cell = cells[i];
+		if (cell.symbol === 0) count++;
+	}
+	return count;
+}
 
 const STRATEGY = {
-	NONE: 0,
-	NAKED_HIDDEN: 1,
-	NAKED_2: 2,
-	NAKED_3: 3,
-	NAKED_4: 4,
-	HIDDEN_2: 5,
-	HIDDEN_3: 6,
-	HIDDEN_4: 7,
-	INTERSECTION_REMOVAL: 8,
-	DEADLY_PATTERN: 9,
-	Y_WING: 10,
-	XYZ_WING: 11,
-	X_WING: 12,
-	SWORDFISH: 13,
-	JELLYFISH: 14,
-	ALL: 15,
+	SIMPLE_HIDDEN: 0,
+	SIMPLE_INTERSECTION: 1,
+	SIMPLE_NAKED: 2,
+
+	VISIBLE_NAKED: 3,
+	VISIBLE_INTERSECTION: 4,
+
+	NAKED_2: 5,
+	NAKED_3: 6,
+	NAKED_4: 7,
+	HIDDEN_1: 8,
+	HIDDEN_2: 9,
+	HIDDEN_3: 10,
+	HIDDEN_4: 11,
+	INTERSECTION_REMOVAL: 12,
+	DEADLY_PATTERN: 13,
+	Y_WING: 14,
+	XYZ_WING: 15,
+	X_WING: 16,
+	SWORDFISH: 17,
+	JELLYFISH: 18,
 };
 Object.freeze(STRATEGY);
 
-const STRATEGIES = [
-	STRATEGY.NAKED_HIDDEN,
-	STRATEGY.INTERSECTION_REMOVAL,
-	STRATEGY.DEADLY_PATTERN,
-	STRATEGY.Y_WING,
-	STRATEGY.XYZ_WING,
-	STRATEGY.X_WING,
-	STRATEGY.SWORDFISH,
-	STRATEGY.JELLYFISH,
-];
-Object.freeze(STRATEGIES);
+const fillSolve = (cells, simples, strategies, visible = true) => {
+	let hiddenSimple = 0;
+	let omissionSimple = 0;
+	let nakedSimple = 0;
+	const solveSimple = () => {
+		let remaining = emptyCount(cells);
+		while (remaining > 0) {
+			let found = false;
+			for (const simple of simples) {
+				if (simple === STRATEGY.SIMPLE_HIDDEN && simpleHidden(cells)) {
+					hiddenSimple++;
+					found = true;
+					break;
+				}
+				if (simple === STRATEGY.SIMPLE_INTERSECTION && omissions(cells, 0)) {
+					omissionSimple++;
+					found = true;
+					break;
+				}
+				if (simple === STRATEGY.SIMPLE_NAKED && simpleNaked(cells)) {
+					nakedSimple++;
+					found = true;
+					break;
+				}
+			}
+			if (found) remaining--;
+			else break;
+		}
+		return remaining > 0;
+	}
 
-const fillSolve = (cells, solveStrategy = STRATEGY.NONE, isolated = false) => {
+	let nakedVisible = 0;
+	let omissionVisible = 0;
+
 	let naked2Reduced = 0;
 	let naked3Reduced = 0;
 	let naked4Reduced = 0;
+	let hidden1Reduced = 0;
 	let hidden2Reduced = 0;
 	let hidden3Reduced = 0;
 	let hidden4Reduced = 0;
 	let omissionsReduced = 0;
+	let uniqueRectangleReduced = 0;
 	let yWingReduced = 0;
 	let xyzWingReduced = 0;
 	let xWingReduced = 0;
 	let swordfishReduced = 0;
 	let jellyfishReduced = 0;
-	let uniqueRectangleReduced = 0;
-	let bruteForceFill = false;
-
+	let nakedHidden = null;
+	// 0 none
+	// 1 reduced
+	// 2 placed
 	const solvePriority = (strategy) => {
-		if (strategy === STRATEGY.NAKED_HIDDEN) {
-			const nakedHiddenGroups = new NakedHiddenGroups(cells);
-			const result = nakedHiddenGroups.nakedHiddenSets();
-			if (result) {
-				if (result.nakedSize === 2) naked2Reduced++;
-				else if (result.nakedSize === 3) naked3Reduced++;
-				else if (result.nakedSize === 4) naked4Reduced++;
-				else if (result.hiddenSize === 2) hidden2Reduced++;
-				else if (result.hiddenSize === 3) hidden3Reduced++;
-				else if (result.hiddenSize === 4) hidden4Reduced++;
-				return true;
-			}
+		if (!nakedHidden) {
+			if (strategy === STRATEGY.NAKED_2 ||
+				strategy === STRATEGY.NAKED_3 ||
+				strategy === STRATEGY.NAKED_4 ||
+				strategy === STRATEGY.HIDDEN_2 ||
+				strategy === STRATEGY.HIDDEN_3 ||
+				strategy === STRATEGY.HIDDEN_4
+			) nakedHidden = new NakedHiddenGroups(cells);
 		}
-		if (strategy === STRATEGY.NAKED_2) {
-			if (new NakedHiddenGroups(cells).nakedPair()) {
-				naked2Reduced++;
-				return true;
-			}
+		if (strategy === STRATEGY.NAKED_2 && nakedHidden.nakedPair()) {
+			naked2Reduced++;
+			return 1;
 		}
-		if (strategy === STRATEGY.NAKED_3) {
-			if (new NakedHiddenGroups(cells).nakedTriple()) {
-				naked3Reduced++;
-				return true;
-			}
+		if (strategy === STRATEGY.NAKED_3 && nakedHidden.nakedTriple()) {
+			naked3Reduced++;
+			return 1;
 		}
-		if (strategy === STRATEGY.NAKED_4) {
-			if (new NakedHiddenGroups(cells).nakedQuad()) {
-				naked4Reduced++;
-				return true;
-			}
+		if (strategy === STRATEGY.NAKED_4 && nakedHidden.nakedQuad()) {
+			naked4Reduced++;
+			return 1;
 		}
-		if (strategy === STRATEGY.HIDDEN_2) {
-			if (new NakedHiddenGroups(cells).hiddenPair()) {
-				hidden2Reduced++;
-				return true;
-			}
+		if (strategy === STRATEGY.HIDDEN_1 && hiddenSingles(cells)) {
+			hidden1Reduced++;
+			return 2;
 		}
-		if (strategy === STRATEGY.HIDDEN_3) {
-			if (new NakedHiddenGroups(cells).hiddenTriple()) {
-				hidden3Reduced++;
-				return true;
-			}
+		if (strategy === STRATEGY.HIDDEN_2 && nakedHidden.hiddenPair()) {
+			hidden2Reduced++;
+			return 1;
 		}
-		if (strategy === STRATEGY.HIDDEN_4) {
-			if (new NakedHiddenGroups(cells).hiddenQuad()) {
-				hidden4Reduced++;
-				return true;
-			}
+		if (strategy === STRATEGY.HIDDEN_3 && nakedHidden.hiddenTriple()) {
+			hidden3Reduced++;
+			return 1;
 		}
-		if (strategy === STRATEGY.DEADLY_PATTERN) {
-			if (uniqueRectangle(cells)) {
-				uniqueRectangleReduced++;
-				return true;
-			}
+		if (strategy === STRATEGY.HIDDEN_4 && nakedHidden.hiddenQuad()) {
+			hidden4Reduced++;
+			return 1;
 		}
-		if (strategy === STRATEGY.INTERSECTION_REMOVAL) {
-			if (omissions(cells)) {
-				omissionsReduced++;
-				return true;
-			}
+		if (strategy === STRATEGY.INTERSECTION_REMOVAL && omissions(cells)) {
+			omissionsReduced++;
+			return 1;
 		}
-		if (strategy === STRATEGY.Y_WING) {
-			if (yWing(cells)) {
-				yWingReduced++;
-				return true;
-			}
+		if (strategy === STRATEGY.DEADLY_PATTERN && uniqueRectangle(cells)) {
+			uniqueRectangleReduced++;
+			return 1;
 		}
-		if (strategy === STRATEGY.XYZ_WING) {
-			if (xyzWing(cells)) {
-				xyzWingReduced++;
-				return true;
-			}
+		if (strategy === STRATEGY.Y_WING && yWing(cells)) {
+			yWingReduced++;
+			return 1;
 		}
-		if (strategy === STRATEGY.X_WING) {
-			if (xWing(cells)) {
-				xWingReduced++;
-				return true;
-			}
+		if (strategy === STRATEGY.XYZ_WING && xyzWing(cells)) {
+			xyzWingReduced++;
+			return 1;
 		}
-		if (strategy === STRATEGY.SWORDFISH) {
-			if (swordfish(cells)) {
-				swordfishReduced++;
-				return true;
-			}
+		if (strategy === STRATEGY.X_WING && xWing(cells)) {
+			xWingReduced++;
+			return 1;
 		}
-		if (strategy === STRATEGY.JELLYFISH) {
-			if (jellyfish(cells)) {
-				jellyfishReduced++;
-				return true;
-			}
+		if (strategy === STRATEGY.SWORDFISH && swordfish(cells)) {
+			swordfishReduced++;
+			return 1;
 		}
-		return false;
+		if (strategy === STRATEGY.JELLYFISH && jellyfish(cells)) {
+			jellyfishReduced++;
+			return 1;
+		}
+		return 0;
 	}
 
-	let progress = false;
+	let simple = true;
+	let candidateVisible = true;
+	let solved = true;
 	do {
+		const remaining = solveSimple();
+		if (!remaining) break;
+
+		simple = false;
 		candidates(cells);
 
-		progress = nakedSingles(cells);
-		if (progress) continue;
-
-		progress = hiddenSingles(cells);
-		if (progress) continue;
-
-		if (solveStrategy === STRATEGY.NONE) continue;
-
-		if (!isolated) {
-			for (const strategy of STRATEGIES) {
-				if (strategy === solveStrategy) continue;
-				progress = solvePriority(strategy);
-				if (progress) break;
-			}
-			if (progress) continue;
+		let progress = 0;
+		if (strategies.length > 0) {
+			do {
+				if (visible) {
+					if (omissions(cells, 1)) {
+						progress = 1;
+						omissionVisible++;
+						continue;
+					}
+					if (nakedSingles(cells)) {
+						progress = 2;
+						nakedVisible++;
+						break;
+					}
+				}
+				candidateVisible = false;
+				for (const strategy of strategies) {
+					progress = solvePriority(strategy);
+					if (progress > 0) break;
+				}
+				nakedHidden = null;
+			} while (progress === 1);
 		}
+		if (progress === 0) solved = false;
+	} while (solved);
 
-		if (solveStrategy !== STRATEGY.ALL) {
-			progress = solvePriority(solveStrategy);
-			if (progress) continue;
-		}
-
-		// if (table == "puzzlesPhistomefel") {
-		// 	const { reduced, filled } = phistomefel(cells);
-		// 	progress = reduced > 0 || filled > 0;
-		// 	if (progress) {
-		// 		if (reduced > 0) phistomefelReduced++;
-		// 		if (filled > 0) phistomefelFilled++;
-		// 		continue;
-		// 	}
-		// }
-
-		if (!bruteForceFill) bruteForceFill = !isFinished(cells);
-
-		// const superpositionResults = superposition(cells);
-		// if (superpositionResults.length > 0) {
-		// 	progress = true;
-		// 	superpositionReduced.push(...superpositionResults);
-		// 	continue;
-		// }
-
-		// if (bruteForceFill) bruteForce(cells);
-	} while (progress);
+	if (simple) candidateVisible = false;
 
 	return {
-		naked2Reduced,
-		naked3Reduced,
-		naked4Reduced,
-		hidden2Reduced,
-		hidden3Reduced,
-		hidden4Reduced,
-		omissionsReduced,
-		yWingReduced,
-		xyzWingReduced,
-		xWingReduced,
-		swordfishReduced,
-		jellyfishReduced,
-		uniqueRectangleReduced,
-		bruteForceFill
+		solved,
+		simple,
+		candidateVisible,
+		hiddenSimple,
+		omissionSimple,
+		nakedSimple,
+		nakedVisible,
+		omissionVisible,
+		naked2: naked2Reduced,
+		naked3: naked3Reduced,
+		naked4: naked4Reduced,
+		hidden1: hidden1Reduced,
+		hidden2: hidden2Reduced,
+		hidden3: hidden3Reduced,
+		hidden4: hidden4Reduced,
+		omissions: omissionsReduced,
+		uniqueRectangle: uniqueRectangleReduced,
+		yWing: yWingReduced,
+		xyzWing: xyzWingReduced,
+		xWing: xWingReduced,
+		swordfish: swordfishReduced,
+		jellyfish: jellyfishReduced,
 	};
 }
-
 const makeArray = (size) => {
 	const array = new Uint8Array(size);
 	for (let i = 0; i < size; i++) array[i] = i;
