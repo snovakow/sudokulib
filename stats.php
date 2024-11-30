@@ -1,38 +1,41 @@
 <?php
 
+const MAX_SIZE = 10000000;
+
+function totalCount($tableCount, $puzzleCount)
+{
+	if ($tableCount === 0) return 0;
+	return (($tableCount - 1) * MAX_SIZE) +  $puzzleCount;
+}
+
 function flushOut($message)
 {
 	echo "$message<br/>";
 }
 
-function percentage($count, $total)
+function percentage($count, $total, $precision)
 {
-	$precision = 100000;
-	$number = $count / $total;
-	$formatted = ceil(100 * $number * $precision) / $precision;
-	return rtrim(rtrim(sprintf('%f', $formatted), '0'), ".") . "%";
+	return number_format(100.0 * $count / $total, $precision, '.', "") . "%";
 }
 
-function getStat($title, $count, $total)
+function getStat($title, $count, $total, $precision)
 {
-	return $title . ": " . percentage($count, $total) . " " . number_format($count);
+	return $title . ": " . percentage($count, $total, $precision) . " " . number_format($count);
 }
 
-function printStat($title, $count, $total)
+function printStat($title, $count, $total, $precision)
 {
-	$stat =  getStat($title, $count, $total);
-	echo "$stat<br/>";
-}
+	$stat = getStat($title, $count, $total, $precision);
+	echo "$stat<br/>";}
 
-function queryStrategy($conn, $table)
+function queryStrategy($db, $table)
 {
-	$stmt = $conn->prepare("SELECT COUNT(*) as count, MAX(`count`) as max FROM `" . $table . "`");
+	$stmt = $db->prepare("SELECT COUNT(*) as count, MAX(`count`) as max FROM `" . $table . "`");
 	$stmt->execute();
 	$result = $stmt->fetch();
 	return $result;
 }
 
-// header("Access-Control-Allow-Origin: *");
 
 if (!isset($_GET['mode'])) die;
 
@@ -50,7 +53,10 @@ try {
 	$dbname = "sudoku";
 	$db = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
 
-	$countTotal = 0;
+	$tableCount = 0;
+	$puzzleCount = 0;
+	$totalCount = 0;
+
 	if ($mode === 1) {
 		$tables = [];
 		$stmt = $db->prepare("SELECT `table` FROM `tables`");
@@ -115,7 +121,12 @@ try {
 		}
 		echo  "<br/>";
 	} else {
-		$tables = explode(",", $_GET['table']);
+		$stmt = $db->prepare("SELECT `tableCount`, `puzzleCount` FROM `tables`");
+		$stmt->execute();
+		$result = $stmt->fetch();
+		$tableCount = (int)$result['tableCount'];
+		$puzzleCount = (int)$result['puzzleCount'];
+		$totalCount = totalCount($tableCount, $puzzleCount);
 	}
 
 	if ($mode === 2) {
@@ -200,28 +211,11 @@ try {
 		echo  "<br/>";
 	}
 
-	$total = 0;
-	$totals = [];
-	foreach ($tables as $table) {
-		$stmt = $db->prepare("SELECT MAX(id) as totalPuzzles FROM `" . $table . "`");
-		$stmt->execute();
-		$totalPuzzles = $stmt->fetch()["totalPuzzles"];
-		if ($totalPuzzles === NULL) {
-			$stmt = $db->prepare("
-				SELECT table_name FROM information_schema.tables WHERE table_schema = 'sudoku' AND table_name = '" . $table . "' LIMIT 1;
-			");
-			$stmt->execute();
-			if ($stmt->fetch()["table_name"] === NULL) $totalPuzzles = "-1";
-			else $totalPuzzles = "0";
-		} else {
-			$total += $totalPuzzles;
-		}
+	$tableFormat = number_format($tableCount);
+	$tableName = $tableCount === 1 ? "table" : "tables";
+	$totalFormat = number_format($totalCount);
 
-		$totals[] =  $table . "=" . $totalPuzzles;
-		if ($mode !== 3) flushOut($table . ": " . number_format($totalPuzzles));
-	}
-		if (count($tables) > 1) flushOut("Total Puzzles: " . number_format($total));
-		echo  "<br/>";
+	echo "$totalFormat puzzles in $tableFormat $tableName<br/><br/>";
 
 	if ($mode === 3) {
 		flushOut("--- Clues");
@@ -229,46 +223,89 @@ try {
 		$count0 = [];
 		$count1 = [];
 		$count2 = [];
-		foreach ($tables as $table) {
-			$stmt = $db->prepare("SELECT `clueCount`, `solveType`, COUNT(*) as count FROM `" . $table . "` GROUP BY `clueCount`, `solveType`");
-			$stmt->execute();
-			$result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-			foreach ($result as $key => $row) {
-				$clueCount = $row['clueCount'];
-				$solveType = $row['solveType'];
-				$count = $row['count'];
+		$count3 = [];
+		$count4 = [];
+		$count5 = [];
 
-				if (!$counts[$clueCount]) $counts[$clueCount] = 0;
-				if (!$count0[$clueCount]) $count0[$clueCount] = 0;
-				if (!$count1[$clueCount]) $count1[$clueCount] = 0;
-				if (!$count2[$clueCount]) $count2[$clueCount] = 0;
+		// $stmt = $db->prepare("SELECT `clueCount`, `solveType`, COUNT(*) as count FROM `" . $table . "` GROUP BY `clueCount`, `solveType`");
+		// $sql = "
+		// SELECT puzzles.`clueCount` as clueCount, puzzles.`solveType` as solveType, COUNT(*) as count FROM (
+		// SELECT * FROM `puzzles001` UNION ALL SELECT * FROM `puzzles002` UNION ALL SELECT * FROM `puzzles003`
+		// ) puzzles
+		// GROUP BY clueCount, solveType
+		// ";
+		$sql = "
+		SELECT puzzles.`clueCount` as clueCount, puzzles.`solveType` as solveType, COUNT(*) as count FROM (
+		SELECT * FROM `puzzles001`
+		) puzzles
+		GROUP BY clueCount, solveType
+		";
 
-				$counts[$clueCount] += $count;
-				if ($solveType == 0) $count0[$clueCount] += $count;
-				if ($solveType == 1) $count1[$clueCount] += $count;
-				if ($solveType == 2) $count2[$clueCount] += $count;
-			}
+		$stmt = $db->prepare($sql);
+
+		$stmt->execute();
+		$result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+		foreach ($result as $key => $row) {
+			$clueCount = $row['clueCount'];
+			$solveType = (int)$row['solveType'];
+			$count = (int)$row['count'];
+
+			if (!$counts[$clueCount]) $counts[$clueCount] = 0;
+			if (!$count0[$clueCount]) $count0[$clueCount] = 0;
+			if (!$count1[$clueCount]) $count1[$clueCount] = 0;
+			if (!$count2[$clueCount]) $count2[$clueCount] = 0;
+			if (!$count3[$clueCount]) $count3[$clueCount] = 0;
+			if (!$count4[$clueCount]) $count4[$clueCount] = 0;
+			if (!$count5[$clueCount]) $count5[$clueCount] = 0;
+
+			$counts[$clueCount] += $count;
+			if ($solveType == 0) $count0[$clueCount] += $count;
+			if ($solveType == 1) $count1[$clueCount] += $count;
+			if ($solveType == 2) $count2[$clueCount] += $count;
+			if ($solveType == 3) $count3[$clueCount] += $count;
+			if ($solveType == 4) $count4[$clueCount] += $count;
+			if ($solveType == 5) $count5[$clueCount] += $count;
 		}
 
-		foreach ($counts as $clueCount => $count) printStat($clueCount, $count, $total);
+		foreach ($counts as $clueCount => $count) {
+			printStat($clueCount, $count, $totalCount, 5);
+		}
 		echo  "<br/>";
 
 		$counts0 = 0;
 		$counts1 = 0;
 		$counts2 = 0;
+		$counts3 = 0;
+		$counts4 = 0;
+		$counts5 = 0;
 		foreach ($count0 as $clueCount => $count) $counts0 += $count;
 		foreach ($count1 as $clueCount => $count) $counts1 += $count;
 		foreach ($count2 as $clueCount => $count) $counts2 += $count;
-		printStat("Simples", $counts0, $total);
-		foreach ($counts as $clueCount => $count) printStat($clueCount, $count0[$clueCount], $count);
+		foreach ($count3 as $clueCount => $count) $counts3 += $count;
+		foreach ($count4 as $clueCount => $count) $counts4 += $count;
+		foreach ($count5 as $clueCount => $count) $counts5 += $count;
+		printStat("Simples", $counts0, $totalCount, 1);
+		foreach ($counts as $clueCount => $count) printStat($clueCount, $count0[$clueCount], $count, 5);
 		echo  "<br/>";
 
-		printStat("Strategies", $counts1, $total);
-		foreach ($counts as $clueCount => $count) printStat($clueCount, $count1[$clueCount], $count);
+		printStat("Simples Minimal", $counts1, $totalCount, 1);
+		foreach ($counts as $clueCount => $count) printStat($clueCount, $count1[$clueCount], $count, 5);
 		echo  "<br/>";
 
-		printStat("Brute Force", $counts2, $total);
-		foreach ($counts as $clueCount => $count) printStat($clueCount, $count2[$clueCount], $count);
+		printStat("Candidate Visible", $counts2, $totalCount, 1);
+		foreach ($counts as $clueCount => $count) printStat($clueCount, $count2[$clueCount], $count, 5);
+		echo  "<br/>";
+
+		printStat("Candidate", $counts3, $totalCount, 1);
+		foreach ($counts as $clueCount => $count) printStat($clueCount, $count3[$clueCount], $count, 5);
+		echo  "<br/>";
+
+		printStat("Candidate Minimal", $counts4, $totalCount, 1);
+		foreach ($counts as $clueCount => $count) printStat($clueCount, $count4[$clueCount], $count, 5);
+		echo  "<br/>";
+
+		printStat("Unsolvable", $counts5, $totalCount, 1);
+		foreach ($counts as $clueCount => $count) printStat($clueCount, $count5[$clueCount], $count, 5);
 		echo  "<br/>";
 	}
 } catch (PDOException $e) {
