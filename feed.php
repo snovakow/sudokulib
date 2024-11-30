@@ -2,7 +2,7 @@
 
 function flushOut($message)
 {
-	echo $message . "<br/>";
+	echo "$message<br/>";
 }
 
 function percentage($count, $total)
@@ -12,13 +12,16 @@ function percentage($count, $total)
 	$formatted = ceil(100 * $number * $precision) / $precision;
 	return rtrim(rtrim(sprintf('%f', $formatted), '0'), ".") . "%";
 }
+
 function getStat($title, $count, $total)
 {
 	return $title . ": " . percentage($count, $total) . " " . number_format($count);
 }
+
 function printStat($title, $count, $total)
 {
-	echo getStat($title, $count, $total) . "<br/>";
+	$stat =  getStat($title, $count, $total);
+	echo "$stat<br/>";
 }
 
 function queryStrategy($conn, $table)
@@ -33,31 +36,24 @@ function queryStrategy($conn, $table)
 
 if (!isset($_GET['mode'])) die;
 
-// 0 = Count
 // 1 = Strategies Isolated
 // 2 = Strategies
 // 3 = Clues
 
 $mode = (int)$_GET['mode'];
-if ($mode !== 0 && $mode !== 1 && $mode !== 2 && $mode !== 3) die;
-
-if (!isset($_GET['table'])) {
-	if ($mode !== 1) die;
-}
-
-$servername = "localhost";
-$username = "snovakow";
-$password = "kewbac-recge1-Fiwpux";
-$dbname = "sudoku";
+if ($mode !== 1 && $mode !== 2 && $mode !== 3) die;
 
 try {
-	$conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
-	// $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION, PDO::ATTR_STRINGIFY_FETCHES);
+	$servername = "localhost";
+	$username = "snovakow";
+	$password = "kewbac-recge1-Fiwpux";
+	$dbname = "sudoku";
+	$db = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
 
 	$countTotal = 0;
 	if ($mode === 1) {
-		$tables = array();
-		$stmt = $conn->prepare("SELECT `table` FROM `tables`");
+		$tables = [];
+		$stmt = $db->prepare("SELECT `table` FROM `tables`");
 		$stmt->execute();
 		$result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
@@ -65,7 +61,7 @@ try {
 			$table = $row['table'];
 			$tables[] = $table;
 
-			$stmt = $conn->prepare("SELECT MAX(id) as count FROM `" . $table . "`");
+			$stmt = $db->prepare("SELECT MAX(id) as count FROM `" . $table . "`");
 			$stmt->execute();
 			$result = $stmt->fetch()["count"];
 			$countTotal +=  $result;
@@ -73,19 +69,19 @@ try {
 
 		flushOut("--- Strategies Isolated");
 
-		$naked2 = queryStrategy($conn, 'naked2');
-		$naked3 = queryStrategy($conn, 'naked3');
-		$naked4 = queryStrategy($conn, 'naked4');
-		$hidden2 = queryStrategy($conn, 'hidden2');
-		$hidden3 = queryStrategy($conn, 'hidden3');
-		$hidden4 = queryStrategy($conn, 'hidden4');
-		$omissions = queryStrategy($conn, 'omissions');
-		$yWing = queryStrategy($conn, 'yWing');
-		$xyzWing = queryStrategy($conn, 'xyzWing');
-		$xWing = queryStrategy($conn, 'xWing');
-		$swordfish = queryStrategy($conn, 'swordfish');
-		$jellyfish = queryStrategy($conn, 'jellyfish');
-		$uniqueRectangle = queryStrategy($conn, 'uniqueRectangle');
+		$naked2 = queryStrategy($db, 'naked2');
+		$naked3 = queryStrategy($db, 'naked3');
+		$naked4 = queryStrategy($db, 'naked4');
+		$hidden2 = queryStrategy($db, 'hidden2');
+		$hidden3 = queryStrategy($db, 'hidden3');
+		$hidden4 = queryStrategy($db, 'hidden4');
+		$omissions = queryStrategy($db, 'omissions');
+		$yWing = queryStrategy($db, 'yWing');
+		$xyzWing = queryStrategy($db, 'xyzWing');
+		$xWing = queryStrategy($db, 'xWing');
+		$swordfish = queryStrategy($db, 'swordfish');
+		$jellyfish = queryStrategy($db, 'jellyfish');
+		$uniqueRectangle = queryStrategy($db, 'uniqueRectangle');
 
 		$candidates = 0;
 		$candidates += $naked2['count'];
@@ -124,7 +120,7 @@ try {
 
 	if ($mode === 2) {
 		foreach ($tables as $table) {
-			$stmt = $conn->prepare("SELECT MAX(id) as count FROM `" . $table . "`");
+			$stmt = $db->prepare("SELECT MAX(id) as count FROM `" . $table . "`");
 			$stmt->execute();
 			$result = $stmt->fetch()["count"];
 			$countTotal +=  $result;
@@ -132,7 +128,7 @@ try {
 
 		flushOut("--- Strategies");
 
-		$strategies = array(
+		$strategies = [
 			"naked2",
 			"naked3",
 			"naked4",
@@ -146,10 +142,10 @@ try {
 			"xWing",
 			"swordfish",
 			"jellyfish"
-		);
+		];
 
-		$counts = array();
-		$maxs = array();
+		$counts = [];
+		$maxs = [];
 		$candidates = 0;
 
 		foreach ($strategies as $strategy) {
@@ -159,11 +155,9 @@ try {
 
 		foreach ($tables as $table) {
 			foreach ($strategies as $strategy) {
-				$sql = "
-					SELECT MAX(`" . $strategy . "`) AS max, COUNT(`" . $strategy . "`) AS count
-					FROM `" . $table . "` WHERE  `bruteForce`=0  AND `" . $strategy . "` >0
-				";
-				$stmt = $conn->prepare($sql);
+				$sql = "SELECT MAX(`$strategy`) AS max, COUNT(`$strategy`) AS count
+					FROM `$table` WHERE  `bruteForce`=0  AND `$strategy`>0";
+				$stmt = $db->prepare($sql);
 				$stmt->execute();
 				$result = $stmt->fetch();
 
@@ -187,12 +181,12 @@ try {
 	}
 
 	if ($mode === 1 || $mode === 2) {
-		$stmt = $conn->prepare("SELECT MAX(id) as count FROM `simple`");
+		$stmt = $db->prepare("SELECT MAX(id) as count FROM `simple`");
 		$stmt->execute();
 		$result = $stmt->fetch()["count"];
 		$count0 = $result;
 
-		$stmt = $conn->prepare("SELECT MAX(id) as count FROM `bruteForce`");
+		$stmt = $db->prepare("SELECT MAX(id) as count FROM `bruteForce`");
 		$stmt->execute();
 		$result = $stmt->fetch()["count"];
 		$count2 = $result;
@@ -207,13 +201,13 @@ try {
 	}
 
 	$total = 0;
-	$totals = array();
+	$totals = [];
 	foreach ($tables as $table) {
-		$stmt = $conn->prepare("SELECT MAX(id) as totalPuzzles FROM `" . $table . "`");
+		$stmt = $db->prepare("SELECT MAX(id) as totalPuzzles FROM `" . $table . "`");
 		$stmt->execute();
 		$totalPuzzles = $stmt->fetch()["totalPuzzles"];
 		if ($totalPuzzles === NULL) {
-			$stmt = $conn->prepare("
+			$stmt = $db->prepare("
 				SELECT table_name FROM information_schema.tables WHERE table_schema = 'sudoku' AND table_name = '" . $table . "' LIMIT 1;
 			");
 			$stmt->execute();
@@ -224,23 +218,19 @@ try {
 		}
 
 		$totals[] =  $table . "=" . $totalPuzzles;
-		if ($mode !== 0 && $mode !== 3) flushOut($table . ": " . number_format($totalPuzzles));
+		if ($mode !== 3) flushOut($table . ": " . number_format($totalPuzzles));
 	}
-	if ($mode === 0) {
-		echo implode(",", $totals);
-	} else if ($mode !== 3) {
 		if (count($tables) > 1) flushOut("Total Puzzles: " . number_format($total));
 		echo  "<br/>";
-	}
 
 	if ($mode === 3) {
 		flushOut("--- Clues");
-		$counts = array();
-		$count0 = array();
-		$count1 = array();
-		$count2 = array();
+		$counts = [];
+		$count0 = [];
+		$count1 = [];
+		$count2 = [];
 		foreach ($tables as $table) {
-			$stmt = $conn->prepare("SELECT `clueCount`, `solveType`, COUNT(*) as count FROM `" . $table . "` GROUP BY `clueCount`, `solveType`");
+			$stmt = $db->prepare("SELECT `clueCount`, `solveType`, COUNT(*) as count FROM `" . $table . "` GROUP BY `clueCount`, `solveType`");
 			$stmt->execute();
 			$result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 			foreach ($result as $key => $row) {
@@ -282,6 +272,5 @@ try {
 		echo  "<br/>";
 	}
 } catch (PDOException $e) {
-	echo "Error: " . $e->getMessage();
+	// echo "Error: " . $e->getMessage();
 }
-$conn = null;
