@@ -145,17 +145,15 @@ class SimpleMinimalCounter {
 	constructor() {
 		this.hiddenSimple = 0;
 		this.omissionSimple = 0;
-		this.naked_omissionSimple = 0;
 		this.nakedSimple = 0;
-		this.nakedIsolateSimple = 0;
+		this.allSimple = 0;
 		this.count = 0;
 	}
 	addData(data) {
 		if (data.hiddenSimple > 0 && data.omissionSimple === 0 && data.nakedSimple === 0) this.hiddenSimple++;
 		if (data.hiddenSimple > 0 && data.omissionSimple > 0 && data.nakedSimple === 0) this.omissionSimple++;
-		if (data.hiddenSimple > 0 && data.omissionSimple > 0 && data.nakedSimple > 0) this.naked_omissionSimple++;
 		if (data.hiddenSimple > 0 && data.omissionSimple === 0 && data.nakedSimple > 0) this.nakedSimple++;
-		if (data.hiddenSimple === 0 && data.omissionSimple === 0 && data.nakedSimple > 0) this.nakedIsolateSimple++;
+		if (data.hiddenSimple > 0 && data.omissionSimple > 0 && data.nakedSimple > 0) this.allSimple++;
 		this.count++;
 	}
 }
@@ -275,11 +273,10 @@ class StrategyCounter {
 				line += " - " + this.simplesIsolated[property].toLocaleString();
 				lines.push(line);
 			}
-			printStrategy("H  ", 'hiddenSimple');
-			printStrategy("HO ", 'omissionSimple');
-			printStrategy("HON", 'naked_omissionSimple');
-			printStrategy("HN ", 'nakedSimple');
-			printStrategy("N  ", 'nakedIsolateSimple');
+			printStrategy("Hidden", 'hiddenSimple');
+			printStrategy("Omission", 'omissionSimple');
+			printStrategy("Naked", 'nakedSimple');
+			printStrategy("All", 'allSimple');
 		}
 
 		if (this.candidatesMinimal.count) {
