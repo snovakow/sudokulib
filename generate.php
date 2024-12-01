@@ -65,11 +65,10 @@ try {
 	$dbname = "sudoku";
 	$db = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
 
-	$db->exec("START TRANSACTION");
-
 	$array = json_decode(file_get_contents("php://input"));
 	$addCount = count($array);
 
+	$db->exec("START TRANSACTION");
 	$stmt = $db->prepare("SELECT `tableCount`, `puzzleCount` FROM `tables` FOR UPDATE");
 	$stmt->execute();
 	$result = $stmt->fetch();
