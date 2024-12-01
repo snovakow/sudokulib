@@ -8,6 +8,12 @@ function totalCount($tableCount, $puzzleCount)
 	return (($tableCount - 1) * MAX_SIZE) +  $puzzleCount;
 }
 
+function tableName($number)
+{
+	$pad = str_pad($number, 3, "0", STR_PAD_LEFT);
+	return "puzzles$pad";
+}
+
 function flushOut($message)
 {
 	echo "$message<br/>";
@@ -15,18 +21,23 @@ function flushOut($message)
 
 function percentage($count, $total, $precision)
 {
-	return number_format(100.0 * $count / $total, $precision, '.', "") . "%";
+	$percent = number_format(100.0 * $count / $total, $precision, '.', "");
+	$pad = str_pad($percent, $precision + 3, "0", STR_PAD_LEFT);
+	return "$pad%";
 }
 
 function getStat($title, $count, $total, $precision)
 {
-	return $title . ": " . percentage($count, $total, $precision) . " " . number_format($count);
+	$percent = percentage($count, $total, $precision);
+	$number = number_format($count);
+	return "$title: $percent $number";
 }
 
 function printStat($title, $count, $total, $precision)
 {
 	$stat = getStat($title, $count, $total, $precision);
-	echo "$stat<br/>";}
+	echo "$stat<br/>";
+}
 
 function queryStrategy($db, $table)
 {
@@ -56,6 +67,8 @@ try {
 	$tableCount = 0;
 	$puzzleCount = 0;
 	$totalCount = 0;
+
+	echo "<pre>";
 
 	if ($mode === 1) {
 		$tables = [];
@@ -212,37 +225,33 @@ try {
 	}
 
 	$tableFormat = number_format($tableCount);
-	$tableName = $tableCount === 1 ? "table" : "tables";
+	$tableSyntax = $tableCount === 1 ? "table" : "tables";
 	$totalFormat = number_format($totalCount);
 
-	echo "$totalFormat puzzles in $tableFormat $tableName<br/><br/>";
+	echo "$totalFormat puzzles in $tableFormat $tableSyntax<br/><br/>";
 
 	if ($mode === 3) {
 		flushOut("--- Clues");
 		$counts = [];
-		$count0 = [];
-		$count1 = [];
-		$count2 = [];
-		$count3 = [];
-		$count4 = [];
-		$count5 = [];
+		$countSimple = [];
+		$countCandidate = [];
+		$countUnsolvable = [];
 
-		// $stmt = $db->prepare("SELECT `clueCount`, `solveType`, COUNT(*) as count FROM `" . $table . "` GROUP BY `clueCount`, `solveType`");
-		// $sql = "
-		// SELECT puzzles.`clueCount` as clueCount, puzzles.`solveType` as solveType, COUNT(*) as count FROM (
-		// SELECT * FROM `puzzles001` UNION ALL SELECT * FROM `puzzles002` UNION ALL SELECT * FROM `puzzles003`
-		// ) puzzles
-		// GROUP BY clueCount, solveType
-		// ";
-		$sql = "
-		SELECT puzzles.`clueCount` as clueCount, puzzles.`solveType` as solveType, COUNT(*) as count FROM (
-		SELECT * FROM `puzzles001`
-		) puzzles
-		GROUP BY clueCount, solveType
-		";
+		if ($tableCount > 1) {
+			$unions = [];
+			for ($i = 1; $i <= $tableCount; $i++) {
+				$tableName = tableName($i);
+				$unions[] = "SELECT * FROM `$tableName`";
+			}
+			$unionString = $unions . implode(' UNION ALL ', $unions);
+			$puzzleString = "($unionString)";
+		} else {
+			$puzzleString = tableName(1);
+		}
+		$sql = "SELECT puzzles.`clueCount` as clueCount, puzzles.`solveType` as solveType, COUNT(*) as count FROM $puzzleString as puzzles
+			GROUP BY clueCount, solveType";
 
 		$stmt = $db->prepare($sql);
-
 		$stmt->execute();
 		$result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 		foreach ($result as $key => $row) {
@@ -251,20 +260,17 @@ try {
 			$count = (int)$row['count'];
 
 			if (!$counts[$clueCount]) $counts[$clueCount] = 0;
-			if (!$count0[$clueCount]) $count0[$clueCount] = 0;
-			if (!$count1[$clueCount]) $count1[$clueCount] = 0;
-			if (!$count2[$clueCount]) $count2[$clueCount] = 0;
-			if (!$count3[$clueCount]) $count3[$clueCount] = 0;
-			if (!$count4[$clueCount]) $count4[$clueCount] = 0;
-			if (!$count5[$clueCount]) $count5[$clueCount] = 0;
+			if (!$countSimple[$clueCount]) $countSimple[$clueCount] = 0;
+			if (!$countCandidate[$clueCount]) $countCandidate[$clueCount] = 0;
+			if (!$countUnsolvable[$clueCount]) $countUnsolvable[$clueCount] = 0;
 
 			$counts[$clueCount] += $count;
-			if ($solveType == 0) $count0[$clueCount] += $count;
-			if ($solveType == 1) $count1[$clueCount] += $count;
-			if ($solveType == 2) $count2[$clueCount] += $count;
-			if ($solveType == 3) $count3[$clueCount] += $count;
-			if ($solveType == 4) $count4[$clueCount] += $count;
-			if ($solveType == 5) $count5[$clueCount] += $count;
+			if ($solveType == 0) $countSimple[$clueCount] += $count;
+			if ($solveType == 1) $countSimple[$clueCount] += $count;
+			if ($solveType == 2) $countCandidate[$clueCount] += $count;
+			if ($solveType == 3) $countCandidate[$clueCount] += $count;
+			if ($solveType == 4) $countCandidate[$clueCount] += $count;
+			if ($solveType == 5) $countUnsolvable[$clueCount] += $count;
 		}
 
 		foreach ($counts as $clueCount => $count) {
@@ -272,42 +278,26 @@ try {
 		}
 		echo  "<br/>";
 
-		$counts0 = 0;
-		$counts1 = 0;
-		$counts2 = 0;
-		$counts3 = 0;
-		$counts4 = 0;
-		$counts5 = 0;
-		foreach ($count0 as $clueCount => $count) $counts0 += $count;
-		foreach ($count1 as $clueCount => $count) $counts1 += $count;
-		foreach ($count2 as $clueCount => $count) $counts2 += $count;
-		foreach ($count3 as $clueCount => $count) $counts3 += $count;
-		foreach ($count4 as $clueCount => $count) $counts4 += $count;
-		foreach ($count5 as $clueCount => $count) $counts5 += $count;
-		printStat("Simples", $counts0, $totalCount, 1);
-		foreach ($counts as $clueCount => $count) printStat($clueCount, $count0[$clueCount], $count, 5);
+		$countsSimple = 0;
+		$countsCandidate = 0;
+		$countsUnsolvable = 0;
+		foreach ($countSimple as $clueCount => $count) $countsSimple += $count;
+		foreach ($countCandidate as $clueCount => $count) $countsCandidate += $count;
+		foreach ($countUnsolvable as $clueCount => $count) $countsUnsolvable += $count;
+
+		printStat("Simple", $countsSimple, $totalCount, 1);
+		foreach ($counts as $clueCount => $count) printStat($clueCount, $countSimple[$clueCount], $count, 5);
 		echo  "<br/>";
 
-		printStat("Simples Minimal", $counts1, $totalCount, 1);
-		foreach ($counts as $clueCount => $count) printStat($clueCount, $count1[$clueCount], $count, 5);
+		printStat("Candidate", $countsCandidate, $totalCount, 1);
+		foreach ($counts as $clueCount => $count) printStat($clueCount, $countCandidate[$clueCount], $count, 5);
 		echo  "<br/>";
 
-		printStat("Candidate Visible", $counts2, $totalCount, 1);
-		foreach ($counts as $clueCount => $count) printStat($clueCount, $count2[$clueCount], $count, 5);
-		echo  "<br/>";
-
-		printStat("Candidate", $counts3, $totalCount, 1);
-		foreach ($counts as $clueCount => $count) printStat($clueCount, $count3[$clueCount], $count, 5);
-		echo  "<br/>";
-
-		printStat("Candidate Minimal", $counts4, $totalCount, 1);
-		foreach ($counts as $clueCount => $count) printStat($clueCount, $count4[$clueCount], $count, 5);
-		echo  "<br/>";
-
-		printStat("Unsolvable", $counts5, $totalCount, 1);
-		foreach ($counts as $clueCount => $count) printStat($clueCount, $count5[$clueCount], $count, 5);
+		printStat("Unsolvable", $countsUnsolvable, $totalCount, 1);
+		foreach ($counts as $clueCount => $count) printStat($clueCount, $countUnsolvable[$clueCount], $count, 5);
 		echo  "<br/>";
 	}
+	echo "</pre>";
 } catch (PDOException $e) {
 	// echo "Error: " . $e->getMessage();
 }
