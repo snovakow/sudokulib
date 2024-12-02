@@ -374,17 +374,14 @@
 					const timeAvg = strategyCounter.lines();
 					const timeAvgInv = 1 / timeAvg;
 
-					const lines = [];
-					lines.push("Generated: " + strategyCounter.totalPuzzles.toLocaleString());
-					lines.push(timeAvg.toFixed(3) + " seconds per puzzle");
-					lines.push(timeAvgInv.toFixed(1) + " puzzles per second");
+					const line1 = "Generated: " + strategyCounter.totalPuzzles.toLocaleString() + "\n";
+					const line2 = timeAvg.toFixed(3) + " seconds per puzzle\n";
+					const line3 = timeAvgInv.toFixed(1) + " puzzles per second\n";
 
 					statsGenerated = [];
-					statsGenerated.push(document.createTextNode(lines[0]));
-					statsGenerated.push(document.createElement('br'));
-					statsGenerated.push(document.createTextNode(lines[1]));
-					statsGenerated.push(document.createElement('br'));
-					statsGenerated.push(document.createTextNode(lines[2]));
+					statsGenerated[0] = document.createTextNode(line1);
+					statsGenerated[1] = document.createTextNode(line2);
+					statsGenerated[2] = document.createTextNode(line3);
 
 					displayStats();
 					sendData(data);
