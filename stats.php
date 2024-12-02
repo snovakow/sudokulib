@@ -222,8 +222,6 @@ class StrategyCounter
 	{
 		$this->totalPuzzles = 0;
 
-		$this->clueCounter = [];
-
 		$this->simples = new SimpleCounter();
 		$this->simplesMinimal = new SimpleCounter();
 		$this->simplesIsolated = new SimpleIsolatedCounter();
@@ -250,12 +248,6 @@ class StrategyCounter
 		if ($data->solveType === 4)  $this->candidatesIsolated->addData($data);
 
 		if ($data->solveType === 5) $this->unsolvable->addData($data);
-
-		// const clueValue = this.clueCounter.get(data.clueCount);
-		// if (clueValue) this.clueCounter.set(data.clueCount, clueValue + 1);
-		// else this.clueCounter.set(data.clueCount, 1)
-
-		// this.totalTime = performance.now() - this.startTime;
 	}
 
 	function lines()
@@ -532,8 +524,10 @@ function queryStrategy($db, $table)
 if (!isset($_GET['mode'])) die;
 
 // 1 = Strategies Isolated
-// 2 = Strategies
-// 3 = Clues
+// 2 = Totals
+// 3 = Visuals
+// 4 = Strategies
+// 5 = Clues
 
 $mode = (int)$_GET['mode'];
 if ($mode !== 1 && $mode !== 2 && $mode !== 3) die;
@@ -629,7 +623,48 @@ try {
 	}
 
 	if ($mode === 2) {
+		flushOut("--- Totals");
+
+		$sql = "SELECT 
+			puzzles.`solveType` as solveType, COUNT(*) as count FROM ppuzzles001 as puzzles
+			GROUP BY solveType";
+	}
+
+	if ($mode === 3) {
+		flushOut("--- Visuals");
+
+		$sql = "SELECT 
+			puzzles.`hiddenSimple`>0 as hiddenSimple, MAX(puzzles.`hiddenSimple`) as hiddenSimpleMax, 
+			puzzles.`omissionSimple`>0 as omissionSimple, MAX(puzzles.`omissionSimple`) as omissionSimpleMax, 
+			puzzles.`nakedSimple`>0 as nakedSimple, MAX(puzzles.`nakedSimple`) as nakedSimpleMax, 
+			puzzles.`nakedVisible`>0 as nakedVisible, MAX(puzzles.`nakedVisible`) as nakedVisibleMax, 
+			puzzles.`clueCount` as clueCount, puzzles.`solveType` as solveType, COUNT(*) as count FROM ppuzzles001 as puzzles
+			WHERE solveType=0 OR solveType=1 OR solveType=2
+			GROUP BY hiddenSimple, omissionSimple, nakedSimple, nakedVisible, clueCount, solveType";
+	}
+
+	if ($mode === 4) {
 		flushOut("--- Strategies");
+
+		$sql = "SELECT 
+			puzzles.`naked2`>0 as naked2, MAX(puzzles.`naked2`) as naked2Max, 
+			puzzles.`naked3`>0 as naked3, MAX(puzzles.`naked3`) as naked3Max, 
+			puzzles.`naked4`>0 as naked4, MAX(puzzles.`naked4`) as naked4Max, 
+			puzzles.`hidden1`>0 as hidden1, MAX(puzzles.`hidden1`) as hidden1Max, 
+			puzzles.`hidden2`>0 as hidden2, MAX(puzzles.`hidden2`) as hidden1Max, 
+			puzzles.`hidden3`>0 as hidden3, MAX(puzzles.`hidden3`) as hidden1Max, 
+			puzzles.`hidden4`>0 as hidden4, MAX(puzzles.`hidden4`) as hidden1Max, 
+			puzzles.`omissions`>0 as omissions, MAX(puzzles.`omissions`) as omissionsMax, 
+			puzzles.`uniqueRectangle`>0 as uniqueRectangle, MAX(puzzles.`uniqueRectangle`) as uniqueRectangleMax, 
+			puzzles.`yWing`>0 as yWing, MAX(puzzles.`yWing`) as yWingMax, 
+			puzzles.`xyzWing`>0 as xyzWing, MAX(puzzles.`xyzWing`) as xyzWingMax, 
+			puzzles.`xWing`>0 as xWing, MAX(puzzles.`xWing`) as xWingMax, 
+			puzzles.`swordfish`>0 as swordfish, MAX(puzzles.`swordfish`) as swordfishMax, 
+			puzzles.`jellyfish`>0 as jellyfish, MAX(puzzles.`jellyfish`) as jellyfishMax, 
+			puzzles.`solveType` as solveType, COUNT(*) as count FROM ppuzzles001 as puzzles
+			WHERE solveType=3 OR solveType=4
+			GROUP BY naked2, naked3, naked4, hidden1, hidden2, hidden3, hidden4, 
+			omissions, uniqueRectangle, yWing, xyzWing, xWing, swordfish, jellyfish, solveType";
 
 		$strategies = [
 			"simple",
@@ -720,7 +755,7 @@ try {
 		echo  "<br/>";
 	}
 
-	if ($mode === 3) {
+	if ($mode === 5) {
 		flushOut("--- Clues");
 		$counts = [];
 		$countSimple = [];
