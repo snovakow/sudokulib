@@ -9,6 +9,21 @@
 	<script type="module">
 		import * as SudokuProcess from "./process.js";
 
+		class StrategyCounter {
+			constructor() {
+				this.totalPuzzles = 0;
+				this.startTime = performance.now();
+				this.totalTime = 0;
+			}
+			addData() {
+				this.totalPuzzles++;
+				this.totalTime = performance.now() - this.startTime;
+			}
+			timeAvg() {
+				return this.totalTime / 1000 / this.totalPuzzles;
+			}
+		}
+
 		const MAX_SIZE = 1e7;
 		const estimateContainer = document.createElement('pre');
 
@@ -258,7 +273,7 @@
 			}
 			generateButton.appendChild(document.createTextNode("Stop"));
 			workers = [];
-			if (!strategyCounter) strategyCounter = new SudokuProcess.StrategyCounter();
+			if (!strategyCounter) strategyCounter = new StrategyCounter();
 
 			for (let i = 0; i < coreCount; i++) workers[i] = new Worker("worker.js", { type: "module" });
 		};
@@ -269,7 +284,7 @@
 		const MAX_SEND = 100;
 
 		const populateGenerate = () => {
-			const timeAvg = strategyCounter.lines();
+			const timeAvg = strategyCounter.timeAvg();
 			const timeAvgInv = 1 / timeAvg;
 
 			statsGenerated = [];
@@ -391,7 +406,7 @@
 				workerData.run = true;
 				worker.onmessage = (e) => {
 					const data = e.data;
-					strategyCounter.addData(data);
+					strategyCounter.addData();
 					populateGenerate();
 					sendData(data);
 				};
