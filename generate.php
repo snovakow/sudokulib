@@ -80,9 +80,23 @@ try {
 	$totalAvailable = $tableAvailable * MAX_SIZE;
 
 	while ($totalRequired > $totalAvailable) {
+		$db->exec("COMMIT");
+
 		$tableAvailable++;
 		$totalAvailable = $tableAvailable * MAX_SIZE;
 		$db->exec(addTable($tableAvailable));
+
+		$db->exec("START TRANSACTION");
+		$stmt->execute();
+		$result = $stmt->fetch();
+		$tableCount = (int)$result['tableCount'];
+		$puzzleCount = (int)$result['puzzleCount'];
+		$totalRequired = totalCount($tableCount, $puzzleCount) + $addCount;
+
+		if ($tableCount > $tableAvailable) {
+			$tableAvailable = $tableCount;
+			$totalAvailable = $tableAvailable * MAX_SIZE;
+		}
 	}
 
 	$values = [];
