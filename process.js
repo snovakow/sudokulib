@@ -241,26 +241,26 @@ class StrategyCounter {
 		this.totalTime = performance.now() - this.startTime;
 	}
 	lines() {
-		const res = 10000;
-		const percent = (val, total = this.totalPuzzles) => {
-			return ((Math.ceil(100 * res * val / total) / res).toFixed(3) + "%").padStart(7, "0");
-		}
-		const makeLineSimple = (title, val, total) => {
-			return title + ": " + percent(val, total);
-		};
-		const makeLine = (title, val, total) => {
-			return title + ": " + percent(val, total) + " - " + val.toLocaleString();
-		};
-		const printLine = (title, val, total) => {
-			lines.push(makeLine(title, val, total));
-		};
+		// const res = 10000;
+		// const percent = (val, total = this.totalPuzzles) => {
+		// 	return ((Math.ceil(100 * res * val / total) / res).toFixed(3) + "%").padStart(7, "0");
+		// }
+		// const makeLineSimple = (title, val, total) => {
+		// 	return title + ": " + percent(val, total);
+		// };
+		// const makeLine = (title, val, total) => {
+		// 	return title + ": " + percent(val, total) + " - " + val.toLocaleString();
+		// };
+		// const printLine = (title, val, total) => {
+		// 	lines.push(makeLine(title, val, total));
+		// };
 
-		const lines = [];
+		// const lines = [];
 
-		const clues = [...this.clueCounter.entries()];
-		clues.sort((a, b) => {
-			return a[0] - b[0];
-		});
+		// const clues = [...this.clueCounter.entries()];
+		// clues.sort((a, b) => {
+		// 	return a[0] - b[0];
+		// });
 
 		// lines.push("--- Clues");
 		// for (const clue of clues) printLine(clue[0], clue[1], this.totalPuzzles);
