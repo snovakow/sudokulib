@@ -17,7 +17,6 @@
 
 		let statsGenerated = [];
 		let statsTotals = [];
-		let statsSent = [];
 		let statsEstimate = [];
 		const addStat = (stats) => {
 			for (const stat of stats) estimateContainer.appendChild(stat);
@@ -28,7 +27,6 @@
 		const displayStats = () => {
 			while (estimateContainer.firstChild) estimateContainer.removeChild(estimateContainer.firstChild);
 			addStat(statsTotals);
-			addStat(statsSent);
 			addStat(statsEstimate);
 			addStat(statsGenerated);
 		};
@@ -276,15 +274,27 @@
 			for (let i = 0; i < coreCount; i++) workers[i] = new Worker("worker.js", { type: "module" });
 		};
 
-		const addLineSent = () => {
-			statsSent = [];
-			addLine(statsSent, sendDataSent.toLocaleString(), "Sent");
-		}
-
+		let sendDataSent = 0;
 		const sendDataStack = [];
 		let sendDataSending = false;
-		let sendDataSent = 0;
 		const maxSend = 100;
+
+		const populateGenerate = () => {
+			const timeAvg = strategyCounter.lines();
+			const timeAvgInv = 1 / timeAvg;
+
+			statsGenerated = [];
+			const addGenerate = (line) => {
+				statsGenerated.push(document.createTextNode(line + "\n"));
+			}
+			addGenerate("Sent: " + sendDataSent.toLocaleString());
+			addGenerate("Generated: " + strategyCounter.totalPuzzles.toLocaleString());
+			addGenerate(timeAvg.toFixed(3) + " seconds per puzzle");
+			addGenerate(timeAvgInv.toFixed(1) + " puzzles per second");
+
+			displayStats();
+		}
+
 		const sendData = (currentData) => {
 			if (currentData) sendDataStack.push(currentData);
 			if (sendDataSending) return;
@@ -351,7 +361,7 @@
 					if (isNaN(puzzleCount)) return;
 
 					sendDataSent += readyDataSend.length;
-					addLineSent();
+					populateGenerate();
 
 					setCount(tableCount, puzzleCount);
 					populate();
@@ -370,20 +380,7 @@
 				worker.onmessage = (e) => {
 					const data = e.data;
 					strategyCounter.addData(data);
-
-					const timeAvg = strategyCounter.lines();
-					const timeAvgInv = 1 / timeAvg;
-
-					const line1 = "Generated: " + strategyCounter.totalPuzzles.toLocaleString() + "\n";
-					const line2 = timeAvg.toFixed(3) + " seconds per puzzle\n";
-					const line3 = timeAvgInv.toFixed(1) + " puzzles per second\n";
-
-					statsGenerated = [];
-					statsGenerated[0] = document.createTextNode(line1);
-					statsGenerated[1] = document.createTextNode(line2);
-					statsGenerated[2] = document.createTextNode(line3);
-
-					displayStats();
+					populateGenerate();
 					sendData(data);
 				};
 				worker.postMessage(workerData);
@@ -398,9 +395,6 @@
 			toggleWorker();
 			if (pingTimer) {
 				window.clearTimeout(pingTimer);
-			}
-			if (!generateMode && sendDataSent === 0) {
-				addLineSent();
 			}
 
 			if (workers) {
