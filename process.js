@@ -262,74 +262,74 @@ class StrategyCounter {
 			return a[0] - b[0];
 		});
 
-		lines.push("--- Clues");
-		for (const clue of clues) printLine(clue[0], clue[1], this.totalPuzzles);
+		// lines.push("--- Clues");
+		// for (const clue of clues) printLine(clue[0], clue[1], this.totalPuzzles);
 
-		if (this.simplesMinimal.count > 0) {
-			lines.push("");
-			lines.push("--- Simples Minimal (H)idden (O)mission (N)aked");
-			const printStrategy = (title, property) => {
-				let line = makeLineSimple(title, this.simplesIsolated[property], this.simplesMinimal.count);
-				line += " - " + this.simplesIsolated[property].toLocaleString();
-				lines.push(line);
-			}
-			printStrategy("Hidden", 'hiddenSimple');
-			printStrategy("Omission", 'omissionSimple');
-			printStrategy("Naked", 'nakedSimple');
-			printStrategy("All", 'allSimple');
-		}
+		// if (this.simplesMinimal.count > 0) {
+		// 	lines.push("");
+		// 	lines.push("--- Simples Minimal");
+		// 	const printStrategy = (title, property) => {
+		// 		let line = makeLineSimple(title, this.simplesIsolated[property], this.simplesMinimal.count);
+		// 		line += " - " + this.simplesIsolated[property].toLocaleString();
+		// 		lines.push(line);
+		// 	}
+		// 	printStrategy("Hidden", 'hiddenSimple');
+		// 	printStrategy("Omission", 'omissionSimple');
+		// 	printStrategy("Naked", 'nakedSimple');
+		// 	printStrategy("All", 'allSimple');
+		// }
 
-		if (this.candidatesMinimal.count) {
-			lines.push("");
-			lines.push("--- Candidates Minimal");
+		// if (this.candidatesMinimal.count) {
+		// 	lines.push("");
+		// 	lines.push("--- Candidates Minimal");
 
-			const printStrategy = (title, property) => {
-				const line = makeLineSimple(title, this.candidatesMinimal[property], this.candidatesMinimal.count);
-				lines.push(line + " - " + this.candidatesMinimal[property].toLocaleString());
-			}
-			printStrategy("Naked2", 'naked2');
-			printStrategy("Naked3", 'naked3');
-			printStrategy("Naked4", 'naked4');
-			printStrategy("Hidden1", 'hidden1');
-			printStrategy("Hidden2", 'hidden2');
-			printStrategy("Hidden3", 'hidden3');
-			printStrategy("Hidden4", 'hidden4');
-			printStrategy("Omissions", 'omissions');
-			printStrategy("Unique Rectangle", 'uniqueRectangle');
-			printStrategy("Y-Wing", 'yWing');
-			printStrategy("XYZ-Wing", 'xyzWing');
-			printStrategy("X-Wing", 'xWing');
-			printStrategy("Swordfish", 'swordfish');
-			printStrategy("Jellyfish", 'jellyfish');
-		}
+		// 	const printStrategy = (title, property) => {
+		// 		const line = makeLineSimple(title, this.candidatesMinimal[property], this.candidatesMinimal.count);
+		// 		lines.push(line + " - " + this.candidatesMinimal[property].toLocaleString());
+		// 	}
+		// 	printStrategy("Naked2", 'naked2');
+		// 	printStrategy("Naked3", 'naked3');
+		// 	printStrategy("Naked4", 'naked4');
+		// 	printStrategy("Hidden1", 'hidden1');
+		// 	printStrategy("Hidden2", 'hidden2');
+		// 	printStrategy("Hidden3", 'hidden3');
+		// 	printStrategy("Hidden4", 'hidden4');
+		// 	printStrategy("Omissions", 'omissions');
+		// 	printStrategy("Unique Rectangle", 'uniqueRectangle');
+		// 	printStrategy("Y-Wing", 'yWing');
+		// 	printStrategy("XYZ-Wing", 'xyzWing');
+		// 	printStrategy("X-Wing", 'xWing');
+		// 	printStrategy("Swordfish", 'swordfish');
+		// 	printStrategy("Jellyfish", 'jellyfish');
+		// }
 
-		const candidateCount = this.candidates.count + this.candidatesVisible.count;
+		// const candidateCount = this.candidates.count + this.candidatesVisible.count;
 
-		lines.push("");
-		lines.push("--- Totals " + this.totalPuzzles.toLocaleString());
+		// lines.push("");
+		// lines.push("--- Totals " + this.totalPuzzles.toLocaleString());
 
-		let line = "Simples: " + percent(this.simples.count);
-		if (this.simples.count > 0) line += " (" + percent(this.simplesMinimal.count, this.simples.count) + " minimal)";
-		lines.push(line);
+		// let line = "Simples: " + percent(this.simples.count);
+		// if (this.simples.count > 0) line += " (" + percent(this.simplesMinimal.count, this.simples.count) + " minimal)";
+		// lines.push(line);
 
-		line = "Strategies: " + percent(this.candidates.count);
-		if (this.candidates.count > 0) line += " (" + percent(this.candidatesMinimal.count, this.candidates.count) + " minimal)";
-		lines.push(line);
+		// line = "Strategies: " + percent(this.candidates.count);
+		// if (this.candidates.count > 0) line += " (" + percent(this.candidatesMinimal.count, this.candidates.count) + " minimal)";
+		// lines.push(line);
 
-		line = "Candidates: " + percent(candidateCount);
-		if (candidateCount > 0) line += " (" + percent(this.candidatesVisible.count, candidateCount) + " visible)";
-		lines.push(line);
+		// line = "Candidates: " + percent(candidateCount);
+		// if (candidateCount > 0) line += " (" + percent(this.candidatesVisible.count, candidateCount) + " visible)";
+		// lines.push(line);
 
-		lines.push("Unsolvable: " + percent(this.unsolvable.count));
+		// lines.push("Unsolvable: " + percent(this.unsolvable.count));
 
-		lines.push("");
-		lines.push("--- Rate");
+		// lines.push("");
+		// lines.push("--- Rate");
 		const timeAvg = this.totalTime / 1000 / this.totalPuzzles;
-		const timeAvgInv = 1 / timeAvg;
-		lines.push("Time Avg: " + timeAvg.toFixed(3));
-		lines.push("Per Second: " + timeAvgInv.toFixed(1));
+		// const timeAvgInv = 1 / timeAvg;
+		// lines.push("Time Avg: " + timeAvg.toFixed(3));
+		// lines.push("Per Second: " + timeAvgInv.toFixed(1));
 
-		return lines;
+		return timeAvg;
 	}
 }
 
