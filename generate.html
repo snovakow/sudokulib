@@ -10,26 +10,27 @@
 		import * as SudokuProcess from "./process.js";
 
 		const MAX_SIZE = 1e7;
-		const body = document.createElement('pre');
 		const estimateContainer = document.createElement('pre');
 
 		let generateMode = false;
 		let pingTimer = 0;
 
+		let statsGenerated = [];
 		let statsTotals = [];
 		let statsSent = [];
 		let statsEstimate = [];
+		const addStat = (stats) => {
+			for (const stat of stats) estimateContainer.appendChild(stat);
+			if (stats.length === 0) return;
+			estimateContainer.appendChild(document.createElement('br'));
+			estimateContainer.appendChild(document.createElement('br'));
+		}
 		const displayStats = () => {
 			while (estimateContainer.firstChild) estimateContainer.removeChild(estimateContainer.firstChild);
-			for (const stat of statsTotals) estimateContainer.appendChild(stat);
-			estimateContainer.appendChild(document.createElement('br'));
-			estimateContainer.appendChild(document.createElement('br'));
-			for (const stat of statsSent) estimateContainer.appendChild(stat);
-			if (statsSent.length > 0) {
-				estimateContainer.appendChild(document.createElement('br'));
-				estimateContainer.appendChild(document.createElement('br'));
-			}
-			for (const stat of statsEstimate) estimateContainer.appendChild(stat);
+			addStat(statsTotals);
+			addStat(statsSent);
+			addStat(statsEstimate);
+			addStat(statsGenerated);
 		};
 
 		let tableCount = 0;
@@ -93,22 +94,39 @@
 			setTimeLine();
 		};
 
-		estimateContainer.style.textAlign = "right";
+		estimateContainer.style.textAlign = "left";
 		estimateContainer.style.position = "absolute";
-		estimateContainer.style.top = 8 + 36 + "px";
-		estimateContainer.style.right = "8px";
+		estimateContainer.style.top = "16px";
+		estimateContainer.style.left = "16px";
+		estimateContainer.style.margin = "0px";
 		document.body.appendChild(estimateContainer);
+
+		let animationLoop = true;
+
+		let pingInitiated = false;
+		let pingFound = false;
+
+		let pingRun = false;
+		let pingRunBusy = false;
 
 		const createEstimate = () => {
 			const now = Date.now();
 
-			if (generateMode) {
-				window.requestAnimationFrame(createEstimate);
-				const seconds = Math.floor(now / 1000);
-				if (seconds === processTimer) return;
-				processTimer = seconds;
+			if (animationLoop) window.requestAnimationFrame(createEstimate);
+			const seconds = Math.floor(now / 1000);
+			if (seconds === processTimer) return;
+			processTimer = seconds;
+
+			if (pingRun && !pingRunBusy) {
+				pingSend();
 			}
 
+			if (!generateMode && !pingFound) {
+				if (!pingInitiated) return
+				populate();
+				displayStats();
+				return;
+			}
 			if (processStartTime === 0) {
 				processStartTime = now;
 				processStartCount = totalCount;
@@ -172,9 +190,12 @@
 		let prevPingTime = Date.now();
 		let prevPingCount = 0;
 		const pingSend = () => {
+			pingRunBusy = true;
 			const url = './tables.php?version=1';
 			fetch(url, { cache: "no-store" }).then(response => {
 				response.text().then((string) => {
+					pingRunBusy = false;
+
 					const fields = string.split(":");
 					if (fields.length !== 2) return;
 
@@ -192,20 +213,32 @@
 					populate();
 					const now = Date.now();
 					if (prevPingCount !== totalCount) {
-						if (prevPingCount !== 0) createEstimate();
+						if (prevPingCount === 0) {
+							pingRun = true;
+							// createEstimate();
+						} else {
+							pingFound = true;
+						}
 
 						prevPingTime = now;
 						prevPingCount = totalCount;
 
 					}
-					displayStats();
+					// displayStats();
+					if (!pingInitiated) {
+						pingInitiated = true;
+						createEstimate();
+					}
 
-					if (prevPingCount > 0 && (now - prevPingTime > cancelDelay)) return;
+					if (prevPingCount > 0 && (now - prevPingTime > cancelDelay)) {
+						pingRun = false;
+						animationLoop = false;
+					}
 
 					pingTimer = window.setTimeout(() => {
 						pingTimer = 0;
 						pingCount++;
-						pingSend();
+						// pingSend();
 					}, delay);
 				});
 			});
@@ -225,18 +258,18 @@
 		generateButton.style.height = '32px';
 		generateButton.appendChild(document.createTextNode("Generate"));
 
-		const setMessage = (message) => {
-			body.innerText = message.join('\n');
-		};
-
 		let strategyCounter = null;
 		let workers = null;
 		const toggleWorker = () => {
+			pingRun = false;
+			while (generateButton.firstChild) generateButton.removeChild(generateButton.firstChild);
 			if (workers) {
+				generateButton.appendChild(document.createTextNode("Generate"));
 				for (const worker of workers) worker.terminate();
 				workers = null;
 				return;
 			}
+			generateButton.appendChild(document.createTextNode("Stop"));
 			workers = [];
 			if (!strategyCounter) strategyCounter = new SudokuProcess.StrategyCounter();
 
@@ -337,7 +370,23 @@
 				worker.onmessage = (e) => {
 					const data = e.data;
 					strategyCounter.addData(data);
-					setMessage(strategyCounter.lines());
+
+					const timeAvg = strategyCounter.lines();
+					const timeAvgInv = 1 / timeAvg;
+
+					const lines = [];
+					lines.push("Generated: " + strategyCounter.totalPuzzles.toLocaleString());
+					lines.push(timeAvg.toFixed(3) + " seconds per puzzle");
+					lines.push(timeAvgInv.toFixed(1) + " puzzles per second");
+
+					statsGenerated = [];
+					statsGenerated.push(document.createTextNode(lines[0]));
+					statsGenerated.push(document.createElement('br'));
+					statsGenerated.push(document.createTextNode(lines[1]));
+					statsGenerated.push(document.createElement('br'));
+					statsGenerated.push(document.createTextNode(lines[2]));
+
+					displayStats();
 					sendData(data);
 				};
 				worker.postMessage(workerData);
@@ -346,8 +395,10 @@
 
 
 		generateButton.addEventListener('click', () => {
+			pingInitiated = true;
+			pingFound = true;
+
 			toggleWorker();
-			while (generateButton.firstChild) generateButton.removeChild(generateButton.firstChild);
 			if (pingTimer) {
 				window.clearTimeout(pingTimer);
 			}
@@ -358,18 +409,13 @@
 			if (workers) {
 				generateMode = true;
 				processGenerate();
-				generateButton.appendChild(document.createTextNode("Stop"));
 			} else {
 				generateMode = false;
-				generateButton.appendChild(document.createTextNode("Generate"));
 			}
 
 			populate();
-			createEstimate();
 		});
 		document.body.appendChild(generateButton);
-
-		document.body.appendChild(body);
 
 		displayStats();
 	</script>
