@@ -1,17 +1,18 @@
+<!doctype html>
+<html>
+
+<head>
+	<title>Populate</title>
+</head>
+
+<body>
+	<pre>
 <?php
-if (!isset($_GET['table'])) die();
-$table = $_GET['table'];
-
-$log = isset($_GET['log']);
-
-$servername = "localhost";
-$username = "snovakow";
-$password = "kewbac-recge1-Fiwpux";
-$dbname = "sudoku";
+$log = true;
 
 function flushOut($message)
 {
-	echo $message . "<br/>";
+	echo "$message<br/>";
 }
 
 function truncate($db, $table, $log)
@@ -20,41 +21,42 @@ function truncate($db, $table, $log)
 	flushOut($sql);
 	if ($log) return;
 
-	$statement = $db->prepare($sql);
-	$statement->execute();
+	$stmt = $db->prepare($sql);
+	$stmt->execute();
 }
 
 function process($db, $sql, $strategy, $log)
 {
 	flushOut($sql . ";");
 	if (!$log) {
-		$statement = $db->prepare($sql);
-		$statement->execute();
+		$stmt = $db->prepare($sql);
+		$stmt->execute();
 	}
 
 	$sql = "ALTER TABLE `" . $strategy . "` AUTO_INCREMENT=1";
 	flushOut($sql . ";<br/>");
 	if (!$log) {
-		$statement = $db->prepare($sql);
-		$statement->execute();
+		$stmt = $db->prepare($sql);
+		$stmt->execute();
 	}
 }
 
 function insert($db, $strategy, $table, $log)
 {
-	$sql = "
-		INSERT INTO `" . $strategy . "` (`puzzle_id`, `table`)
-		SELECT `id`, '" . $table . "'
-		FROM `" . $table . "` WHERE `" . $strategy . "`>0
-	";
+	$sql = "INSERT INTO `" . $strategy . "` (`puzzle_id`, `table`)
+SELECT `id`, '" . $table . "'
+FROM `" . $table . "` WHERE `" . $strategy . "`>0";
 	process($db, $sql, $strategy, $log);
 }
 
 try {
-	$pdo = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
-	$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+	$servername = "localhost";
+	$username = "snovakow";
+	$password = "kewbac-recge1-Fiwpux";
+	$dbname = "sudoku";
+	$db = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
 
-	$strategies = array(
+	$strategies = [
 		"naked2",
 		"naked3",
 		"naked4",
@@ -68,19 +70,19 @@ try {
 		"swordfish",
 		"jellyfish",
 		"uniqueRectangle"
-	);
+	];
 
 	if ($table === 'truncate') {
-		truncate($pdo, 'simple', $log);
-		truncate($pdo, 'bruteForce', $log);
+		truncate($db, 'simple', $log);
+		truncate($db, 'bruteForce', $log);
 	} else {
-		insert($pdo, 'simple',  $table, $log);
-		insert($pdo, 'bruteForce',  $table, $log);
+		insert($db, 'simple',  $table, $log);
+		insert($db, 'bruteForce',  $table, $log);
 	}
 
 	foreach ($strategies as $strategy) {
 		if ($table === 'truncate') {
-			truncate($pdo, $strategy, $log);
+			truncate($db, $strategy, $log);
 		} else {
 			$sql = "
 				INSERT INTO `" . $strategy . "` (`puzzle_id`, `count`, `table`)
@@ -91,11 +93,11 @@ try {
 				if ($name == $strategy) continue;
 				$sql .= " AND `has_" . $name . "`=0";
 			}
-			process($pdo, $sql, $strategy, $log);
+			process($db, $sql, $strategy, $log);
 		}
 	}
 } catch (PDOException $e) {
-	echo "Connection failed: " . $e->getMessage();
+	// echo "Connection failed: " . $e->getMessage();
 }
 
 echo "Complete!<br/>";
@@ -109,11 +111,8 @@ if ($log && $table !== 'truncate') {
 	flushOut("ALTER TABLE `" . $table . "` AUTO_INCREMENT=1;");
 }
 
-$pdo = null;
+?>
+	</pre>
+</body>
 
-/*
-INSERT INTO `phistomefel` (`puzzle_id`, `count`)
-SELECT `id`
-FROM `puzzlesPhistomefel` AS p
-WHERE p.`naked2`=0 AND p.`naked3`=0 AND p.`naked4`=0 AND p.`hidden2`=0 AND p.`hidden3`=0 AND p.`hidden4`=0 AND p.`omissions`=0 AND p.`yWing`=0 AND p.`xyzWing`=0 AND p.`xWing`=0 AND p.`swordfish`=0 AND p.`jellyfish`=0 AND p.`uniqueRectangle`=0 AND p.`bruteForce`=0
-*/
+</html>
