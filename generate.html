@@ -13,7 +13,6 @@
 		const estimateContainer = document.createElement('pre');
 
 		let generateMode = false;
-		let pingTimer = 0;
 
 		let statsGenerated = [];
 		let statsTotals = [];
@@ -77,7 +76,7 @@
 			while (statsTotals.length > timeLineIndex) statsTotals.pop();
 			addLine(statsTotals, dateNow, "Time");
 		}
-		const populate = () => {
+		const populateCount = () => {
 			statsTotals = [];
 
 			statsTotals.push(makeBold(totalCount.toLocaleString()));
@@ -121,7 +120,7 @@
 
 			if (!generateMode && !pingFound) {
 				if (!pingInitiated) return
-				populate();
+				populateCount();
 				displayStats();
 				return;
 			}
@@ -184,7 +183,6 @@
 			displayStats();
 		};
 
-		let pingCount = 0;
 		let prevPingTime = Date.now();
 		let prevPingCount = 0;
 		const pingSend = () => {
@@ -203,12 +201,8 @@
 					if (isNaN(puzzleCount)) return;
 
 					setCount(tableCount, puzzleCount);
+					populateCount();
 
-					const maxDelay = 10 * 1000;
-					const cancelDelay = 100 * 1000;
-					const delay = Math.min(Math.pow(1000, 1 + (pingCount / 100)), maxDelay);
-
-					populate();
 					const now = Date.now();
 					if (prevPingCount !== totalCount) {
 						if (prevPingCount === 0) {
@@ -222,22 +216,17 @@
 						prevPingCount = totalCount;
 
 					}
-					// displayStats();
 					if (!pingInitiated) {
 						pingInitiated = true;
 						createEstimate();
 					}
 
+					const cancelDelay = 100 * 1000;
 					if (prevPingCount > 0 && (now - prevPingTime > cancelDelay)) {
 						pingRun = false;
 						animationLoop = false;
 					}
-
-					pingTimer = window.setTimeout(() => {
-						pingTimer = 0;
-						pingCount++;
-						// pingSend();
-					}, delay);
+					displayStats();
 				});
 			});
 		};
@@ -277,7 +266,7 @@
 		let sendDataSent = 0;
 		const sendDataStack = [];
 		let sendDataSending = false;
-		const maxSend = 100;
+		const MAX_SEND = 100;
 
 		const populateGenerate = () => {
 			const timeAvg = strategyCounter.lines();
@@ -295,10 +284,33 @@
 			displayStats();
 		}
 
+		const SEND_DELAY_TIME = 1 * 1000;
+		let sendDelayTimeout = 0;
+		let sendDelayProcess = false;
 		const sendData = (currentData) => {
 			if (currentData) sendDataStack.push(currentData);
 			if (sendDataSending) return;
 			if (sendDataStack.length === 0) return;
+
+			if (sendDelayTimeout === 0) {
+				if (!sendDelayProcess) {
+					sendDelayTimeout = window.setTimeout(() => {
+						sendDelayTimeout = 0;
+						sendDelayProcess = true;
+						sendData();
+					}, SEND_DELAY_TIME);
+					return;
+				}
+				sendDelayProcess = false;
+			} else {
+				if (sendDataStack.length >= MAX_SEND) {
+					window.clearTimeout(sendDelayTimeout);
+					sendDelayTimeout = 0;
+				} else {
+					return;
+				}
+			}
+
 			sendDataSending = true;
 
 			const url = './generate.php?version=2';
@@ -339,7 +351,7 @@
 				}
 
 				readyDataSend.push(post);
-				if (readyDataSend.length === maxSend) break;
+				if (readyDataSend.length === MAX_SEND) break;
 			}
 			sendDataStack.splice(0, readyDataSend.length);
 
@@ -364,7 +376,7 @@
 					populateGenerate();
 
 					setCount(tableCount, puzzleCount);
-					populate();
+					populateCount();
 					displayStats();
 
 					sendDataSending = false;
@@ -393,9 +405,6 @@
 			pingFound = true;
 
 			toggleWorker();
-			if (pingTimer) {
-				window.clearTimeout(pingTimer);
-			}
 
 			if (workers) {
 				generateMode = true;
@@ -403,8 +412,6 @@
 			} else {
 				generateMode = false;
 			}
-
-			populate();
 		});
 		document.body.appendChild(generateButton);
 
