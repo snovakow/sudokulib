@@ -111,13 +111,6 @@ const step = () => {
 		}
 
 		cells.fromData(save);
-		const nakedResult = fillSolve(cells, [STRATEGY.SIMPLE_NAKED], []);
-		if (nakedResult.solved) {
-			data.solveType = 1;
-			return;
-		}
-
-		cells.fromData(save);
 		const simples2 = [STRATEGY.SIMPLE_HIDDEN, STRATEGY.SIMPLE_NAKED, STRATEGY.SIMPLE_INTERSECTION];
 		const orderedResult = fillSolve(cells, simples2, []);
 
