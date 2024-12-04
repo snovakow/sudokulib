@@ -785,7 +785,7 @@ CREATE TABLE `simple_hidden` (
 	PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 INSERT INTO `simple_hidden` (`puzzle_id`, `count`, `table`)
-SELECT `id`, `hiddenSimple`, 'puzzles001'
+SELECT `id`, `simple_hidden`, 'puzzles001'
 FROM `puzzles001` WHERE `solveType`=1 AND 
 `hiddenSimple`>0 AND 
 `omissionSimple`=0 AND 
