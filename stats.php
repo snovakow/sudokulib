@@ -776,6 +776,37 @@ try {
 		$sql = "SELECT puzzles.`clueCount` as clueCount, puzzles.`solveType` as solveType, COUNT(*) as count FROM $puzzleString as puzzles
 			GROUP BY clueCount, solveType";
 
+		$sql1="DROP TABLE IF EXISTS `simple_hidden`;
+CREATE TABLE `simple_hidden` (
+	`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+	`puzzle_id` int(10) unsigned NOT NULL,
+	`count` tinyint(3) unsigned NOT NULL,
+	`table` varchar(10) CHARACTER SET ascii NOT NULL DEFAULT '',
+	PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+INSERT INTO `simple_hidden` (`puzzle_id`, `count`, `table`)
+SELECT `id`, `hiddenSimple`, 'puzzles001'
+FROM `puzzles001` WHERE `solveType`=1 AND 
+`hiddenSimple`>0 AND 
+`omissionSimple`=0 AND 
+`nakedSimple`=0 AND 
+`nakedVisible`=0 AND 
+`naked2`=0 AND 
+`naked3`=0 AND 
+`naked4`=0 AND 
+`hidden1`=0 AND 
+`hidden2`=0 AND 
+`hidden3`=0 AND 
+`hidden4`=0 AND 
+`omissions`=0 AND 
+`uniqueRectangle`=0 AND 
+`yWing`=0 AND 
+`xyzWing`=0 AND 
+`xWing`=0 AND 
+`swordfish`=0 AND 
+`jellyfish`=0 
+LIMIT 1000000;
+ALTER TABLE `simple_hidden` AUTO_INCREMENT=1";
 		$stmt = $db->prepare($sql);
 		$stmt->execute();
 		$result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
