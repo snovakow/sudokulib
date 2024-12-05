@@ -8,6 +8,7 @@
 <body>
 	<pre>
 <?php
+
 class SimpleCounter
 {
 	public $nakedSimple;
@@ -313,166 +314,9 @@ class StrategyCounter
 		// 	printStrategy("Swordfish", 'swordfish');
 		// 	printStrategy("Jellyfish", 'jellyfish');
 		// }
-
-		// const candidateCount = this.candidates.count + this.candidatesVisible.count;
-
-		// lines.push("");
-		// lines.push("--- Totals " + this.totalPuzzles.toLocaleString());
-
-		// let line = "Simples: " + percent(this.simples.count);
-		// if (this.simples.count > 0) line += " (" + percent(this.simplesMinimal.count, this.simples.count) + " minimal)";
-		// lines.push(line);
-
-		// line = "Strategies: " + percent(this.candidates.count);
-		// if (this.candidates.count > 0) line += " (" + percent(this.candidatesMinimal.count, this.candidates.count) + " minimal)";
-		// lines.push(line);
-
-		// line = "Candidates: " + percent(candidateCount);
-		// if (candidateCount > 0) line += " (" + percent(this.candidatesVisible.count, candidateCount) + " visible)";
-		// lines.push(line);
-
-		// lines.push("Unsolvable: " + percent(this.unsolvable.count));
-
-		// lines.push("");
-		// lines.push("--- Rate");
-		// /const timeAvg = this.totalTime / 1000 / this.totalPuzzles;
-		// const timeAvgInv = 1 / timeAvg;
-		// lines.push("Time Avg: " + timeAvg.toFixed(3));
-		// lines.push("Per Second: " + timeAvgInv.toFixed(1));
-
-		// /return timeAvg;
 	}
 }
-/*
 
-	class StrategyCounter {
-	constructor() {
-		this.totalPuzzles = 0;
-		this.clueCounter = new Map();
-
-		this.simples = new SimpleCounter();
-		this.simplesMinimal = new SimpleCounter();
-		this.simplesIsolated = new SimpleMinimalCounter();
-		this.candidatesVisible = new VisibleCounter();
-		this.candidates = new CandidateCounter();
-		this.candidatesMinimal = new CandidateCounter();
-		this.unsolvable = new CandidateCounter();
-
-		this.startTime = performance.now();
-		this.totalTime = 0;
-	}
-	addData(data) {
-		this.totalPuzzles++;
-
-		if (data.solveType === 0 || data.solveType === 1) this.simples.addData(data);
-		if (data.solveType === 1) this.simplesMinimal.addData(data);
-		if (data.solveType === 1) this.simplesIsolated.addData(data);
-
-		if (data.solveType === 2) this.candidatesVisible.addData(data);
-		if (data.solveType === 3 || data.solveType === 4) this.candidates.addData(data);
-		if (data.solveType === 4) this.candidatesMinimal.addData(data);
-
-		if (data.solveType === 5) this.unsolvable.addData(data);
-
-		const clueValue = this.clueCounter.get(data.clueCount);
-		if (clueValue) this.clueCounter.set(data.clueCount, clueValue + 1);
-		else this.clueCounter.set(data.clueCount, 1)
-
-		this.totalTime = performance.now() - this.startTime;
-	}
-	lines() {
-		// const res = 10000;
-		// const percent = (val, total = this.totalPuzzles) => {
-		// 	return ((Math.ceil(100 * res * val / total) / res).toFixed(3) + "%").padStart(7, "0");
-		// }
-		// const makeLineSimple = (title, val, total) => {
-		// 	return title + ": " + percent(val, total);
-		// };
-		// const makeLine = (title, val, total) => {
-		// 	return title + ": " + percent(val, total) + " - " + val.toLocaleString();
-		// };
-		// const printLine = (title, val, total) => {
-		// 	lines.push(makeLine(title, val, total));
-		// };
-
-		// const lines = [];
-
-		// const clues = [...this.clueCounter.entries()];
-		// clues.sort((a, b) => {
-		// 	return a[0] - b[0];
-		// });
-
-		// lines.push("--- Clues");
-		// for (const clue of clues) printLine(clue[0], clue[1], this.totalPuzzles);
-
-		// if (this.simplesMinimal.count > 0) {
-		// 	lines.push("");
-		// 	lines.push("--- Simples Minimal");
-		// 	const printStrategy = (title, property) => {
-		// 		let line = makeLineSimple(title, this.simplesIsolated[property], this.simplesMinimal.count);
-		// 		line += " - " + this.simplesIsolated[property].toLocaleString();
-		// 		lines.push(line);
-		// 	}
-		// 	printStrategy("Hidden", 'hiddenSimple');
-		// 	printStrategy("Omission", 'omissionSimple');
-		// 	printStrategy("Naked", 'nakedSimple');
-		// 	printStrategy("All", 'allSimple');
-		// }
-
-		// if (this.candidatesMinimal.count) {
-		// 	lines.push("");
-		// 	lines.push("--- Candidates Minimal");
-
-		// 	const printStrategy = (title, property) => {
-		// 		const line = makeLineSimple(title, this.candidatesMinimal[property], this.candidatesMinimal.count);
-		// 		lines.push(line + " - " + this.candidatesMinimal[property].toLocaleString());
-		// 	}
-		// 	printStrategy("Naked2", 'naked2');
-		// 	printStrategy("Naked3", 'naked3');
-		// 	printStrategy("Naked4", 'naked4');
-		// 	printStrategy("Hidden1", 'hidden1');
-		// 	printStrategy("Hidden2", 'hidden2');
-		// 	printStrategy("Hidden3", 'hidden3');
-		// 	printStrategy("Hidden4", 'hidden4');
-		// 	printStrategy("Omissions", 'omissions');
-		// 	printStrategy("Unique Rectangle", 'uniqueRectangle');
-		// 	printStrategy("Y-Wing", 'yWing');
-		// 	printStrategy("XYZ-Wing", 'xyzWing');
-		// 	printStrategy("X-Wing", 'xWing');
-		// 	printStrategy("Swordfish", 'swordfish');
-		// 	printStrategy("Jellyfish", 'jellyfish');
-		// }
-
-		// const candidateCount = this.candidates.count + this.candidatesVisible.count;
-
-		// lines.push("");
-		// lines.push("--- Totals " + this.totalPuzzles.toLocaleString());
-
-		// let line = "Simples: " + percent(this.simples.count);
-		// if (this.simples.count > 0) line += " (" + percent(this.simplesMinimal.count, this.simples.count) + " minimal)";
-		// lines.push(line);
-
-		// line = "Strategies: " + percent(this.candidates.count);
-		// if (this.candidates.count > 0) line += " (" + percent(this.candidatesMinimal.count, this.candidates.count) + " minimal)";
-		// lines.push(line);
-
-		// line = "Candidates: " + percent(candidateCount);
-		// if (candidateCount > 0) line += " (" + percent(this.candidatesVisible.count, candidateCount) + " visible)";
-		// lines.push(line);
-
-		// lines.push("Unsolvable: " + percent(this.unsolvable.count));
-
-		// lines.push("");
-		// lines.push("--- Rate");
-		const timeAvg = this.totalTime / 1000 / this.totalPuzzles;
-		// const timeAvgInv = 1 / timeAvg;
-		// lines.push("Time Avg: " + timeAvg.toFixed(3));
-		// lines.push("Per Second: " + timeAvgInv.toFixed(1));
-
-		return timeAvg;
-	}
-}
-*/
 const MAX_SIZE = 10000000;
 
 function totalCount($tableCount, $puzzleCount)
@@ -520,17 +364,48 @@ function queryStrategy($db, $table)
 	return $result;
 }
 
+function tableStatement($tableCount, $countName, $tableName, $logic)
+{
+	$sql = "";
+	$sql .= "DROP TABLE IF EXISTS `$tableName`;\n";
+	$sql .= "CREATE TABLE `$tableName` (\n";
+	$sql .= "  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,\n";
+	$sql .= "  `puzzle_id` int(10) unsigned NOT NULL,\n";
+	$sql .= "  `count` tinyint(2) unsigned NOT NULL,\n";
+	$sql .= "  `table` varchar(10) CHARACTER SET ascii NOT NULL DEFAULT '',\n";
+	$sql .= "  PRIMARY KEY (`id`)\n";
+	$sql .= ") ENGINE=InnoDB DEFAULT CHARSET=utf8;\n";
+
+	$sql .= "INSERT INTO `$tableName` (`puzzle_id`, `count`, `table`)\n";
+
+	$unions = [];
+	for ($i = 1; $i <= $tableCount; $i++) {
+		$table = tableName($i);
+		$unions[] = "SELECT `id`, `$countName`, '$table' as puzzle FROM `$table` WHERE $logic";
+	}
+	if (count($unions) === 1) {
+		$unionString = $unions[0];
+		$sql .= "$unionString LIMIT 1000000;\n";
+	} else {
+		$unionString = implode(") \n  UNION ALL\n  (", $unions);
+		$sql .= "SELECT `id`, `$countName`, `puzzle` FROM (\n  ($unionString)\n  LIMIT 1000000\n) as puzzles;\n";
+	}
+
+	$sql .= "ALTER TABLE `$tableName` AUTO_INCREMENT=1;\n";
+	return $sql;
+}
 
 if (!isset($_GET['mode'])) die;
 
-// 1 = Strategies Isolated
+// 0 = Populate Statements
+// 1 = Populated Tables
 // 2 = Totals
-// 3 = Visuals
+// 3 = Visual
 // 4 = Strategies
 // 5 = Clues
 
 $mode = (int)$_GET['mode'];
-if ($mode !== 1 && $mode !== 2 && $mode !== 3) die;
+if (!is_int($mode) || $mode < 0 || $mode > 5) die;
 
 try {
 	$servername = "localhost";
@@ -552,95 +427,370 @@ try {
 	$puzzleCount = (int)$result['puzzleCount'];
 	$totalCount = totalCount($tableCount, $puzzleCount);
 
-	$tableFormat = number_format($tableCount);
-	$tableSyntax = $tableCount === 1 ? "table" : "tables";
-	$totalFormat = number_format($totalCount);
-	echo "$totalFormat puzzles in $tableFormat $tableSyntax<br/><br/>";
+	if ($mode > 0) {
+		$tableFormat = number_format($tableCount);
+		$tableSyntax = $tableCount === 1 ? "table" : "tables";
+		$totalFormat = number_format($totalCount);
+		echo "$totalFormat puzzles in $tableFormat $tableSyntax<br/><br/>";
+	}
 
-	if ($mode === 1) {
-		$tables = [];
-		$stmt = $db->prepare("SELECT `table` FROM `tables`");
-		$stmt->execute();
-		$result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+	if ($mode === 0) {
+		$logic = "`solveType`=1 AND `hiddenSimple`>0 AND `omissionSimple`=0 AND `nakedSimple`=0";
+		$sql = tableStatement($tableCount, "hiddenSimple", "simple_hidden", $logic);
+		echo "$sql\n";
 
-		foreach ($result as $key => $row) {
-			$table = $row['table'];
-			$tables[] = $table;
+		$logic = "`solveType`=1 AND `hiddenSimple`>0 AND `omissionSimple`>0 AND `nakedSimple`=0";
+		$sql = tableStatement($tableCount, "omissionSimple", "simple_omission", $logic);
+		echo "$sql\n";
 
-			$stmt = $db->prepare("SELECT MAX(id) as count FROM `" . $table . "`");
-			$stmt->execute();
-			$result = $stmt->fetch()["count"];
-			$countTotal +=  $result;
+		$logic = "`solveType`=1 AND `hiddenSimple`>0 AND `omissionSimple`=0 AND `nakedSimple`>0";
+		$sql = tableStatement($tableCount, "nakedSimple", "simple_naked", $logic);
+		echo "$sql\n";
+
+		$logic = "`solveType`=1 AND `hiddenSimple`>0 AND `omissionSimple`>0 AND `nakedSimple`>0";
+		$sql = tableStatement($tableCount, "clueCount", "simple_all", $logic);
+		echo "$sql\n";
+
+		$sql1 = "DROP TABLE IF EXISTS `simple_hidden`;
+		CREATE TABLE `simple_hidden` (
+			`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+			`puzzle_id` int(10) unsigned NOT NULL,
+			`count` tinyint(3) unsigned NOT NULL,
+			`table` varchar(10) CHARACTER SET ascii NOT NULL DEFAULT '',
+			PRIMARY KEY (`id`)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+		INSERT INTO `simple_hidden` (`puzzle_id`, `count`, `table`)
+		SELECT `id`, `simple_hidden`, 'puzzles001'
+		FROM `puzzles001` WHERE `solveType`=1 AND 
+		`hiddenSimple`>0 AND 
+		`omissionSimple`=0 AND 
+		`nakedSimple`=0 AND 
+		`nakedVisible`=0 AND 
+		`naked2`=0 AND 
+		`naked3`=0 AND 
+		`naked4`=0 AND 
+		`hidden1`=0 AND 
+		`hidden2`=0 AND 
+		`hidden3`=0 AND 
+		`hidden4`=0 AND 
+		`omissions`=0 AND 
+		`uniqueRectangle`=0 AND 
+		`yWing`=0 AND 
+		`xyzWing`=0 AND 
+		`xWing`=0 AND 
+		`swordfish`=0 AND 
+		`jellyfish`=0 
+		LIMIT 1000000;
+		ALTER TABLE `simple_hidden` AUTO_INCREMENT=1";
+		$sql2 = "DROP TABLE IF EXISTS `unsolvable`;
+		CREATE TABLE `unsolvable` (
+			`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+			`puzzle_id` int(10) unsigned NOT NULL,
+			`count` tinyint(3) unsigned NOT NULL,
+			`table` varchar(10) CHARACTER SET ascii NOT NULL DEFAULT '',
+			PRIMARY KEY (`id`)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+		INSERT INTO `unsolvable` (`puzzle_id`, `count`, `table`)
+		SELECT `id`, `clueCount`, 'puzzles001'
+		FROM `puzzles001` WHERE `solveType`=5 AND 
+		`hiddenSimple`=0 AND 
+		`omissionSimple`=0 AND 
+		`nakedSimple`=0 AND 
+		`nakedVisible`=0 AND 
+		`naked2`=0 AND 
+		`naked3`=0 AND 
+		`naked4`=0 AND 
+		`hidden1`=0 AND 
+		`hidden2`=0 AND 
+		`hidden3`=0 AND 
+		`hidden4`=0 AND 
+		`omissions`=0 AND 
+		`uniqueRectangle`=0 AND 
+		`yWing`=0 AND 
+		`xyzWing`=0 AND 
+		`xWing`=0 AND 
+		`swordfish`=0 AND 
+		`jellyfish`=0 
+		LIMIT 1000000;
+		ALTER TABLE `unsolvable` AUTO_INCREMENT=1";
+		$sql3 = "SELECT 
+		`naked2`>0 as naked2Count, MAX(`naked2`) as naked2Max, 
+		`naked3`>0 as naked3Count, MAX(`naked3`) as naked3Max, 
+		`naked4`>0 as naked4Count, MAX(`naked4`) as naked4Max, 
+		`hidden1`>0 as hidden1Count, MAX(`hidden1`) as hidden1Max, 
+		`hidden2`>0 as hidden2Count, MAX(`hidden2`) as hidden1Max, 
+		`hidden3`>0 as hidden3Count, MAX(`hidden3`) as hidden1Max, 
+		`hidden4`>0 as hidden4Count, MAX(`hidden4`) as hidden1Max, 
+		`omissions`>0 as omissionsCount, MAX(`omissions`) as omissionsMax, 
+		`uniqueRectangle`>0 as uniqueRectangleCount, MAX(`uniqueRectangle`) as uniqueRectangleMax, 
+		`yWing`>0 as yWingCount, MAX(`yWing`) as yWingMax, 
+		`xyzWing`>0 as xyzWingCount, MAX(`xyzWing`) as xyzWingMax, 
+		`xWing`>0 as xWingCount, MAX(`xWing`) as xWingMax, 
+		`swordfish`>0 as swordfishCount, MAX(`swordfish`) as swordfishMax, 
+		`jellyfish`>0 as jellyfishCount, MAX(`jellyfish`) as jellyfishMax, 
+		`solveType`, COUNT(*) as count FROM `puzzles001`
+		WHERE `solveType`=3 OR `solveType`=4
+		GROUP BY naked2Count, naked3Count, naked4Count, hidden1Count, hidden2Count, hidden3Count, hidden4Count, 
+		omissionsCount, uniqueRectangleCount, yWingCount, xyzWingCount, xWingCount, swordfishCount, jellyfishCount, `solveType`";
+
+		$strategies = [
+			"simple",
+			"simple_all",
+		];
+
+		$strategiesCount = [
+			"simple_hidden",
+			"simple_omission",
+			"simple_naked",
+			"candidate_visible",
+			"candidate_naked2",
+			"candidate_naked3",
+			"candidate_naked4",
+			"candidate_hidden1",
+			"candidate_hidden2",
+			"candidate_hidden3",
+			"candidate_hidden4",
+			"candidate_omissions",
+			"candidate_uniqueRectangle",
+			"candidate_yWing",
+			"candidate_xyzWing",
+			"candidate_xWing",
+			"candidate_swordfish",
+			"candidate_jellyfish",
+			"unsolvable",
+		];
+		$strategies = [
+			"simple_hidden",
+			"unsolvable",
+		];
+		foreach ($strategies as $strategy) {
+			$sql = "DROP TABLE IF EXISTS `$strategy`;\n";
+			echo $sql;
+
+			$sql = "CREATE TABLE `$strategy` (
+	`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+	`puzzle_id` int(10) unsigned NOT NULL,
+	`count` tinyint(3) unsigned NOT NULL,
+	`table` varchar(10) CHARACTER SET ascii NOT NULL DEFAULT '',
+	PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;\n";
+			echo $sql;
+
+			$table = 'puzzles001';
+			$sql = "INSERT INTO `$strategy` (`puzzle_id`, `count`, `table`)
+SELECT `id`, `clueCount`, '$table'
+FROM `$table` WHERE `solveType`=5 AND 
+`hiddenSimple`=0 AND 
+`omissionSimple`=0 AND 
+`nakedSimple`=0 AND 
+`nakedVisible`=0 AND 
+`naked2`=0 AND 
+`naked3`=0 AND 
+`naked4`=0 AND 
+`hidden1`=0 AND 
+`hidden2`=0 AND 
+`hidden3`=0 AND 
+`hidden4`=0 AND 
+`omissions`=0 AND 
+`uniqueRectangle`=0 AND 
+`yWing`=0 AND 
+`xyzWing`=0 AND 
+`xWing`=0 AND 
+`swordfish`=0 AND 
+`jellyfish`=0 
+LIMIT 1000000;\n";
+			echo $sql;
+
+			$sql = "ALTER TABLE `$strategy` AUTO_INCREMENT=1;\n";
+			echo $sql;
 		}
 
 		flushOut("--- Strategies Isolated");
 
-		$naked2 = queryStrategy($db, 'naked2');
-		$naked3 = queryStrategy($db, 'naked3');
-		$naked4 = queryStrategy($db, 'naked4');
-		$hidden2 = queryStrategy($db, 'hidden2');
-		$hidden3 = queryStrategy($db, 'hidden3');
-		$hidden4 = queryStrategy($db, 'hidden4');
-		$omissions = queryStrategy($db, 'omissions');
-		$yWing = queryStrategy($db, 'yWing');
-		$xyzWing = queryStrategy($db, 'xyzWing');
-		$xWing = queryStrategy($db, 'xWing');
-		$swordfish = queryStrategy($db, 'swordfish');
-		$jellyfish = queryStrategy($db, 'jellyfish');
-		$uniqueRectangle = queryStrategy($db, 'uniqueRectangle');
+		// $naked2 = queryStrategy($db, 'naked2');
+		// $naked3 = queryStrategy($db, 'naked3');
+		// $naked4 = queryStrategy($db, 'naked4');
+		// $hidden2 = queryStrategy($db, 'hidden2');
+		// $hidden3 = queryStrategy($db, 'hidden3');
+		// $hidden4 = queryStrategy($db, 'hidden4');
+		// $omissions = queryStrategy($db, 'omissions');
+		// $yWing = queryStrategy($db, 'yWing');
+		// $xyzWing = queryStrategy($db, 'xyzWing');
+		// $xWing = queryStrategy($db, 'xWing');
+		// $swordfish = queryStrategy($db, 'swordfish');
+		// $jellyfish = queryStrategy($db, 'jellyfish');
+		// $uniqueRectangle = queryStrategy($db, 'uniqueRectangle');
 
-		$candidates = 0;
-		$candidates += $naked2['count'];
-		$candidates += $naked3['count'];
-		$candidates += $naked4['count'];
-		$candidates += $hidden2['count'];
-		$candidates += $hidden3['count'];
-		$candidates += $hidden4['count'];
-		$candidates += $omissions['count'];
-		$candidates += $yWing['count'];
-		$candidates += $xyzWing['count'];
-		$candidates += $xWing['count'];
-		$candidates += $swordfish['count'];
-		$candidates += $jellyfish['count'];
-		$candidates += $uniqueRectangle['count'];
+		// $candidates = 0;
+		// $candidates += $naked2['count'];
+		// $candidates += $naked3['count'];
+		// $candidates += $naked4['count'];
+		// $candidates += $hidden2['count'];
+		// $candidates += $hidden3['count'];
+		// $candidates += $hidden4['count'];
+		// $candidates += $omissions['count'];
+		// $candidates += $yWing['count'];
+		// $candidates += $xyzWing['count'];
+		// $candidates += $xWing['count'];
+		// $candidates += $swordfish['count'];
+		// $candidates += $jellyfish['count'];
+		// $candidates += $uniqueRectangle['count'];
 
-		if ($candidates > 0) {
-			printStat("naked2 (" . $naked2['max'] . ")", $naked2['count'], $candidates);
-			printStat("naked3 (" . $naked3['max'] . ")", $naked3['count'], $candidates);
-			printStat("naked4 (" . $naked4['max'] . ")", $naked4['count'], $candidates);
-			printStat("hidden2 (" . $hidden2['max'] . ")", $hidden2['count'], $candidates);
-			printStat("hidden3 (" . $hidden3['max'] . ")", $hidden3['count'], $candidates);
-			printStat("hidden4 (" . $hidden4['max'] . ")", $hidden4['count'], $candidates);
-			printStat("omissions (" . $omissions['max'] . ")", $omissions['count'], $candidates);
-			printStat("uniqueRectangle (" . $uniqueRectangle['max'] . ")", $uniqueRectangle['count'], $candidates);
-			printStat("yWing (" . $yWing['max'] . ")", $yWing['count'], $candidates);
-			printStat("xyzWing (" . $xyzWing['max'] . ")", $xyzWing['count'], $candidates);
-			printStat("xWing (" . $xWing['max'] . ")", $xWing['count'], $candidates);
-			printStat("swordfish (" . $swordfish['max'] . ")", $swordfish['count'], $candidates);
-			printStat("jellyfish (" . $jellyfish['max'] . ")", $jellyfish['count'], $candidates);
-		}
-		echo  "<br/>";
+		// if ($candidates > 0) {
+		// 	printStat("naked2 (" . $naked2['max'] . ")", $naked2['count'], $candidates);
+		// 	printStat("naked3 (" . $naked3['max'] . ")", $naked3['count'], $candidates);
+		// 	printStat("naked4 (" . $naked4['max'] . ")", $naked4['count'], $candidates);
+		// 	printStat("hidden2 (" . $hidden2['max'] . ")", $hidden2['count'], $candidates);
+		// 	printStat("hidden3 (" . $hidden3['max'] . ")", $hidden3['count'], $candidates);
+		// 	printStat("hidden4 (" . $hidden4['max'] . ")", $hidden4['count'], $candidates);
+		// 	printStat("omissions (" . $omissions['max'] . ")", $omissions['count'], $candidates);
+		// 	printStat("uniqueRectangle (" . $uniqueRectangle['max'] . ")", $uniqueRectangle['count'], $candidates);
+		// 	printStat("yWing (" . $yWing['max'] . ")", $yWing['count'], $candidates);
+		// 	printStat("xyzWing (" . $xyzWing['max'] . ")", $xyzWing['count'], $candidates);
+		// 	printStat("xWing (" . $xWing['max'] . ")", $xWing['count'], $candidates);
+		// 	printStat("swordfish (" . $swordfish['max'] . ")", $swordfish['count'], $candidates);
+		// 	printStat("jellyfish (" . $jellyfish['max'] . ")", $jellyfish['count'], $candidates);
+		// }
+		// echo  "<br/>";
 	}
 
 	if ($mode === 2) {
 		flushOut("--- Totals");
 
-		$sql = "SELECT 
-			puzzles.`solveType` as solveType, COUNT(*) as count FROM ppuzzles001 as puzzles
-			GROUP BY solveType";
+		$unions = [];
+		for ($i = 1; $i <= $tableCount; $i++) {
+			$table = tableName($i);
+			$unions[] = "SELECT `solveType`, COUNT(*) as count FROM `$table` GROUP BY `solveType`";
+		}
+		if (count($unions) === 1) {
+			$unionString = $unions[0];
+			$sql = "$unionString;\n";
+		} else {
+			$unionString = implode("\n UNION ALL\n ", $unions);
+			$sql = "SELECT `solveType`, SUM(`count`) as count FROM\n($unionString\n)";
+			$sql .= " as puzzles GROUP BY `solveType`;\n";
+		}
+		// echo $unions[0], ";\n";
+		// echo "$sql\n";
+
+		$counts = [];
+
+		$stmt = $db->prepare($sql);
+		$stmt->execute();
+		$result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+		foreach ($result as $key => $row) {
+			$solveType = (int)$row['solveType'];
+			$count = (int)$row['count'];
+			$counts[$solveType] = $count;
+		}
+
+		$simple = $counts[0];
+		$simpleMinimal = $counts[1];
+		$simple += $simpleMinimal;
+
+		$candidateVisual = $counts[2];
+		$candidate = $counts[3];
+		$candidateMinimal = $counts[4];
+		$candidate += $candidateMinimal;
+		$unsolvable = $counts[5];
+
+		$percent = percentage($simple, $totalCount, 2);
+		$percentMinimal = percentage($simpleMinimal, $simple, 2);
+		echo "Simple: $percent ($percentMinimal minimal)\n";
+
+		$percent = percentage($candidateVisual, $totalCount, 2);
+		$percentVisual = percentage($candidateVisual, $candidateVisual + $candidate, 2);
+		echo "Visual: $percent ($percentVisual of candidates)\n";
+
+		$percent = percentage($candidate, $totalCount, 2);
+		$percentMinimal = percentage($candidateMinimal, $candidate, 2);
+		echo "Strategy: $percent ($percentMinimal minimal)\n";
+
+		$percent = percentage($unsolvable, $totalCount, 2);
+		echo "Unsolvable: $percent\n";
+
+		echo "\n";
 	}
 
 	if ($mode === 3) {
-		flushOut("--- Visuals");
+		flushOut("--- Simples");
+
+		$sql = "
+SELECT solveType, clueCount, 
+MAX(hiddenSimpleMax) as hiddenSimpleMax, 
+MAX(omissionSimpleMax) as omissionSimpleMax, 
+MAX(nakedSimpleMax) as nakedSimpleMax, 
+SUM(`count`) as count FROM
+(
+SELECT 
+			`hiddenSimple`>0 as hiddenSimple, MAX(`hiddenSimple`) as hiddenSimpleMax, 
+			`omissionSimple`>0 as omissionSimple, MAX(`omissionSimple`) as omissionSimpleMax, 
+			`nakedSimple`>0 as nakedSimple, MAX(`nakedSimple`) as nakedSimpleMax, 
+			`solveType` as solveType, `clueCount`, COUNT(*) as count FROM puzzles001 as puzzles
+			WHERE solveType<=1
+			GROUP BY hiddenSimple, omissionSimple, nakedSimple, solveType, clueCount
+UNION ALL
+SELECT 
+			`hiddenSimple`>0 as hiddenSimple, MAX(`hiddenSimple`) as hiddenSimpleMax, 
+			`omissionSimple`>0 as omissionSimple, MAX(`omissionSimple`) as omissionSimpleMax, 
+			`nakedSimple`>0 as nakedSimple, MAX(`nakedSimple`) as nakedSimpleMax, 
+			`solveType` as solveType, `clueCount`, COUNT(*) as count FROM puzzles002 as puzzles
+			WHERE solveType<=1
+			GROUP BY hiddenSimple, omissionSimple, nakedSimple, solveType, clueCount
+)
+ as puzzles GROUP BY hiddenSimple, omissionSimple, nakedSimple, `solveType`, `clueCount`;
+
+SELECT clueCount, 
+MAX(hiddenSimpleMax) as hiddenSimple, 
+MAX(omissionSimpleMax) as omissionSimple, 
+MAX(nakedSimpleMax) as nakedSimple, 
+MAX(nakedVisibleMax) as nakedVisiblemax, 
+SUM(`count`) as count FROM
+(
+SELECT 
+			`hiddenSimple`>0 as hiddenSimple, MAX(`hiddenSimple`) as hiddenSimpleMax, 
+			`omissionSimple`>0 as omissionSimple, MAX(`omissionSimple`) as omissionSimpleMax, 
+			`nakedSimple`>0 as nakedSimple, MAX(`nakedSimple`) as nakedSimpleMax, 
+			MAX(`nakedVisible`) as nakedVisibleMax, 
+			`clueCount`, COUNT(*) as count FROM puzzles001 as puzzles
+			WHERE solveType=2
+			GROUP BY hiddenSimple, omissionSimple, nakedSimple, clueCount
+UNION ALL
+SELECT 
+			`hiddenSimple`>0 as hiddenSimple, MAX(`hiddenSimple`) as hiddenSimpleMax, 
+			`omissionSimple`>0 as omissionSimple, MAX(`omissionSimple`) as omissionSimpleMax, 
+			`nakedSimple`>0 as nakedSimple, MAX(`nakedSimple`) as nakedSimpleMax, 
+			MAX(`nakedVisible`) as nakedVisibleMax, 
+			`clueCount`, COUNT(*) as count FROM puzzles002 as puzzles
+			WHERE solveType=2
+			GROUP BY hiddenSimple, omissionSimple, nakedSimple, clueCount
+)
+ as puzzles GROUP BY hiddenSimple, omissionSimple, nakedSimple, clueCount;
+		";
+		$unions = [];
+		for ($i = 1; $i <= $tableCount; $i++) {
+			$table = tableName($i);
+			$unions[] = "SELECT `clueCount`, `solveType`, COUNT(*) as count FROM `$table` GROUP BY `clueCount`, `solveType`";
+		}
+		if (count($unions) === 1) {
+			$unionString = $unions[0];
+			$sql = "$unionString;\n";
+		} else {
+			$unionString = implode("\n UNION ALL\n ", $unions);
+			$sql = "SELECT `clueCount`, `solveType`, SUM(`count`) as count FROM\n($unionString\n)";
+			$sql .= " as puzzles GROUP BY `clueCount`, `solveType`;\n";
+		}
+		// echo $unions[0], ";\n";
+		// echo "$sql\n";
 
 		$sql = "SELECT 
 			puzzles.`hiddenSimple`>0 as hiddenSimple, MAX(puzzles.`hiddenSimple`) as hiddenSimpleMax, 
 			puzzles.`omissionSimple`>0 as omissionSimple, MAX(puzzles.`omissionSimple`) as omissionSimpleMax, 
 			puzzles.`nakedSimple`>0 as nakedSimple, MAX(puzzles.`nakedSimple`) as nakedSimpleMax, 
 			puzzles.`nakedVisible`>0 as nakedVisible, MAX(puzzles.`nakedVisible`) as nakedVisibleMax, 
-			puzzles.`clueCount` as clueCount, puzzles.`solveType` as solveType, COUNT(*) as count FROM ppuzzles001 as puzzles
-			WHERE solveType=0 OR solveType=1 OR solveType=2
-			GROUP BY hiddenSimple, omissionSimple, nakedSimple, nakedVisible, clueCount, solveType";
+			puzzles.`solveType` as solveType, COUNT(*) as count FROM puzzles001 as puzzles
+			WHERE solveType<=2
+			GROUP BY hiddenSimple, omissionSimple, nakedSimple, nakedVisible, solveType";
 	}
 
 	if ($mode === 4) {
@@ -762,51 +912,22 @@ try {
 		$countCandidate = [];
 		$countUnsolvable = [];
 
-		if ($tableCount > 1) {
-			$unions = [];
-			for ($i = 1; $i <= $tableCount; $i++) {
-				$tableName = tableName($i);
-				$unions[] = "SELECT * FROM `$tableName`";
-			}
-			$unionString = implode(' UNION ALL ', $unions);
-			$puzzleString = "($unionString)";
-		} else {
-			$puzzleString = tableName(1);
+		$unions = [];
+		for ($i = 1; $i <= $tableCount; $i++) {
+			$table = tableName($i);
+			$unions[] = "SELECT `clueCount`, `solveType`, COUNT(*) as count FROM `$table` GROUP BY `clueCount`, `solveType`";
 		}
-		$sql = "SELECT puzzles.`clueCount` as clueCount, puzzles.`solveType` as solveType, COUNT(*) as count FROM $puzzleString as puzzles
-			GROUP BY clueCount, solveType";
+		if (count($unions) === 1) {
+			$unionString = $unions[0];
+			$sql = "$unionString;\n";
+		} else {
+			$unionString = implode("\n UNION ALL\n ", $unions);
+			$sql = "SELECT `clueCount`, `solveType`, SUM(`count`) as count FROM\n($unionString\n)";
+			$sql .= " as puzzles GROUP BY `clueCount`, `solveType`;\n";
+		}
+		// echo $unions[0], ";\n";
+		// echo "$sql\n";
 
-		$sql1="DROP TABLE IF EXISTS `simple_hidden`;
-CREATE TABLE `simple_hidden` (
-	`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-	`puzzle_id` int(10) unsigned NOT NULL,
-	`count` tinyint(3) unsigned NOT NULL,
-	`table` varchar(10) CHARACTER SET ascii NOT NULL DEFAULT '',
-	PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-INSERT INTO `simple_hidden` (`puzzle_id`, `count`, `table`)
-SELECT `id`, `simple_hidden`, 'puzzles001'
-FROM `puzzles001` WHERE `solveType`=1 AND 
-`hiddenSimple`>0 AND 
-`omissionSimple`=0 AND 
-`nakedSimple`=0 AND 
-`nakedVisible`=0 AND 
-`naked2`=0 AND 
-`naked3`=0 AND 
-`naked4`=0 AND 
-`hidden1`=0 AND 
-`hidden2`=0 AND 
-`hidden3`=0 AND 
-`hidden4`=0 AND 
-`omissions`=0 AND 
-`uniqueRectangle`=0 AND 
-`yWing`=0 AND 
-`xyzWing`=0 AND 
-`xWing`=0 AND 
-`swordfish`=0 AND 
-`jellyfish`=0 
-LIMIT 1000000;
-ALTER TABLE `simple_hidden` AUTO_INCREMENT=1";
 		$stmt = $db->prepare($sql);
 		$stmt->execute();
 		$result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
@@ -854,8 +975,10 @@ ALTER TABLE `simple_hidden` AUTO_INCREMENT=1";
 		echo  "<br/>";
 	}
 
-	$time = (time() - $time) . "s";
-	echo $time;
+	if ($mode > 0) {
+		$time = (time() - $time) . "s";
+		echo $time;	
+	}
 } catch (PDOException $e) {
 	// echo "Error: " . $e->getMessage();
 }
