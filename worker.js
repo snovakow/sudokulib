@@ -89,48 +89,19 @@ const step = () => {
 
 	// solveType
 	// 0 Simple
-	// 1 Simple Minimal
+	// 1 Visible
 	// 2 Candidate
-	// 3 Candidate Visible
-	// 3 Candidate Minimal
+	// 3 Minimal
 	// 4 Incomplete
 	data.solveType = 0;
 	if (!result.simple) {
 		if (result.solved) {
-			data.solveType = 2;
-		} else {
-			data.solveType = 5;
-		}
-	}
-
-	const orderedSolveSimple = () => {
-		// simples = [STRATEGY.SIMPLE_HIDDEN, STRATEGY.SIMPLE_INTERSECTION, STRATEGY.SIMPLE_NAKED];
-		if (result.nakedSimple === 0) {
 			data.solveType = 1;
-			return;
-		}
-
-		cells.fromData(save);
-		const simples2 = [STRATEGY.SIMPLE_HIDDEN, STRATEGY.SIMPLE_NAKED, STRATEGY.SIMPLE_INTERSECTION];
-		const orderedResult = fillSolve(cells, simples2, []);
-
-		// "X0X" = if simples2 "XX0" then simples
-		// "X0X" = if simples2 "XXX" then simples min
-		// "XXX" = if simples2 "XX0" then simples2 min
-		// "XXX" = if simples2 "XXX" then simples min
-		if (result.omissionSimple > 0) {
-			if (orderedResult.nakedSimple > 0 && orderedResult.omissionSimple > 0) {
-				data.solveType = 1;
-			} else {
-				for (const strategy of simpleDataArray) data[strategy.data] = orderedResult[strategy.data];
-				data.solveType = 1;
-			}
 		} else {
-			if (orderedResult.omissionSimple > 0) {
-				data.solveType = 1;
-			}
+			data.solveType = 4;
 		}
 	}
+
 	const orderedSolve = () => {
 		const usedData = [];
 		for (const strategy of strategyDataArray) {
@@ -155,18 +126,15 @@ const step = () => {
 		cells.fromData(save);
 		const minimalResult = fillSolve(cells, simples, minimal);
 		if (minimalResult.solved) {
-			data.solveType = 4;
+			data.solveType = 3;
 			for (const strategy of allArray) data[strategy.data] = minimalResult[strategy.data];
 		}
 	}
 
 	for (const strategy of allArray) data[strategy.data] = result[strategy.data];
-	if (data.solveType === 0) {
-		orderedSolveSimple();
-	}
-	if (data.solveType === 2) {
+	if (data.solveType === 1) {
 		if (!result.candidateVisible) {
-			data.solveType = 3;
+			data.solveType = 2;
 			orderedSolve();
 		}
 	}
