@@ -85,6 +85,26 @@ const STRATEGY = {
 Object.freeze(STRATEGY);
 
 const fillSolve = (cells, simples, strategies, visible = true) => {
+	simples = simples ?? [STRATEGY.SIMPLE_HIDDEN, STRATEGY.SIMPLE_INTERSECTION, STRATEGY.SIMPLE_NAKED];
+	strategies = strategies ?? [
+		STRATEGY.NAKED_2,
+		STRATEGY.NAKED_3,
+		STRATEGY.NAKED_4,
+		STRATEGY.NAKED_5_2,
+		STRATEGY.NAKED_5_3,
+		STRATEGY.NAKED_5_4,
+		STRATEGY.HIDDEN_1,
+		STRATEGY.HIDDEN_2,
+		STRATEGY.HIDDEN_3,
+		STRATEGY.INTERSECTION_REMOVAL,
+		STRATEGY.DEADLY_PATTERN,
+		STRATEGY.Y_WING,
+		STRATEGY.XYZ_WING,
+		STRATEGY.X_WING,
+		STRATEGY.SWORDFISH,
+		STRATEGY.JELLYFISH,
+	];
+
 	let hiddenSimple = 0;
 	let omissionSimple = 0;
 	let nakedSimple = 0;
