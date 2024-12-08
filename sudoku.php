@@ -1,8 +1,6 @@
 <?php
 
-// header("Access-Control-Allow-Origin: *");
-
-if (!isset($_GET['strategy'])) die;
+if (!isset($_GET['strategy'])) die();
 $type = $_GET['strategy'];
 
 $strategy = false;
@@ -26,50 +24,45 @@ if ($type == 'custom') $strategy = $type;
 
 if (!$strategy) die();
 
-$servername = "localhost";
-$username = "snovakow";
-$password = "kewbac-recge1-Fiwpux";
-$dbname = "sudoku";
-
 try {
-	$conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
-	// $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION, PDO::ATTR_STRINGIFY_FETCHES);
+	$servername = "localhost";
+	$username = "snovakow";
+	$password = "kewbac-recge1-Fiwpux";
+	$dbname = "sudoku";
+	$db = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
 
 	if ($type == 'custom') {
-		$stmt = $conn->prepare("SELECT `id`, `title`, `puzzle` FROM `hardcoded`");
+		$stmt = $db->prepare("SELECT `id`, `title`, `puzzle` FROM `hardcoded`");
 		$stmt->execute();
 		$result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-		$results = array();
+		$results = [];
 		foreach ($result as $key => $row) {
 			$id = $row['id'];
 			$title = $row['title'];
 			$puzzle = $row['puzzle'];
-			$results[] = $id . "," . $title . "," . $puzzle;
+			$results[] = "$id,$title,$puzzle";
 		}
 		echo implode(":", $results);
-		die;
+		die();
 	}
 
-	$stmt = $conn->prepare("
-		SELECT s.`puzzle_id`, s.`table` FROM `" . $strategy . "` AS s   
-			JOIN (
-				SELECT FLOOR(RAND() * (SELECT MAX(`id`) FROM `" . $strategy . "`)) AS `rand_id`
-			) r ON s.`id` > r.`rand_id`
-		LIMIT 1
-	");
+	$stmt = $db->prepare("SELECT s.`puzzle_id`, s.`table` FROM `$strategy` AS s   
+		JOIN (
+			SELECT FLOOR(RAND() * (SELECT MAX(`id`) FROM `$strategy`)) AS `rand_id`
+		) r ON s.`id` > r.`rand_id`
+		LIMIT 1");
 	$stmt->execute();
 	$result = $stmt->fetch();
 
-	$stmt = $conn->prepare(
-		"SELECT `id`, HEX(`puzzleData`) AS 'puzzleData' FROM `" . $result['table'] . "` WHERE `id`=" . $result['puzzle_id']
-	);
+	$table = $result['table'];
+	$puzzle_id = $result['puzzle_id'];
+	$stmt = $db->prepare("SELECT `id`, HEX(`puzzleData`) AS 'puzzleData' FROM `$table` WHERE `id`=$puzzle_id");
 
 	$stmt->execute();
 	$result = $stmt->fetch();
 	$id = $result['id'];
 	$puzzleData = $result['puzzleData'];
-	echo $id . ":" . $puzzleData;
+	echo "$id:$puzzleData";
 } catch (PDOException $e) {
-	echo "Error: " . $e->getMessage();
+	// echo "Error: " . $e->getMessage();
 }
-$conn = null;
