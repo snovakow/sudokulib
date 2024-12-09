@@ -9,158 +9,208 @@
 	<script type="module">
 		import * as SudokuProcess from "./process.js";
 
-		const body = document.createElement('div');
-		body.style.fontFamily = "'Courier New', monospace";
+		class StrategyCounter {
+			constructor() {
+				this.totalPuzzles = 0;
+				this.startTime = performance.now();
+				this.totalTime = 0;
+			}
+			addData() {
+				this.totalPuzzles++;
+				this.totalTime = performance.now() - this.startTime;
+			}
+			timeAvg() {
+				return this.totalTime / 1000 / this.totalPuzzles;
+			}
+		}
+
+		const body = document.createElement('pre');
+		body.style.textAlign = "left";
+		body.style.position = "absolute";
+		body.style.top = "16px";
+		body.style.left = "16px";
+		body.style.margin = "0px";
+		document.body.appendChild(body);
+
+		const MAX_SIZE = 1e7;
+		let totalCount = 0;
+		const setCount = (tableCount, puzzleCount) => {
+			if (tableCount > 0) totalCount = (tableCount - 1) * MAX_SIZE + puzzleCount;
+		}
+
+		let strategyCounter = null;
+		let startTime = 0;
+		let receivedCount = 0;
+		let updateDataSent = 0;
+
+		let animationTicker = 0;
+		const animateFrame = () => {
+			window.requestAnimationFrame(animateFrame);
+			const tick = Math.floor(Date.now() / 1000);
+			if (tick === animationTicker) return;
+			animationTicker = tick;
+
+			while (body.firstChild) body.removeChild(body.lastChild);
+
+			body.appendChild(document.createTextNode("Received: " + receivedCount.toLocaleString()));
+			body.appendChild(document.createElement("br"));
+
+			body.appendChild(document.createTextNode("Total: " + totalCount.toLocaleString()));
+			body.appendChild(document.createElement("br"));
+			body.appendChild(document.createElement("br"));
+			if (strategyCounter) {
+				const timeAvg = strategyCounter.timeAvg();
+				body.appendChild(document.createTextNode("Processed: " + strategyCounter.totalPuzzles.toLocaleString()));
+				body.appendChild(document.createElement("br"));
+				body.appendChild(document.createTextNode("Avg Time: " + timeAvg.toFixed(4) + "s"));
+				body.appendChild(document.createElement("br"));
+				body.appendChild(document.createTextNode("Rate: " + (1 / timeAvg).toFixed(2) + "/s"));
+				body.appendChild(document.createElement("br"));
+				body.appendChild(document.createElement("br"));
+			}
+
+			body.appendChild(document.createTextNode("Sent: " + updateDataSent.toLocaleString()));
+			body.appendChild(document.createElement("br"));
+
+			if (startTime > 0 && updateDataSent > 0) {
+				const passed = Date.now() - startTime;
+				const eta = totalCount * passed / updateDataSent;
+				const seconds = Math.floor(eta / 1000);
+				const secondsString = new String(seconds % 60).padStart(2, '0');
+				const minutes = Math.floor(seconds / 60);
+				const minutesString = new String(minutes % 60).padStart(2, '0');
+				const hours = Math.floor(minutes / 60);
+				body.appendChild(document.createTextNode(`ETA: ${hours}:${minutesString}:${secondsString}`));
+			}
+		}
 
 		const updateButton = document.createElement('button');
 		updateButton.appendChild(document.createTextNode("Update"));
 		updateButton.style.top = '8px';
 		updateButton.style.right = '8px';
 		updateButton.style.position = 'absolute';
+		updateButton.style.width = '80px';
 		updateButton.style.height = '32px';
 
-		const setMessage = (message) => {
-			while (body.firstChild) body.removeChild(body.lastChild);
-			for (const line of message) {
-				const stat = document.createElement('div');
-				stat.appendChild(document.createTextNode(line));
-				body.appendChild(stat);
-			}
-		};
-
+		let coreCount = 1;
 		const searchParams = new URLSearchParams(window.location.search);
+		const searchCores = parseInt(searchParams.get("cores"));
+		if (!isNaN(searchCores) && searchCores <= 10 && searchCores > 0) coreCount = searchCores;
 
-		const table = searchParams.get("table");
+		const url = './tables.php?version=1';
+		fetch(url, { cache: "no-store" }).then(response => {
+			response.text().then((string) => {
+				const fields = string.split(":");
+				if (fields.length !== 2) return;
 
-		const sentDisplay = document.createElement('span');
-		sentDisplay.style.position = 'absolute';
-		sentDisplay.style.top = '48px';
-		sentDisplay.style.right = '8px';
-		sentDisplay.style.fontFamily = 'Courier New';
-		sentDisplay.style.visibility = 'hidden';
-		sentDisplay.textContent = "Sent: 0";
-		document.body.appendChild(sentDisplay);
+				const tableCount = parseInt(fields[0]);
+				if (isNaN(tableCount)) return;
+				const puzzleCount = parseInt(fields[1]);
+				if (isNaN(puzzleCount)) return;
 
-		const receiveDisplay = document.createElement('span');
-		receiveDisplay.style.position = 'absolute';
-		receiveDisplay.style.top = '64px';
-		receiveDisplay.style.right = '8px';
-		receiveDisplay.style.fontFamily = 'Courier New';
-		receiveDisplay.style.visibility = 'hidden';
-		receiveDisplay.textContent = "Received: 0";
-		document.body.appendChild(receiveDisplay);
+				setCount(tableCount, puzzleCount);
+				document.body.appendChild(updateButton);
+			});
+		});
 
-		let worker = null;
-		let strategyCounter = null;
+		const WorkerUnit = class {
+			constructor() {
+				this.worker = new Worker("worker.js", { type: "module" });
+				this.remaining = 0;
+			}
+			process(data) {
+				this.remaining = data.grids.length;
+				this.worker.postMessage(data);
+			}
+
+		}
+		let workers = null;
 		const toggleWorker = () => {
-			if (worker) {
-				worker.terminate();
-				worker = null;
+			if (workers) {
+				for (const unit of workers) {
+					const worker = unit.worker;
+					worker.terminate();
+				}
+				workers = null;
 				return;
 			}
-			strategyCounter = new SudokuProcess.StrategyCounter();
-			worker = new Worker("worker.js", { type: "module" });
+			if (!strategyCounter) strategyCounter = new StrategyCounter();
+
+			workers = [];
+			for (let i = 0; i < coreCount; i++) workers[i] = new WorkerUnit();
 		};
 
 		const updateDataStack = [];
 		let updateDataSending = false;
-		let updateDataSent = 0;
-		const maxSend = 100;
+		const maxSend = 1000;
 		const updateData = (data) => {
-			if (!table) return;
-
 			if (data) updateDataStack.push(data);
 			if (updateDataSending) return;
 			if (updateDataStack.length === 0) return;
 			updateDataSending = true;
 
-			const url = './update.php?version=1&table=' + table;
 			const readyDataSend = [];
 			for (const ready of updateDataStack) {
 				const post = {
-					version: 1,
 					id: ready.id,
-					simple: ready.simple,
+					solveType: ready.solveType,
+					hiddenSimple: ready.hiddenSimple,
+					omissionSimple: ready.omissionSimple,
+					nakedSimple: ready.nakedSimple,
+					nakedVisible: ready.nakedVisible,
+					omissionVisible: ready.omissionVisible,
 					naked2: ready.naked2,
 					naked3: ready.naked3,
 					naked4: ready.naked4,
+					hidden1: ready.hidden1,
 					hidden2: ready.hidden2,
 					hidden3: ready.hidden3,
 					hidden4: ready.hidden4,
 					omissions: ready.omissions,
+					uniqueRectangle: ready.uniqueRectangle,
 					yWing: ready.yWing,
 					xyzWing: ready.xyzWing,
 					xWing: ready.xWing,
 					swordfish: ready.swordfish,
 					jellyfish: ready.jellyfish,
-					uniqueRectangle: ready.uniqueRectangle,
-					bruteForce: ready.bruteForce,
-
-					has_naked2: ready.has_naked2,
-					has_naked3: ready.has_naked3,
-					has_naked4: ready.has_naked4,
-					has_hidden2: ready.has_hidden2,
-					has_hidden3: ready.has_hidden3,
-					has_hidden4: ready.has_hidden4,
-					has_omissions: ready.has_omissions,
-					has_uniqueRectangle: ready.has_uniqueRectangle,
-					has_yWing: ready.has_yWing,
-					has_xyzWing: ready.has_xyzWing,
-					has_xWing: ready.has_xWing,
-					has_swordfish: ready.has_swordfish,
-					has_jellyfish: ready.has_jellyfish,
 				};
 				readyDataSend.push(ready);
 				if (readyDataSend.length === maxSend) break;
 			}
 			updateDataStack.splice(0, readyDataSend.length);
 
+			const url = './update.php?version=2';
 			fetch(url, {
 				cache: "no-store",
 				method: "POST",
 				body: JSON.stringify(readyDataSend),
 			}).then(response => {
 				updateDataSending = false;
-
 				updateDataSent += readyDataSend.length;
-				sentDisplay.textContent = "Sent: " + updateDataSent;
 
 				if (updateDataStack.length > 0) updateData();
 
-				// response.text().then(
-				// 	(string)=>{
-				// 		console.log(string);
-				// 	}
-				// );
+				// response.text().then((string) => { console.log(string) });
 			});
 		};
 
 		const processUpdate = () => {
-			sentDisplay.style.visibility = 'visible';
-			receiveDisplay.style.visibility = 'visible';
-
 			const inc = 10000;
-			let start = 0;
 
 			let sentCount = 0;
 			const sentData = [];
 
-			worker.onmessage = (e) => {
-				const data = e.data;
-				strategyCounter.addData(data);
-				setMessage(strategyCounter.lines());
-				updateData(data);
-			};
+			const dataReceivedChunks = [];
 
 			const sendRequest = () => {
-				const url = `./feedSudoku.php?start=${start}&end=${start + inc}&table=${table}`;
+				const url = `./updateFeed.php?start=${receivedCount}&count=${inc}`;
 				fetch(url, {
 					cache: "no-store",
 					method: "GET"
 				}).then(response => {
 					response.json().then(
 						(json) => {
-							if (!worker) return;
+							if (!workers) return;
 
 							const options = {
 								weekday: "long",
@@ -173,10 +223,7 @@
 							};
 							// fillContent(json.length, time);
 
-							start += json.length;
-
-							receiveDisplay.textContent = "Received: " + start;
-
+							receivedCount += json.length;
 							for (const data of json) {
 								const puzzleDataHex = data.puzzleData;
 								if (puzzleDataHex.length !== 64) continue;
@@ -185,27 +232,60 @@
 								data.puzzleFilled = grid;
 							}
 
-							const workerData = {};
-							workerData.run = true;
-							workerData.grids = json;
-							worker.postMessage(workerData);
+							if (json.length !== inc) return;
 
-							if (json.length === inc) sendRequest();
+							const workerData = {};
+							workerData.grids = json;
+							dataReceivedChunks.push(workerData);
+							const workersAvailable = [];
+							for (const unit of workers) {
+								if (unit.remaining === 0) workersAvailable.push(unit);
+							}
+
+							while (dataReceivedChunks.length > 0 && workersAvailable.length > 0) {
+								const dataReceivedChunk = dataReceivedChunks.shift();
+								const unit = workersAvailable.shift();
+								unit.process(dataReceivedChunk);
+							};
+
+							if (json.length === inc && dataReceivedChunks.length < coreCount) sendRequest();
 						}
 					);
 				});
 			}
+
+			for (const unit of workers) {
+				const worker = unit.worker;
+				worker.onmessage = (e) => {
+					const data = e.data;
+					strategyCounter.addData(data);
+
+					updateData(data);
+					unit.remaining = data.remaining;
+					if (unit.remaining === 0 && dataReceivedChunks.length > 0) {
+						if (dataReceivedChunks.length === coreCount) sendRequest();
+
+						const dataReceivedChunk = dataReceivedChunks.shift();
+						unit.process(dataReceivedChunk);
+					}
+				};
+			}
+
 			sendRequest();
 		};
 
 		updateButton.addEventListener('click', () => {
+			if (startTime === 0) startTime = Date.now();
+			if (animationTicker === 0) animateFrame();
+			while (updateButton.firstChild) updateButton.removeChild(updateButton.firstChild);
 			toggleWorker();
-			if (worker) processUpdate();
+			if (workers) {
+				updateButton.appendChild(document.createTextNode("Stop"));
+				processUpdate();
+			} else {
+				updateButton.appendChild(document.createTextNode("Update"));
+			}
 		});
-
-		document.body.appendChild(updateButton);
-
-		document.body.appendChild(body);
 	</script>
 
 </head>
