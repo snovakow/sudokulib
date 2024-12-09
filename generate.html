@@ -26,6 +26,12 @@
 
 		const MAX_SIZE = 1e7;
 		const estimateContainer = document.createElement('pre');
+		estimateContainer.style.textAlign = "left";
+		estimateContainer.style.position = "absolute";
+		estimateContainer.style.top = "16px";
+		estimateContainer.style.left = "16px";
+		estimateContainer.style.margin = "0px";
+		document.body.appendChild(estimateContainer);
 
 		let generateMode = false;
 
@@ -105,13 +111,6 @@
 			if (timeLineIndex === 0) timeLineIndex = statsTotals.length;
 			setTimeLine();
 		};
-
-		estimateContainer.style.textAlign = "left";
-		estimateContainer.style.position = "absolute";
-		estimateContainer.style.top = "16px";
-		estimateContainer.style.left = "16px";
-		estimateContainer.style.margin = "0px";
-		document.body.appendChild(estimateContainer);
 
 		let animationLoop = true;
 
@@ -250,7 +249,7 @@
 		let coreCount = 1;
 		const search = new URLSearchParams(window.location.search);
 		const searchCores = parseInt(search.get("cores"));
-		if (!isNaN(searchCores) && searchCores < 10 && searchCores > 0) coreCount = searchCores;
+		if (!isNaN(searchCores) && searchCores <= 10 && searchCores > 0) coreCount = searchCores;
 
 		const generateButton = document.createElement('button');
 		generateButton.style.top = '8px';
@@ -272,9 +271,9 @@
 				return;
 			}
 			generateButton.appendChild(document.createTextNode("Stop"));
-			workers = [];
 			if (!strategyCounter) strategyCounter = new StrategyCounter();
 
+			workers = [];
 			for (let i = 0; i < coreCount; i++) workers[i] = new Worker("worker.js", { type: "module" });
 		};
 
@@ -403,7 +402,6 @@
 		const processGenerate = () => {
 			for (const worker of workers) {
 				const workerData = {};
-				workerData.run = true;
 				worker.onmessage = (e) => {
 					const data = e.data;
 					strategyCounter.addData();
