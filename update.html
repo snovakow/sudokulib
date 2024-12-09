@@ -43,34 +43,61 @@
 		let receivedCount = 0;
 		let updateDataSent = 0;
 
+		let receivedNodeOverride = true;
+		let processedNodeOverride = true;
+		let sentNodeOverride = true;
+		const receivedNode = document.createElement('span');
+		const processedNode = document.createElement('span');
+		const sentNode = document.createElement('span');
+
 		let animationTicker = 0;
 		const animateFrame = () => {
 			window.requestAnimationFrame(animateFrame);
+
 			const tick = Math.floor(Date.now() / 1000);
-			if (tick === animationTicker) return;
+			if (tick === animationTicker) {
+				if (receivedNodeOverride) {
+					while (receivedNode.firstChild) receivedNode.removeChild(receivedNode.lastChild);
+					receivedNode.appendChild(document.createTextNode("Received: " + receivedCount.toLocaleString()));
+					receivedNodeOverride = false;
+				}
+				if (processedNodeOverride && strategyCounter) {
+					while (processedNode.firstChild) processedNode.removeChild(processedNode.lastChild);
+					processedNode.appendChild(document.createTextNode("Processed: " + strategyCounter.totalPuzzles.toLocaleString()));
+					processedNodeOverride = false;
+				}
+				if (sentNodeOverride) {
+					while (sentNode.firstChild) sentNode.removeChild(sentNode.lastChild);
+					sentNode.appendChild(document.createTextNode("Sent: " + updateDataSent.toLocaleString()));
+					sentNodeOverride = false;
+				}
+				return;
+			}
 			animationTicker = tick;
 
 			while (body.firstChild) body.removeChild(body.lastChild);
 
-			body.appendChild(document.createTextNode("Received: " + receivedCount.toLocaleString()));
+			body.appendChild(receivedNode);
 			body.appendChild(document.createElement("br"));
 
 			body.appendChild(document.createTextNode("Total: " + totalCount.toLocaleString()));
 			body.appendChild(document.createElement("br"));
 			body.appendChild(document.createElement("br"));
+
+			if (strategyCounter) {
+				body.appendChild(processedNode);
+				body.appendChild(document.createElement("br"));
+			}
+			body.appendChild(sentNode);
+
 			if (strategyCounter) {
 				const timeAvg = strategyCounter.timeAvg();
-				body.appendChild(document.createTextNode("Processed: " + strategyCounter.totalPuzzles.toLocaleString()));
 				body.appendChild(document.createElement("br"));
 				body.appendChild(document.createTextNode("Avg Time: " + timeAvg.toFixed(4) + "s"));
 				body.appendChild(document.createElement("br"));
 				body.appendChild(document.createTextNode("Rate: " + (1 / timeAvg).toFixed(2) + "/s"));
 				body.appendChild(document.createElement("br"));
-				body.appendChild(document.createElement("br"));
 			}
-
-			body.appendChild(document.createTextNode("Sent: " + updateDataSent.toLocaleString()));
-			body.appendChild(document.createElement("br"));
 
 			if (startTime > 0 && updateDataSent > 0) {
 				const passed = Date.now() - startTime;
@@ -187,6 +214,7 @@
 			}).then(response => {
 				updateDataSending = false;
 				updateDataSent += readyDataSend.length;
+				sentNodeOverride = true;
 
 				if (updateDataStack.length > 0) updateData();
 
@@ -224,6 +252,7 @@
 							// fillContent(json.length, time);
 
 							receivedCount += json.length;
+							receivedNodeOverride = true;
 							for (const data of json) {
 								const puzzleDataHex = data.puzzleData;
 								if (puzzleDataHex.length !== 64) continue;
@@ -261,6 +290,8 @@
 					strategyCounter.addData(data);
 
 					updateData(data);
+					processedNodeOverride = true;
+
 					unit.remaining = data.remaining;
 					if (unit.remaining === 0 && dataReceivedChunks.length > 0) {
 						if (dataReceivedChunks.length === coreCount) sendRequest();
