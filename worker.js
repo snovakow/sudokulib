@@ -59,20 +59,19 @@ const step = () => {
 		mode = -1;
 	}
 
-	let id = 0;
+	let puzzleId = 0;
 	if (puzzleStrings) {
 		const puzzleData = puzzleStrings.shift();
 		if (!puzzleData) return false;
 		const puzzle = puzzleData.puzzleClues;
 		if (!puzzle) return false;
-		id = puzzleData.id;
+		puzzleId = puzzleData.id;
 		cells.fromString(puzzle);
 		mode = -1;
 	}
 	const [clueCount, puzzleFilled] = sudokuGenerator(cells, mode);
 
 	const data = {
-		id,
 		puzzle: cells.string(),
 		cells: cells.toData()
 	};
@@ -84,6 +83,8 @@ const step = () => {
 	data.puzzleClues = data.puzzle;
 	data.puzzleFilled = puzzleFilled.join('');
 	data.clueCount = clueCount;
+	if (puzzleId > 0) data.id = puzzleId;
+	if (puzzleStrings) data.remaining = puzzleStrings.length;
 
 	for (const strategy of allArray) data[strategy.data] = 0;
 
@@ -139,6 +140,7 @@ const step = () => {
 		}
 	}
 	postMessage(data);
+	if (puzzleStrings) return puzzleStrings.length > 0;
 	return true;
 };
 
