@@ -126,11 +126,9 @@
 			if (animationLoop) window.requestAnimationFrame(createEstimate);
 			const seconds = Math.floor(now / 1000);
 			if (seconds === processTimer) return;
-			processTimer = seconds;
 
-			if (pingRun && !pingRunBusy) {
-				pingSend();
-			}
+			if (coreCount === 0 && pingRun && !pingRunBusy) pingSend();
+			processTimer = seconds;
 
 			if (!generateMode && !pingFound) {
 				if (!pingInitiated) return
@@ -240,13 +238,13 @@
 						pingRun = false;
 						animationLoop = false;
 					}
-					displayStats();
+					// displayStats();
 				});
 			});
 		};
 		pingSend();
 
-		let coreCount = 1;
+		let coreCount = 0;
 		const search = new URLSearchParams(window.location.search);
 		const searchCores = parseInt(search.get("cores"));
 		if (!isNaN(searchCores) && searchCores <= 10 && searchCores > 0) coreCount = searchCores;
@@ -295,7 +293,7 @@
 			addGenerate(timeAvg.toFixed(3) + " seconds per puzzle");
 			addGenerate(timeAvgInv.toFixed(1) + " puzzles per second");
 
-			displayStats();
+			// displayStats();
 		}
 
 		const SEND_DELAY_TIME = 1 * 1000;
@@ -391,7 +389,7 @@
 
 					setCount(tableCount, puzzleCount);
 					populateCount();
-					displayStats();
+					// displayStats();
 
 					sendDataSending = false;
 					if (sendDataStack.length > 0) sendData();
@@ -412,23 +410,24 @@
 			}
 		};
 
+		if (coreCount > 0) {
+			generateButton.addEventListener('click', () => {
+				pingInitiated = true;
+				pingFound = true;
 
-		generateButton.addEventListener('click', () => {
-			pingInitiated = true;
-			pingFound = true;
+				toggleWorker();
 
-			toggleWorker();
-
-			if (workers) {
-				generateMode = true;
-				processGenerate();
-			} else {
-				generateMode = false;
-			}
-		});
-		document.body.appendChild(generateButton);
-
-		displayStats();
+				if (workers) {
+					generateMode = true;
+					processGenerate();
+				} else {
+					generateMode = false;
+				}
+			});
+			document.body.appendChild(generateButton);
+			// } else {
+			// 	displayStats();
+		}
 	</script>
 
 </head>
