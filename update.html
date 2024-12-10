@@ -50,23 +50,31 @@
 		const processedNode = document.createElement('span');
 		const sentNode = document.createElement('span');
 
+		const makeBold = (node, title, line) => {
+			const bolded = document.createElement('span');
+			bolded.style.fontWeight = "bold";
+			bolded.appendChild(document.createTextNode(title + ": "));
+			node.appendChild(bolded);
+			node.appendChild(document.createTextNode(line));
+		};
+
 		let animationTicker = 0;
 		const animateFrame = () => {
 			window.requestAnimationFrame(animateFrame);
 
 			if (receivedNodeOverride) {
 				while (receivedNode.firstChild) receivedNode.removeChild(receivedNode.lastChild);
-				receivedNode.appendChild(document.createTextNode("Received: " + receivedCount.toLocaleString()));
+				makeBold(receivedNode, "Received", receivedCount.toLocaleString());
 				receivedNodeOverride = false;
 			}
 			if (processedNodeOverride && strategyCounter) {
 				while (processedNode.firstChild) processedNode.removeChild(processedNode.lastChild);
-				processedNode.appendChild(document.createTextNode("Processed: " + strategyCounter.totalPuzzles.toLocaleString()));
+				makeBold(processedNode, "Processed", strategyCounter.totalPuzzles.toLocaleString());
 				processedNodeOverride = false;
 			}
 			if (sentNodeOverride) {
 				while (sentNode.firstChild) sentNode.removeChild(sentNode.lastChild);
-				sentNode.appendChild(document.createTextNode("Sent: " + updateDataSent.toLocaleString()));
+				makeBold(sentNode, "Sent", updateDataSent.toLocaleString())
 				sentNodeOverride = false;
 			}
 
@@ -79,7 +87,7 @@
 			body.appendChild(receivedNode);
 			body.appendChild(document.createElement("br"));
 
-			body.appendChild(document.createTextNode("Total: " + totalCount.toLocaleString()));
+			makeBold(body, "Total", totalCount.toLocaleString())
 			body.appendChild(document.createElement("br"));
 			body.appendChild(document.createElement("br"));
 
@@ -97,9 +105,9 @@
 						const timeAvg = strategyCounter.timeAvg();
 						if (timeAvg > 0) {
 							body.appendChild(document.createElement("br"));
-							body.appendChild(document.createTextNode("Avg: " + timeAvg.toFixed(4) + "s"));
+							makeBold(body, "Avg", timeAvg.toFixed(4) + "s")
 							body.appendChild(document.createElement("br"));
-							body.appendChild(document.createTextNode("Rate: " + (1 / timeAvg).toFixed(2) + "/s"));
+							makeBold(body, "Rate", (1 / timeAvg).toFixed(2) + "/s");
 							body.appendChild(document.createElement("br"));
 						}
 					}
@@ -110,7 +118,7 @@
 						const minutes = Math.floor(seconds / 60);
 						const minutesString = new String(minutes % 60).padStart(2, '0');
 						const hours = Math.floor(minutes / 60);
-						body.appendChild(document.createTextNode(`ETA: ${hours}:${minutesString}:${secondsString}`));
+						makeBold(body, "ETA", `${hours}:${minutesString}:${secondsString}`)
 					}
 				}
 			}
