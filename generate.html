@@ -217,12 +217,8 @@
 
 					const now = Date.now();
 					if (prevPingCount !== totalCount) {
-						if (prevPingCount === 0) {
-							pingRun = true;
-							// createEstimate();
-						} else {
-							pingFound = true;
-						}
+						if (prevPingCount === 0) pingRun = true;
+						else pingFound = true;
 
 						prevPingTime = now;
 						prevPingCount = totalCount;
@@ -230,7 +226,8 @@
 					}
 					if (!pingInitiated) {
 						pingInitiated = true;
-						createEstimate();
+						if (coreCount === 0) createEstimate();
+						else displayStats();
 					}
 
 					const cancelDelay = 100 * 1000;
@@ -238,7 +235,6 @@
 						pingRun = false;
 						animationLoop = false;
 					}
-					// displayStats();
 				});
 			});
 		};
@@ -414,6 +410,7 @@
 			generateButton.addEventListener('click', () => {
 				pingInitiated = true;
 				pingFound = true;
+				if (processTimer === 0) createEstimate();
 
 				toggleWorker();
 
