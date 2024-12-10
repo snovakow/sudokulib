@@ -57,6 +57,14 @@
 			node.appendChild(bolded);
 			node.appendChild(document.createTextNode(line));
 		};
+		const formatTime = (time) => {
+			const seconds = Math.floor(time / 1000);
+			const secondsString = new String(seconds % 60).padStart(2, '0');
+			const minutes = Math.floor(seconds / 60);
+			const minutesString = new String(minutes % 60).padStart(2, '0');
+			const hours = Math.floor(minutes / 60);
+			return `${hours}:${minutesString}:${secondsString}`;
+		}
 
 		let animationTicker = 0;
 		const animateFrame = () => {
@@ -74,7 +82,13 @@
 			}
 			if (sentNodeOverride) {
 				while (sentNode.firstChild) sentNode.removeChild(sentNode.lastChild);
-				makeBold(sentNode, "Sent", updateDataSent.toLocaleString())
+				makeBold(sentNode, "Sent", updateDataSent.toLocaleString());
+
+				if (totalCount > 0) {
+					sentNode.appendChild(document.createElement("br"));
+					makeBold(sentNode, "Progress", (100 * updateDataSent / totalCount).toFixed(2) + "%");
+				}
+
 				sentNodeOverride = false;
 			}
 
@@ -98,6 +112,11 @@
 			body.appendChild(sentNode);
 			body.appendChild(document.createElement("br"));
 
+			if (strategyCounter) {
+				makeBold(body, "Elapsed", formatTime(strategyCounter.totalTime));
+				body.appendChild(document.createElement("br"));
+			}
+
 			if (startTime > 0 && updateDataSent > 0) {
 				const passed = Date.now() - startTime;
 				if (passed > 3 * 1000) {
@@ -112,13 +131,12 @@
 						}
 					}
 					if (updateDataSent > 0) {
-						const eta = totalCount * passed / updateDataSent;
-						const seconds = Math.floor(eta / 1000);
-						const secondsString = new String(seconds % 60).padStart(2, '0');
-						const minutes = Math.floor(seconds / 60);
-						const minutesString = new String(minutes % 60).padStart(2, '0');
-						const hours = Math.floor(minutes / 60);
-						makeBold(body, "ETA", `${hours}:${minutesString}:${secondsString}`)
+						if (updateDataSent < totalCount) {
+							const eta = (totalCount - updateDataSent) * passed / updateDataSent;
+							makeBold(body, "ETA", formatTime(eta))
+						} else {
+							makeBold(body, "ETA", "Complete!")
+						}
 					}
 				}
 			}
@@ -231,14 +249,15 @@
 				sentNodeOverride = true;
 
 				if (updateDataStack.length > 0) updateData();
+				if (updateDataSent === totalCount) document.body.removeChild(updateButton);
+
 
 				// response.text().then((string) => { console.log(string) });
 			});
 		};
 
 		const processUpdate = () => {
-			const inc = 10000;
-
+			const incMax = 10000;
 			let sentCount = 0;
 			const sentData = [];
 
@@ -247,6 +266,8 @@
 			let sendRequestBusy = false;
 			const sendRequest = () => {
 				sendRequestBusy = true;
+				const inc = Math.min(incMax, totalCount - receivedCount);
+
 				const url = `./updateFeed.php?start=${receivedCount}&count=${inc}`;
 				fetch(url, {
 					cache: "no-store",
@@ -294,7 +315,7 @@
 							};
 
 							sendRequestBusy = false;
-							if (json.length === inc && dataReceivedChunks.length < coreCount) sendRequest();
+							if (json.length === inc && receivedCount < totalCount && dataReceivedChunks.length < coreCount) sendRequest();
 						}
 					);
 				});
