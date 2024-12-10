@@ -230,7 +230,9 @@
 
 			const dataReceivedChunks = [];
 
+			let sendRequestBusy = false;
 			const sendRequest = () => {
+				sendRequestBusy = true;
 				const url = `./updateFeed.php?start=${receivedCount}&count=${inc}`;
 				fetch(url, {
 					cache: "no-store",
@@ -261,7 +263,7 @@
 								data.puzzleFilled = grid;
 							}
 
-							if (json.length !== inc) return;
+							if (json.length === 0) return;
 
 							const workerData = {};
 							workerData.grids = json;
@@ -277,6 +279,7 @@
 								unit.process(dataReceivedChunk);
 							};
 
+							sendRequestBusy = false;
 							if (json.length === inc && dataReceivedChunks.length < coreCount) sendRequest();
 						}
 					);
@@ -293,11 +296,10 @@
 					processedNodeOverride = true;
 
 					unit.remaining = data.remaining;
-					if (unit.remaining === 0 && dataReceivedChunks.length > 0) {
-						if (dataReceivedChunks.length === coreCount) sendRequest();
-
+					if (unit.remaining === 0) {
 						const dataReceivedChunk = dataReceivedChunks.shift();
-						unit.process(dataReceivedChunk);
+						if (dataReceivedChunk) unit.process(dataReceivedChunk);
+						if (!sendRequestBusy && dataReceivedChunks.length < coreCount) sendRequest();
 					}
 				};
 			}
