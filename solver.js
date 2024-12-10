@@ -252,6 +252,7 @@ class NakedHiddenResult {
 		this.max = max;
 	}
 }
+
 class NakedHiddenGroups {
 	constructor(cells) {
 		this.groupSets = [];
@@ -368,6 +369,50 @@ class NakedHiddenGroups {
 								}
 							}
 							if (reduced) return new NakedHiddenResult(4, false, len);
+						}
+					}
+				}
+			}
+		}
+		return null;
+	}
+	nakedQuint() {
+		const union = new SetUnion();
+		for (const sets of this.groupSets) {
+			const len = sets.length;
+			if (len < 7) continue;
+
+			const len_1 = len - 1;
+			const len_2 = len - 2;
+			const len_3 = len - 3;
+			const len_4 = len - 4;
+
+			for (let i1 = 0; i1 < len_4; i1++) {
+				const mask1 = sets[i1].mask;
+				for (let i2 = i1 + 1; i2 < len_3; i2++) {
+					const mask2 = sets[i2].mask;
+					for (let i3 = i2 + 1; i3 < len_2; i3++) {
+						const mask3 = sets[i3].mask;
+						for (let i4 = i3 + 1; i4 < len_1; i4++) {
+							const mask4 = sets[i4].mask;
+							for (let i5 = i4 + 1; i5 < len; i5++) {
+								const mask5 = sets[i5].mask;
+
+								union.set(mask1 | mask2 | mask3 | mask4 | mask5);
+								if (union.size !== 5) continue;
+
+								let reduced = false;
+								for (let i = 0; i < len; i++) {
+									if (i === i1 || i === i2 || i === i3 || i === i4 || i === i5) continue;
+
+									const cell = sets[i];
+									for (let x = 1; x <= 9; x++) {
+										if (!union.has(x)) continue;
+										if (cell.delete(x)) reduced = true;
+									}
+								}
+								if (reduced) return new NakedHiddenResult(5, false, len);
+							}
 						}
 					}
 				}
