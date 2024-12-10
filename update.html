@@ -54,25 +54,24 @@
 		const animateFrame = () => {
 			window.requestAnimationFrame(animateFrame);
 
-			const tick = Math.floor(Date.now() / 1000);
-			if (tick === animationTicker) {
-				if (receivedNodeOverride) {
-					while (receivedNode.firstChild) receivedNode.removeChild(receivedNode.lastChild);
-					receivedNode.appendChild(document.createTextNode("Received: " + receivedCount.toLocaleString()));
-					receivedNodeOverride = false;
-				}
-				if (processedNodeOverride && strategyCounter) {
-					while (processedNode.firstChild) processedNode.removeChild(processedNode.lastChild);
-					processedNode.appendChild(document.createTextNode("Processed: " + strategyCounter.totalPuzzles.toLocaleString()));
-					processedNodeOverride = false;
-				}
-				if (sentNodeOverride) {
-					while (sentNode.firstChild) sentNode.removeChild(sentNode.lastChild);
-					sentNode.appendChild(document.createTextNode("Sent: " + updateDataSent.toLocaleString()));
-					sentNodeOverride = false;
-				}
-				return;
+			if (receivedNodeOverride) {
+				while (receivedNode.firstChild) receivedNode.removeChild(receivedNode.lastChild);
+				receivedNode.appendChild(document.createTextNode("Received: " + receivedCount.toLocaleString()));
+				receivedNodeOverride = false;
 			}
+			if (processedNodeOverride && strategyCounter) {
+				while (processedNode.firstChild) processedNode.removeChild(processedNode.lastChild);
+				processedNode.appendChild(document.createTextNode("Processed: " + strategyCounter.totalPuzzles.toLocaleString()));
+				processedNodeOverride = false;
+			}
+			if (sentNodeOverride) {
+				while (sentNode.firstChild) sentNode.removeChild(sentNode.lastChild);
+				sentNode.appendChild(document.createTextNode("Sent: " + updateDataSent.toLocaleString()));
+				sentNodeOverride = false;
+			}
+
+			const tick = Math.floor(Date.now() / 1000);
+			if (tick === animationTicker) return;
 			animationTicker = tick;
 
 			while (body.firstChild) body.removeChild(body.lastChild);
@@ -89,25 +88,31 @@
 				body.appendChild(document.createElement("br"));
 			}
 			body.appendChild(sentNode);
-
-			if (strategyCounter) {
-				const timeAvg = strategyCounter.timeAvg();
-				body.appendChild(document.createElement("br"));
-				body.appendChild(document.createTextNode("Avg Time: " + timeAvg.toFixed(4) + "s"));
-				body.appendChild(document.createElement("br"));
-				body.appendChild(document.createTextNode("Rate: " + (1 / timeAvg).toFixed(2) + "/s"));
-				body.appendChild(document.createElement("br"));
-			}
+			body.appendChild(document.createElement("br"));
 
 			if (startTime > 0 && updateDataSent > 0) {
 				const passed = Date.now() - startTime;
-				const eta = totalCount * passed / updateDataSent;
-				const seconds = Math.floor(eta / 1000);
-				const secondsString = new String(seconds % 60).padStart(2, '0');
-				const minutes = Math.floor(seconds / 60);
-				const minutesString = new String(minutes % 60).padStart(2, '0');
-				const hours = Math.floor(minutes / 60);
-				body.appendChild(document.createTextNode(`ETA: ${hours}:${minutesString}:${secondsString}`));
+				if (passed > 3 * 1000) {
+					if (strategyCounter) {
+						const timeAvg = strategyCounter.timeAvg();
+						if (timeAvg > 0) {
+							body.appendChild(document.createElement("br"));
+							body.appendChild(document.createTextNode("Avg: " + timeAvg.toFixed(4) + "s"));
+							body.appendChild(document.createElement("br"));
+							body.appendChild(document.createTextNode("Rate: " + (1 / timeAvg).toFixed(2) + "/s"));
+							body.appendChild(document.createElement("br"));
+						}
+					}
+					if (updateDataSent > 0) {
+						const eta = totalCount * passed / updateDataSent;
+						const seconds = Math.floor(eta / 1000);
+						const secondsString = new String(seconds % 60).padStart(2, '0');
+						const minutes = Math.floor(seconds / 60);
+						const minutesString = new String(minutes % 60).padStart(2, '0');
+						const hours = Math.floor(minutes / 60);
+						body.appendChild(document.createTextNode(`ETA: ${hours}:${minutesString}:${secondsString}`));
+					}
+				}
 			}
 		}
 
@@ -172,6 +177,7 @@
 		let runningSends = 0;
 		const updateData = (data) => {
 			if (data) updateDataStack.push(data);
+			if (runningSends === 1 && updateDataStack.length < maxSend) return;
 			if (runningSends === 2) return;
 			if (updateDataStack.length === 0) return;
 			runningSends++;
