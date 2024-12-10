@@ -168,13 +168,13 @@
 		};
 
 		const updateDataStack = [];
-		let updateDataSending = false;
 		const maxSend = 1000;
+		let runningSends = 0;
 		const updateData = (data) => {
 			if (data) updateDataStack.push(data);
-			if (updateDataSending) return;
+			if (runningSends === 2) return;
 			if (updateDataStack.length === 0) return;
-			updateDataSending = true;
+			runningSends++;
 
 			const readyDataSend = [];
 			for (const ready of updateDataStack) {
@@ -212,7 +212,7 @@
 				method: "POST",
 				body: JSON.stringify(readyDataSend),
 			}).then(response => {
-				updateDataSending = false;
+				runningSends--;
 				updateDataSent += readyDataSend.length;
 				sentNodeOverride = true;
 
