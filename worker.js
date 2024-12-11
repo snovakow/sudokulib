@@ -59,7 +59,7 @@ const step = () => {
 		mode = -1;
 	}
 
-	let puzzleId = 0;
+	let puzzleId = "";
 	if (puzzleStrings) {
 		const puzzleData = puzzleStrings.shift();
 		if (!puzzleData) return false;
@@ -83,8 +83,10 @@ const step = () => {
 	data.puzzleClues = data.puzzle;
 	data.puzzleFilled = puzzleFilled.join('');
 	data.clueCount = clueCount;
-	if (puzzleId > 0) data.id = puzzleId;
-	if (puzzleStrings) data.remaining = puzzleStrings.length;
+	if (puzzleStrings) {
+		data.remaining = puzzleStrings.length;
+		data.id = puzzleId;
+	}
 
 	for (const strategy of allArray) data[strategy.data] = 0;
 
