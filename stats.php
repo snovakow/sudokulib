@@ -50,7 +50,7 @@ function printStat($title, $count, $total, $precision)
 
 function queryStrategy($db, $table)
 {
-	$stmt = $db->prepare("SELECT COUNT(*) as count, MAX(`count`) as max FROM `" . $table . "`");
+	$stmt = $db->prepare("SELECT COUNT(*) AS count, MAX(`count`) AS max FROM `" . $table . "`");
 	$stmt->execute();
 	$result = $stmt->fetch();
 	return $result;
@@ -73,7 +73,7 @@ function tableStatement($tableCount, $countName, $tableName, $logic, $orderAsc =
 	$unions = [];
 	for ($i = 1; $i <= $tableCount; $i++) {
 		$table = tableName($i);
-		$unions[] = "SELECT `id`, `$countName`, '$table' as puzzle FROM `$table` WHERE $logic";
+		$unions[] = "SELECT `id`, `$countName`, '$table' AS puzzle FROM `$table` WHERE $logic";
 	}
 	$order = $orderAsc ? "ASC" : "DESC";
 	$orderString = "ORDER BY `$countName` $order LIMIT 1000000";
@@ -82,7 +82,7 @@ function tableStatement($tableCount, $countName, $tableName, $logic, $orderAsc =
 		$sql .= "$unionString $orderString;\n";
 	} else {
 		$unionString = implode(") \n  UNION ALL\n  (", $unions);
-		$sql .= "SELECT `id`, `$countName`, `puzzle` FROM (\n  ($unionString)\n  $orderString\n) as puzzles;\n";
+		$sql .= "SELECT `id`, `$countName`, `puzzle` FROM (\n  ($unionString)\n  $orderString\n) AS puzzles;\n";
 	}
 
 	$sql .= "ALTER TABLE `$tableName` AUTO_INCREMENT=1;\n";
@@ -133,7 +133,7 @@ if (!isset($_GET['mode'])) die;
 // 6 = Clues
 
 $mode = (int)$_GET['mode'];
-if (!is_int($mode) || $mode < 0 || $mode > 5) die;
+if (!is_int($mode) || $mode < 0 || $mode > 6) die;
 
 try {
 	$servername = "localhost";
@@ -201,7 +201,7 @@ try {
 		$unions = [];
 		for ($i = 1; $i <= $tableCount; $i++) {
 			$table = tableName($i);
-			$unions[] = "SELECT COUNT(`id`) as count, Max(`id`) as max FROM `$table`";
+			$unions[] = "SELECT COUNT(`id`) AS count, Max(`id`) AS max FROM `$table`";
 		}
 		if (count($unions) === 1) {
 			$unionString = $unions[0];
@@ -209,7 +209,7 @@ try {
 		} else {
 			$unionString = implode("\n UNION ALL\n ", $unions);
 			$sql = "SELECT FORMAT(SUM(`count`),0) AS 'count', FORMAT(SUM(`max`),0) AS 'max' FROM (\n $unionString\n)";
-			$sql .= " as puzzles;";
+			$sql .= " AS puzzles;";
 		}
 		echo "$sql\n";
 	}
@@ -217,21 +217,21 @@ try {
 	if ($mode === 1) {
 		flushOut("--- Strategies Isolated");
 		$sql3 = "SELECT 
-		`naked2`>0 as naked2Count, MAX(`naked2`) as naked2Max, 
-		`naked3`>0 as naked3Count, MAX(`naked3`) as naked3Max, 
-		`naked4`>0 as naked4Count, MAX(`naked4`) as naked4Max, 
-		`hidden1`>0 as hidden1Count, MAX(`hidden1`) as hidden1Max, 
-		`hidden2`>0 as hidden2Count, MAX(`hidden2`) as hidden1Max, 
-		`hidden3`>0 as hidden3Count, MAX(`hidden3`) as hidden1Max, 
-		`hidden4`>0 as hidden4Count, MAX(`hidden4`) as hidden1Max, 
-		`omissions`>0 as omissionsCount, MAX(`omissions`) as omissionsMax, 
-		`uniqueRectangle`>0 as uniqueRectangleCount, MAX(`uniqueRectangle`) as uniqueRectangleMax, 
-		`yWing`>0 as yWingCount, MAX(`yWing`) as yWingMax, 
-		`xyzWing`>0 as xyzWingCount, MAX(`xyzWing`) as xyzWingMax, 
-		`xWing`>0 as xWingCount, MAX(`xWing`) as xWingMax, 
-		`swordfish`>0 as swordfishCount, MAX(`swordfish`) as swordfishMax, 
-		`jellyfish`>0 as jellyfishCount, MAX(`jellyfish`) as jellyfishMax, 
-		`solveType`, COUNT(*) as count FROM `puzzles001`
+		`naked2`>0 AS naked2Count, MAX(`naked2`) AS naked2Max, 
+		`naked3`>0 AS naked3Count, MAX(`naked3`) AS naked3Max, 
+		`naked4`>0 AS naked4Count, MAX(`naked4`) AS naked4Max, 
+		`hidden1`>0 AS hidden1Count, MAX(`hidden1`) AS hidden1Max, 
+		`hidden2`>0 AS hidden2Count, MAX(`hidden2`) AS hidden1Max, 
+		`hidden3`>0 AS hidden3Count, MAX(`hidden3`) AS hidden1Max, 
+		`hidden4`>0 AS hidden4Count, MAX(`hidden4`) AS hidden1Max, 
+		`omissions`>0 AS omissionsCount, MAX(`omissions`) AS omissionsMax, 
+		`uniqueRectangle`>0 AS uniqueRectangleCount, MAX(`uniqueRectangle`) AS uniqueRectangleMax, 
+		`yWing`>0 AS yWingCount, MAX(`yWing`) AS yWingMax, 
+		`xyzWing`>0 AS xyzWingCount, MAX(`xyzWing`) AS xyzWingMax, 
+		`xWing`>0 AS xWingCount, MAX(`xWing`) AS xWingMax, 
+		`swordfish`>0 AS swordfishCount, MAX(`swordfish`) AS swordfishMax, 
+		`jellyfish`>0 AS jellyfishCount, MAX(`jellyfish`) AS jellyfishMax, 
+		`solveType`, COUNT(*) AS count FROM `puzzles001`
 		WHERE `solveType`=2 OR `solveType`=3
 		GROUP BY naked2Count, naked3Count, naked4Count, hidden1Count, hidden2Count, hidden3Count, hidden4Count, 
 		omissionsCount, uniqueRectangleCount, yWingCount, xyzWingCount, xWingCount, swordfishCount, jellyfishCount, `solveType`";
@@ -321,15 +321,15 @@ try {
 		$unions = [];
 		for ($i = 1; $i <= $tableCount; $i++) {
 			$table = tableName($i);
-			$unions[] = "SELECT `solveType`, COUNT(*) as count FROM `$table` GROUP BY `solveType`";
+			$unions[] = "SELECT `solveType`, COUNT(*) AS count FROM `$table` GROUP BY `solveType`";
 		}
 		if (count($unions) === 1) {
 			$unionString = $unions[0];
 			$sql = "$unionString;\n";
 		} else {
 			$unionString = implode("\n UNION ALL\n ", $unions);
-			$sql = "SELECT `solveType`, SUM(`count`) as count FROM\n($unionString\n)";
-			$sql .= " as puzzles GROUP BY `solveType`;\n";
+			$sql = "SELECT `solveType`, SUM(`count`) AS count FROM\n($unionString\n)";
+			$sql .= " AS puzzles GROUP BY `solveType`;\n";
 		}
 		// echo $unions[0], ";\n";
 		// echo "$sql\n";
@@ -379,19 +379,19 @@ try {
 		for ($i = 1; $i <= $tableCount; $i++) {
 			$table = tableName($i);
 			$sql = "SELECT ";
-			$sql .= "`hiddenSimple`>0 as hiddenSimple, MAX(`hiddenSimple`) as hiddenSimpleMax, ";
-			$sql .= "`omissionSimple`>0 as omissionSimple, MAX(`omissionSimple`) as omissionSimpleMax, ";
-			$sql .= "`nakedSimple`>0 as nakedSimple, MAX(`nakedSimple`) as nakedSimpleMax, ";
-			$sql .= "COUNT(*) as count FROM `$table` WHERE solveType=0 ";
+			$sql .= "`hiddenSimple`>0 AS hiddenSimple, MAX(`hiddenSimple`) AS hiddenSimpleMax, ";
+			$sql .= "`omissionSimple`>0 AS omissionSimple, MAX(`omissionSimple`) AS omissionSimpleMax, ";
+			$sql .= "`nakedSimple`>0 AS nakedSimple, MAX(`nakedSimple`) AS nakedSimpleMax, ";
+			$sql .= "COUNT(*) AS count FROM `$table` WHERE solveType=0 ";
 			$sql .= "GROUP BY hiddenSimple, omissionSimple, nakedSimple";
 			$unions[] = $sql;
 		}
 		$unionString = implode(" UNION ALL ", $unions);
 		$sql = "SELECT ";
-		$sql .= "hiddenSimple, MAX(hiddenSimpleMax) as hiddenSimpleMax, ";
-		$sql .= "omissionSimple, MAX(omissionSimpleMax) as omissionSimpleMax, ";
-		$sql .= "nakedSimple, MAX(nakedSimpleMax) as nakedSimpleMax, ";
-		$sql .= "SUM(`count`) as count FROM ($unionString) as puzzles ";
+		$sql .= "hiddenSimple, MAX(hiddenSimpleMax) AS hiddenSimpleMax, ";
+		$sql .= "omissionSimple, MAX(omissionSimpleMax) AS omissionSimpleMax, ";
+		$sql .= "nakedSimple, MAX(nakedSimpleMax) AS nakedSimpleMax, ";
+		$sql .= "SUM(`count`) AS count FROM ($unionString) AS puzzles ";
 		$sql .= "GROUP BY hiddenSimple, omissionSimple, nakedSimple";
 
 		$stmt = $db->prepare($sql);
@@ -538,66 +538,71 @@ try {
 	}
 
 	if ($mode === 4) {
-		flushOut("--- Visual");
-
 		$unions = [];
 		for ($i = 1; $i <= $tableCount; $i++) {
 			$table = tableName($i);
 			$sql = "SELECT ";
-			$sql .= "`nakedVisible`>0 as nakedVisible, MAX(`nakedVisible`) as nakedVisibleMax, ";
-			$sql .= "`omissionVisible`>0 as omissionVisible, MAX(`omissionVisible`) as omissionVisibleMax, ";
-			$sql .= "COUNT(*) as count FROM `$table` WHERE solveType=1 ";
+			$sql .= "SUM(`hiddenSimple`>0) AS hiddenSimple, MAX(`hiddenSimple`) AS hiddenSimpleMax, ";
+			$sql .= "SUM(`omissionSimple`>0) AS omissionSimple, MAX(`omissionSimple`) AS omissionSimpleMax, ";
+			$sql .= "SUM(`nakedSimple`>0) AS nakedSimple, MAX(`nakedSimple`) AS nakedSimpleMax, ";
+			$sql .= "SUM(`nakedVisible`>0) AS nakedVisible, MAX(`nakedVisible`) AS nakedVisibleMax, ";
+			$sql .= "SUM(`omissionVisible`>0) AS omissionVisible, MAX(`omissionVisible`) AS omissionVisibleMax, ";
+			$sql .= "COUNT(*) AS count FROM `$table` WHERE solveType=1";
 			$unions[] = $sql;
 		}
 		$unionString = implode(" UNION ALL ", $unions);
 		$sql = "SELECT ";
-		$sql .= "nakedVisible, MAX(nakedVisibleMax) as nakedVisibleMax, ";
-		$sql .= "omissionVisible, MAX(omissionVisibleMax) as omissionVisibleMax, ";
-		$sql .= "SUM(`count`) as count FROM ($unionString) as puzzles ";
-		$sql .= "GROUP BY nakedVisible, omissionVisible";
+		$sql .= "SUM(hiddenSimple) AS hiddenSimple, MAX(hiddenSimpleMax) AS hiddenSimpleMax, ";
+		$sql .= "SUM(omissionSimple) AS omissionSimple, MAX(omissionSimpleMax) AS omissionSimpleMax, ";
+		$sql .= "SUM(nakedSimple) AS nakedSimple, MAX(nakedSimpleMax) AS nakedSimpleMax, ";
+		$sql .= "SUM(nakedVisible) AS nakedVisible, MAX(nakedVisibleMax) AS nakedVisibleMax, ";
+		$sql .= "SUM(omissionVisible) AS omissionVisible, MAX(omissionVisibleMax) AS omissionVisibleMax, ";
+		$sql .= "SUM(count) AS count FROM ($unionString) AS puzzles";
 
 		$stmt = $db->prepare($sql);
 		$stmt->execute();
-		$result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+		$result = $stmt->fetch(\PDO::FETCH_ASSOC);
 
-		$total = 0;
-		$counts = [];
-		$maxs = [];
-		for ($i = 0; $i < 2; $i++) {
-			$counts[$i] = 0;
-			$maxs[$i] = 0;
-		}
+		$total = (int)$result['count'];
 
-		$results = [];
-		foreach ($result as $row) {
-			$nakedVisible = (int)$row['nakedVisible'];
-			$omissionVisible = (int)$row['omissionVisible'];
-			$nakedVisibleMax = (int)$row['nakedVisibleMax'];
-			$omissionVisibleMax = (int)$row['omissionVisibleMax'];
-			$count = (int)$row['count'];
+		$percent = percentage($total, $totalCount, 2);
+		$number = number_format($total);
+		echo "--- Visuals $percent $number\n";
 
-			if ($nakedVisible > 0) $counts[0] += $count;
-			if ($omissionVisible > 0) $counts[1] += $count;
-			if ($nakedVisibleMax > $maxs[0]) $maxs[0] = $nakedVisibleMax;
-			if ($omissionVisibleMax > $maxs[1]) $maxs[1] = $omissionVisibleMax;
+		$hiddenSimple = (int)$result['hiddenSimple'];
+		$hiddenSimpleMax = (int)$result['hiddenSimpleMax'];
+		$percent = percentage($hiddenSimple, $total, 2);
+		$max = number_format($hiddenSimpleMax);
+		$format = number_format($hiddenSimple);
+		echo "Simple Hidden: $percent ($max) $format\n";
 
-			$total += $count;
-		}
+		$omissionSimple = (int)$result['omissionSimple'];
+		$omissionSimpleMax = (int)$result['omissionSimpleMax'];
+		$percent = percentage($omissionSimple, $total, 2);
+		$max = number_format($omissionSimpleMax);
+		$format = number_format($omissionSimple);
+		echo "Simple Omission: $percent ($max) $format\n";
 
-		$count = $counts[0];
-		$percent = percentage($count, $total, 2);
-		$max = number_format($maxs[0]);
-		$format = number_format($count);
+		$nakedSimple = (int)$result['nakedSimple'];
+		$nakedSimpleMax = (int)$result['nakedSimpleMax'];
+		$percent = percentage($nakedSimple, $total, 2);
+		$max = number_format($nakedSimpleMax);
+		$format = number_format($nakedSimple);
+		echo "Simple Naked: $percent ($max) $format\n";
+
+		$nakedVisible = (int)$result['nakedVisible'];
+		$nakedVisibleMax = (int)$result['nakedVisibleMax'];
+		$percent = percentage($nakedVisible, $total, 2);
+		$max = number_format($nakedVisibleMax);
+		$format = number_format($nakedVisible);
 		echo "Naked: $percent ($max) $format\n";
 
-		$count = $counts[1];
-		$percent = percentage($count, $total, 2);
-		$max = number_format($maxs[1]);
-		$format = number_format($count);
+		$omissionVisible = (int)$result['omissionVisible'];
+		$omissionVisibleMax = (int)$result['omissionVisibleMax'];
+		$percent = percentage($omissionVisible, $total, 2);
+		$max = number_format($omissionVisibleMax);
+		$format = number_format($omissionVisible);
 		echo "Omission: $percent ($max) $format\n";
-
-		echo $results[0];
-		echo $results[1];
 
 		echo "\n";
 	}
@@ -782,15 +787,15 @@ try {
 		$unions = [];
 		for ($i = 1; $i <= $tableCount; $i++) {
 			$table = tableName($i);
-			$unions[] = "SELECT `clueCount`, `solveType`, COUNT(*) as count FROM `$table` GROUP BY `clueCount`, `solveType`";
+			$unions[] = "SELECT `clueCount`, `solveType`, COUNT(*) AS count FROM `$table` GROUP BY `clueCount`, `solveType`";
 		}
 		if (count($unions) === 1) {
 			$unionString = $unions[0];
 			$sql = "$unionString;\n";
 		} else {
 			$unionString = implode("\n UNION ALL\n ", $unions);
-			$sql = "SELECT `clueCount`, `solveType`, SUM(`count`) as count FROM\n($unionString\n)";
-			$sql .= " as puzzles GROUP BY `clueCount`, `solveType`;\n";
+			$sql = "SELECT `clueCount`, `solveType`, SUM(`count`) AS count FROM\n($unionString\n)";
+			$sql .= " AS puzzles GROUP BY `clueCount`, `solveType`;\n";
 		}
 		// echo $unions[0], ";\n";
 		// echo "$sql\n";
