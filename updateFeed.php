@@ -19,11 +19,12 @@ try {
 	$dbname = "sudoku";
 	$db = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
 
-	$table = tableName((int)($startNumber / MAX_SIZE) + 1);
+	$tableNumber = (int)($startNumber / MAX_SIZE) + 1;
+	$id = "CONCAT_WS(':', '$tableNumber', `id`) AS 'id'";
+	$table = tableName($tableNumber);
 	$start = $startNumber % MAX_SIZE;
-	$base = $startNumber - $start;
 	$end = $start + $count;
-	$stmt = $db->prepare("SELECT (`id` + $base) AS 'id', HEX(`puzzleData`) AS 'puzzleData' FROM `$table` WHERE `id`>$start AND `id`<=$end");
+	$stmt = $db->prepare("SELECT $id, HEX(`puzzleData`) AS 'puzzleData' FROM `$table` WHERE `id`>$start AND `id`<=$end");
 	$stmt->execute();
 
 	$result = $stmt->fetchAll(PDO::FETCH_ASSOC);
