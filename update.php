@@ -23,9 +23,9 @@ try {
 	$stmts = [];
 	foreach ($array as $post) {
 		$id = (int)$post->id;
-		$tableId = $id % MAX_SIZE;
+		$tableId = ($id - 1) % MAX_SIZE + 1;
 
-		$tableNumber = (int)($id / MAX_SIZE) + 1;
+		$tableNumber = (int)(($id - 1) / MAX_SIZE) + 1;
 		$stmt = $stmts[$tableNumber];
 		if (!$stmt) {
 			$puzzleName = tableName($tableNumber);
