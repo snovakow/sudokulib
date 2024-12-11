@@ -127,9 +127,10 @@ if (!isset($_GET['mode'])) die;
 // 0 = Populate Statements
 // 1 = Populated Tables
 // 2 = Totals
-// 3 = Visuals
-// 4 = Strategies
-// 5 = Clues
+// 3 = Simples
+// 4 = Visuals
+// 5 = Strategies
+// 6 = Clues
 
 $mode = (int)$_GET['mode'];
 if (!is_int($mode) || $mode < 0 || $mode > 5) die;
@@ -153,13 +154,6 @@ try {
 	$tableCount = (int)$result['tableCount'];
 	$puzzleCount = (int)$result['puzzleCount'];
 	$totalCount = totalCount($tableCount, $puzzleCount);
-
-	if ($mode > 1) {
-		$tableFormat = number_format($tableCount);
-		$tableSyntax = $tableCount === 1 ? "table" : "tables";
-		$totalFormat = number_format($totalCount);
-		echo "$totalFormat puzzles in $tableFormat $tableSyntax\n\n";
-	}
 
 	if ($mode === 0) {
 		$logic = "`solveType`=0 AND `omissionSimple`=0 AND `nakedSimple`=0";
@@ -321,7 +315,8 @@ try {
 	}
 
 	if ($mode === 2) {
-		flushOut("--- Totals");
+		$number = number_format($totalCount);
+		flushOut("--- Total $number");
 
 		$unions = [];
 		for ($i = 1; $i <= $tableCount; $i++) {
@@ -359,25 +354,27 @@ try {
 		$unsolvable = $counts[4];
 
 		$percent = percentage($simple, $totalCount, 2);
-		echo "Simple: $percent\n";
+		$number = number_format($simple);
+		echo "Simple: $percent $number\n";
 
 		$percent = percentage($candidateVisual, $totalCount, 2);
 		$percentVisual = percentage($candidateVisual, $candidateVisual + $candidate, 2);
-		echo "Visual: $percent ($percentVisual of candidates)\n";
+		$number = number_format($candidateVisual);
+		echo "Visual: $percent ($percentVisual of candidates) $number\n";
 
 		$percent = percentage($candidate, $totalCount, 2);
 		$percentMinimal = percentage($candidateMinimal, $candidate, 2);
-		echo "Strategy: $percent ($percentMinimal minimal)\n";
+		$number = number_format($candidate);
+		echo "Strategy: $percent ($percentMinimal minimal) $number\n";
 
 		$percent = percentage($unsolvable, $totalCount, 2);
-		echo "Unsolvable: $percent\n";
+		$number = number_format($unsolvable);
+		echo "Unsolvable: $percent $number\n";
 
 		echo "\n";
 	}
 
 	if ($mode === 3) {
-		flushOut("--- Simples");
-
 		$unions = [];
 		for ($i = 1; $i <= $tableCount; $i++) {
 			$table = tableName($i);
@@ -455,6 +452,10 @@ try {
 
 			$total += $count;
 		}
+
+		$percent = percentage($total, $totalCount, 2);
+		$number = number_format($total);
+		echo "--- Simples $percent $number\n";
 
 		$count = $counts[0];
 		$percent = percentage($count, $total, 2);
@@ -537,6 +538,71 @@ try {
 	}
 
 	if ($mode === 4) {
+		flushOut("--- Visual");
+
+		$unions = [];
+		for ($i = 1; $i <= $tableCount; $i++) {
+			$table = tableName($i);
+			$sql = "SELECT ";
+			$sql .= "`nakedVisible`>0 as nakedVisible, MAX(`nakedVisible`) as nakedVisibleMax, ";
+			$sql .= "`omissionVisible`>0 as omissionVisible, MAX(`omissionVisible`) as omissionVisibleMax, ";
+			$sql .= "COUNT(*) as count FROM `$table` WHERE solveType=1 ";
+			$unions[] = $sql;
+		}
+		$unionString = implode(" UNION ALL ", $unions);
+		$sql = "SELECT ";
+		$sql .= "nakedVisible, MAX(nakedVisibleMax) as nakedVisibleMax, ";
+		$sql .= "omissionVisible, MAX(omissionVisibleMax) as omissionVisibleMax, ";
+		$sql .= "SUM(`count`) as count FROM ($unionString) as puzzles ";
+		$sql .= "GROUP BY nakedVisible, omissionVisible";
+
+		$stmt = $db->prepare($sql);
+		$stmt->execute();
+		$result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+		$total = 0;
+		$counts = [];
+		$maxs = [];
+		for ($i = 0; $i < 2; $i++) {
+			$counts[$i] = 0;
+			$maxs[$i] = 0;
+		}
+
+		$results = [];
+		foreach ($result as $row) {
+			$nakedVisible = (int)$row['nakedVisible'];
+			$omissionVisible = (int)$row['omissionVisible'];
+			$nakedVisibleMax = (int)$row['nakedVisibleMax'];
+			$omissionVisibleMax = (int)$row['omissionVisibleMax'];
+			$count = (int)$row['count'];
+
+			if ($nakedVisible > 0) $counts[0] += $count;
+			if ($omissionVisible > 0) $counts[1] += $count;
+			if ($nakedVisibleMax > $maxs[0]) $maxs[0] = $nakedVisibleMax;
+			if ($omissionVisibleMax > $maxs[1]) $maxs[1] = $omissionVisibleMax;
+
+			$total += $count;
+		}
+
+		$count = $counts[0];
+		$percent = percentage($count, $total, 2);
+		$max = number_format($maxs[0]);
+		$format = number_format($count);
+		echo "Naked: $percent ($max) $format\n";
+
+		$count = $counts[1];
+		$percent = percentage($count, $total, 2);
+		$max = number_format($maxs[1]);
+		$format = number_format($count);
+		echo "Omission: $percent ($max) $format\n";
+
+		echo $results[0];
+		echo $results[1];
+
+		echo "\n";
+	}
+
+	if ($mode === 5) {
 		flushOut("--- Strategies");
 		// $percent = percentage($candidateVisual, $totalCount, 2);
 		// $percentVisual = percentage($candidateVisual, $candidateVisual + $candidate, 2);
@@ -706,7 +772,7 @@ try {
 		echo  "<br/>";
 	}
 
-	if ($mode === 5) {
+	if ($mode === 6) {
 		flushOut("--- Clues");
 		$counts = [];
 		$countSimple = [];
