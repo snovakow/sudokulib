@@ -67,8 +67,9 @@
 		}
 
 		let animationTicker = 0;
+		let animating = true;
 		const animateFrame = () => {
-			window.requestAnimationFrame(animateFrame);
+			if (animating) window.requestAnimationFrame(animateFrame);
 
 			if (receivedNodeOverride) {
 				while (receivedNode.firstChild) receivedNode.removeChild(receivedNode.lastChild);
@@ -133,9 +134,10 @@
 					if (updateDataSent > 0) {
 						if (updateDataSent < totalCount) {
 							const eta = (totalCount - updateDataSent) * passed / updateDataSent;
-							makeBold(body, "ETA", formatTime(eta))
+							makeBold(body, "ETA", formatTime(eta));
 						} else {
-							makeBold(body, "ETA", "Complete!")
+							makeBold(body, "ETA", "Complete!");
+							animating = false;
 						}
 					}
 				}
