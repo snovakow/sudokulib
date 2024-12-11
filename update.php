@@ -22,10 +22,11 @@ try {
 
 	$stmts = [];
 	foreach ($array as $post) {
-		$id = (int)$post->id;
-		$tableId = ($id - 1) % MAX_SIZE + 1;
+		$fields = explode(":", $post->id, 2);
 
-		$tableNumber = (int)(($id - 1) / MAX_SIZE) + 1;
+		$tableNumber = (int)$fields[0];
+		$id = (int)$fields[1];
+
 		$stmt = $stmts[$tableNumber];
 		if (!$stmt) {
 			$puzzleName = tableName($tableNumber);
