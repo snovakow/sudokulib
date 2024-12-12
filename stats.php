@@ -28,10 +28,10 @@ function flushOut($message)
 	echo "$message<br/>";
 }
 
-function percentage($count, $total, $precision)
+function percentage($count, $total, $precision, $pad = 3)
 {
 	$percent = number_format(100.0 * $count / $total, $precision, '.', "");
-	$pad = str_pad($percent, $precision + 3, "0", STR_PAD_LEFT);
+	$pad = str_pad($percent, $precision + $pad, "0", STR_PAD_LEFT);
 	return "$pad%";
 }
 
@@ -56,7 +56,7 @@ function queryStrategy($db, $table)
 	return $result;
 }
 
-function tableStatement($tableCount, $countName, $tableName, $logic, $orderAsc = false, $select = null)
+function tableStatement($tableCount, $countName, $tableName, $logic, $select = null)
 {
 	if ($select === null) $select = "`$countName`";
 
@@ -77,14 +77,13 @@ function tableStatement($tableCount, $countName, $tableName, $logic, $orderAsc =
 		$table = tableName($i);
 		$unions[] = "SELECT `id`, $select, '$table' AS puzzle FROM `$table` WHERE $logic";
 	}
-	$order = $orderAsc ? "ASC" : "DESC";
-	$orderString = "ORDER BY `$countName` $order LIMIT 1000000";
+	$orderString = "ORDER BY `$countName` DESC LIMIT 1000000";
 	if (count($unions) === 1) {
 		$unionString = $unions[0];
 		$sql .= "$unionString $orderString;\n";
 	} else {
 		$unionString = implode(") \n  UNION ALL\n  (", $unions);
-		$sql .= "SELECT `id`, $select, `puzzle` FROM (\n  ($unionString)\n  $orderString\n) AS puzzles;\n";
+		$sql .= "SELECT `id`, `$countName`, `puzzle` FROM (\n  ($unionString)\n  $orderString\n) AS puzzles;\n";
 	}
 
 	$sql .= "ALTER TABLE `$tableName` AUTO_INCREMENT=1;\n";
@@ -159,7 +158,7 @@ try {
 
 	if ($mode === 0) {
 		$logic = "`solveType`=0 AND `omissionSimple`=0 AND `nakedSimple`=0";
-		$sql = tableStatement($tableCount, "hiddenSimple", "simple_hidden", $logic, true);
+		$sql = tableStatement($tableCount, "clueCount", "simple_hidden", $logic);
 		echo "$sql\n";
 
 		$logic = "`solveType`=0 AND `omissionSimple`>0 AND `nakedSimple`=0";
@@ -199,10 +198,9 @@ try {
 		$sql = tableStatement($tableCount, "clueCount", "unsolvable", $logic);
 		echo "$sql\n";
 
-		$select = "(clueCount + hiddenSimple + omissionSimple + nakedSimple + nakedVisible) as rating";
 		$logic = "`solveType`=4";
-		echo tableStatement($tableCount, "rating", "unsolvable_maxFill", $logic, false, $select), "\n";
-		echo tableStatement($tableCount, "rating", "unsolvable_minFill", $logic, true, $select), "\n";
+		$select = "(clueCount + hiddenSimple + omissionSimple + nakedSimple + nakedVisible) AS `filled`";
+		echo tableStatement($tableCount, "filled", "unsolvable_filled", $logic, $select), "\n";
 
 		// Show count vs max
 		$unions = [];
@@ -222,33 +220,7 @@ try {
 	}
 
 	if ($mode === 1) {
-		flushOut("--- Populated Tables");
-		$sql3 = "SELECT 
-		`naked2`>0 AS naked2Count, MAX(`naked2`) AS naked2Max, 
-		`naked3`>0 AS naked3Count, MAX(`naked3`) AS naked3Max, 
-		`naked4`>0 AS naked4Count, MAX(`naked4`) AS naked4Max, 
-		`hidden1`>0 AS hidden1Count, MAX(`hidden1`) AS hidden1Max, 
-		`hidden2`>0 AS hidden2Count, MAX(`hidden2`) AS hidden1Max, 
-		`hidden3`>0 AS hidden3Count, MAX(`hidden3`) AS hidden1Max, 
-		`hidden4`>0 AS hidden4Count, MAX(`hidden4`) AS hidden1Max, 
-		`omissions`>0 AS omissionsCount, MAX(`omissions`) AS omissionsMax, 
-		`uniqueRectangle`>0 AS uniqueRectangleCount, MAX(`uniqueRectangle`) AS uniqueRectangleMax, 
-		`yWing`>0 AS yWingCount, MAX(`yWing`) AS yWingMax, 
-		`xyzWing`>0 AS xyzWingCount, MAX(`xyzWing`) AS xyzWingMax, 
-		`xWing`>0 AS xWingCount, MAX(`xWing`) AS xWingMax, 
-		`swordfish`>0 AS swordfishCount, MAX(`swordfish`) AS swordfishMax, 
-		`jellyfish`>0 AS jellyfishCount, MAX(`jellyfish`) AS jellyfishMax, 
-		`solveType`, COUNT(*) AS count FROM `puzzles001`
-		WHERE `solveType`=2 OR `solveType`=3
-		GROUP BY naked2Count, naked3Count, naked4Count, hidden1Count, hidden2Count, hidden3Count, hidden4Count, 
-		omissionsCount, uniqueRectangleCount, yWingCount, xyzWingCount, xWingCount, swordfishCount, jellyfishCount, `solveType`";
-
-		$strategies = [
-			"simple",
-			"simple_all",
-		];
-
-		$strategiesCount = [
+		$tableNames = [
 			"simple_hidden",
 			"simple_omission",
 			"simple_naked",
@@ -268,57 +240,25 @@ try {
 			"candidate_swordfish",
 			"candidate_jellyfish",
 			"unsolvable",
+			"unsolvable_filled",
 		];
-		$strategies = [
-			"simple_hidden",
-			"unsolvable",
-		];
+		echo "--- Populated Tables ", number_format($totalCount), "\n\n";
 
-		// $naked2 = queryStrategy($db, 'naked2');
-		// $naked3 = queryStrategy($db, 'naked3');
-		// $naked4 = queryStrategy($db, 'naked4');
-		// $hidden2 = queryStrategy($db, 'hidden2');
-		// $hidden3 = queryStrategy($db, 'hidden3');
-		// $hidden4 = queryStrategy($db, 'hidden4');
-		// $omissions = queryStrategy($db, 'omissions');
-		// $yWing = queryStrategy($db, 'yWing');
-		// $xyzWing = queryStrategy($db, 'xyzWing');
-		// $xWing = queryStrategy($db, 'xWing');
-		// $swordfish = queryStrategy($db, 'swordfish');
-		// $jellyfish = queryStrategy($db, 'jellyfish');
-		// $uniqueRectangle = queryStrategy($db, 'uniqueRectangle');
+		foreach ($tableNames as $tableName) {
+			$sql = "SELECT COUNT(*) AS count, MAX(`count`) as max FROM `$tableName`";
+			$stmt = $db->prepare($sql);
+			$stmt->execute();
+			$result = $stmt->fetch();
+			$count = (int)$result['count'];
+			$maxCount = (int)$result['max'];
 
-		// $candidates = 0;
-		// $candidates += $naked2['count'];
-		// $candidates += $naked3['count'];
-		// $candidates += $naked4['count'];
-		// $candidates += $hidden2['count'];
-		// $candidates += $hidden3['count'];
-		// $candidates += $hidden4['count'];
-		// $candidates += $omissions['count'];
-		// $candidates += $yWing['count'];
-		// $candidates += $xyzWing['count'];
-		// $candidates += $xWing['count'];
-		// $candidates += $swordfish['count'];
-		// $candidates += $jellyfish['count'];
-		// $candidates += $uniqueRectangle['count'];
-
-		// if ($candidates > 0) {
-		// 	printStat("naked2 (" . $naked2['max'] . ")", $naked2['count'], $candidates);
-		// 	printStat("naked3 (" . $naked3['max'] . ")", $naked3['count'], $candidates);
-		// 	printStat("naked4 (" . $naked4['max'] . ")", $naked4['count'], $candidates);
-		// 	printStat("hidden2 (" . $hidden2['max'] . ")", $hidden2['count'], $candidates);
-		// 	printStat("hidden3 (" . $hidden3['max'] . ")", $hidden3['count'], $candidates);
-		// 	printStat("hidden4 (" . $hidden4['max'] . ")", $hidden4['count'], $candidates);
-		// 	printStat("omissions (" . $omissions['max'] . ")", $omissions['count'], $candidates);
-		// 	printStat("uniqueRectangle (" . $uniqueRectangle['max'] . ")", $uniqueRectangle['count'], $candidates);
-		// 	printStat("yWing (" . $yWing['max'] . ")", $yWing['count'], $candidates);
-		// 	printStat("xyzWing (" . $xyzWing['max'] . ")", $xyzWing['count'], $candidates);
-		// 	printStat("xWing (" . $xWing['max'] . ")", $xWing['count'], $candidates);
-		// 	printStat("swordfish (" . $swordfish['max'] . ")", $swordfish['count'], $candidates);
-		// 	printStat("jellyfish (" . $jellyfish['max'] . ")", $jellyfish['count'], $candidates);
-		// }
-		// echo  "<br/>";
+			if ($count === 1000000) $percent = "Filled";
+			else $percent = percentage($count, $totalCount, 5, 2);
+			$max = number_format($maxCount);
+			$format = number_format($count);
+			echo "$tableName: $percent ($max) $format\n";
+		}
+		echo "\n";
 	}
 
 	if ($mode === 2) {
@@ -800,7 +740,7 @@ try {
 		echo  "<br/>";
 	}
 
-	if ($mode > 1) {
+	if ($mode > 0) {
 		$time = (time() - $time) . "s";
 		echo $time;
 	}
