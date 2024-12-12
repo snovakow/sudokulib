@@ -63,7 +63,7 @@ try {
 			'xWing' => $post->xWing,
 			'swordfish' => $post->swordfish,
 			'jellyfish' => $post->jellyfish,
-			'id' => $tableId
+			'id' => $id
 		]);
 	}
 } catch (PDOException $e) {
