@@ -56,8 +56,10 @@ function queryStrategy($db, $table)
 	return $result;
 }
 
-function tableStatement($tableCount, $countName, $tableName, $logic, $orderAsc = false)
+function tableStatement($tableCount, $countName, $tableName, $logic, $orderAsc = false, $select = null)
 {
+	if ($select === null) $select = "`$countName`";
+
 	$sql = "";
 	$sql .= "DROP TABLE IF EXISTS `$tableName`;\n";
 	$sql .= "CREATE TABLE `$tableName` (\n";
@@ -73,7 +75,7 @@ function tableStatement($tableCount, $countName, $tableName, $logic, $orderAsc =
 	$unions = [];
 	for ($i = 1; $i <= $tableCount; $i++) {
 		$table = tableName($i);
-		$unions[] = "SELECT `id`, `$countName`, '$table' AS puzzle FROM `$table` WHERE $logic";
+		$unions[] = "SELECT `id`, $select, '$table' AS puzzle FROM `$table` WHERE $logic";
 	}
 	$order = $orderAsc ? "ASC" : "DESC";
 	$orderString = "ORDER BY `$countName` $order LIMIT 1000000";
@@ -82,7 +84,7 @@ function tableStatement($tableCount, $countName, $tableName, $logic, $orderAsc =
 		$sql .= "$unionString $orderString;\n";
 	} else {
 		$unionString = implode(") \n  UNION ALL\n  (", $unions);
-		$sql .= "SELECT `id`, `$countName`, `puzzle` FROM (\n  ($unionString)\n  $orderString\n) AS puzzles;\n";
+		$sql .= "SELECT `id`, $select, `puzzle` FROM (\n  ($unionString)\n  $orderString\n) AS puzzles;\n";
 	}
 
 	$sql .= "ALTER TABLE `$tableName` AUTO_INCREMENT=1;\n";
@@ -94,7 +96,7 @@ function strategyLogic($strategy, $priority = "")
 	if ($strategy == $priority) return " AND `$strategy`>0";
 	return " AND `$strategy`=0";
 }
-function tableLogic($strategy = 0)
+function tableLogic($strategy = "")
 {
 	$logic = "";
 	$logic .= strategyLogic("naked2", $strategy);
@@ -197,6 +199,11 @@ try {
 		$sql = tableStatement($tableCount, "clueCount", "unsolvable", $logic);
 		echo "$sql\n";
 
+		$select = "(clueCount + hiddenSimple + omissionSimple + nakedSimple + nakedVisible) as rating";
+		$logic = "`solveType`=4";
+		echo tableStatement($tableCount, "rating", "unsolvable_maxFill", $logic, false, $select), "\n";
+		echo tableStatement($tableCount, "rating", "unsolvable_minFill", $logic, true, $select), "\n";
+
 		// Show count vs max
 		$unions = [];
 		for ($i = 1; $i <= $tableCount; $i++) {
@@ -215,7 +222,7 @@ try {
 	}
 
 	if ($mode === 1) {
-		flushOut("--- Strategies Isolated");
+		flushOut("--- Populated Tables");
 		$sql3 = "SELECT 
 		`naked2`>0 AS naked2Count, MAX(`naked2`) AS naked2Max, 
 		`naked3`>0 AS naked3Count, MAX(`naked3`) AS naked3Max, 
@@ -382,7 +389,7 @@ try {
 			$sql .= "`hiddenSimple`>0 AS hiddenSimple, MAX(`hiddenSimple`) AS hiddenSimpleMax, ";
 			$sql .= "`omissionSimple`>0 AS omissionSimple, MAX(`omissionSimple`) AS omissionSimpleMax, ";
 			$sql .= "`nakedSimple`>0 AS nakedSimple, MAX(`nakedSimple`) AS nakedSimpleMax, ";
-			$sql .= "COUNT(*) AS count FROM `$table` WHERE solveType=0 ";
+			$sql .= "COUNT(*) AS count FROM `$table` WHERE `solveType`=0 ";
 			$sql .= "GROUP BY hiddenSimple, omissionSimple, nakedSimple";
 			$unions[] = $sql;
 		}
@@ -547,7 +554,7 @@ try {
 			$sql .= "SUM(`nakedSimple`>0) AS nakedSimple, MAX(`nakedSimple`) AS nakedSimpleMax, ";
 			$sql .= "SUM(`nakedVisible`>0) AS nakedVisible, MAX(`nakedVisible`) AS nakedVisibleMax, ";
 			$sql .= "SUM(`omissionVisible`>0) AS omissionVisible, MAX(`omissionVisible`) AS omissionVisibleMax, ";
-			$sql .= "COUNT(*) AS count FROM `$table` WHERE solveType=1";
+			$sql .= "COUNT(*) AS count FROM `$table` WHERE `solveType`=1";
 			$unions[] = $sql;
 		}
 		$unionString = implode(" UNION ALL ", $unions);
@@ -608,173 +615,120 @@ try {
 	}
 
 	if ($mode === 5) {
-		flushOut("--- Strategies");
-		// $percent = percentage($candidateVisual, $totalCount, 2);
-		// $percentVisual = percentage($candidateVisual, $candidateVisual + $candidate, 2);
-		// echo "Visual: $percent ($percentVisual of candidates)\n";
-
-		// $percent = percentage($candidate, $totalCount, 2);
-		// $percentMinimal = percentage($candidateMinimal, $candidate, 2);
-		// echo "Strategy: $percent ($percentMinimal minimal)\n";
-
-		// $percent = percentage($unsolvable, $totalCount, 2);
-		// echo "Unsolvable: $percent\n";
-
-		// const res = 10000;
-		// const percent = (val, total = this.totalPuzzles) => {
-		// 	return ((Math.ceil(100 * res * val / total) / res).toFixed(3) + "%").padStart(7, "0");
-		// }
-		// const makeLineSimple = (title, val, total) => {
-		// 	return title + ": " + percent(val, total);
-		// };
-
-		// const lines = [];
-
-		// if (this.simplesMinimal.count > 0) {
-		// 	lines.push("");
-		// 	lines.push("--- Simples Minimal");
-		// 	const printStrategy = (title, property) => {
-		// 		let line = makeLineSimple(title, this.simplesIsolated[property], this.simplesMinimal.count);
-		// 		line += " - " + this.simplesIsolated[property].toLocaleString();
-		// 		lines.push(line);
-		// 	}
-		// 	printStrategy("Hidden", 'hiddenSimple');
-		// 	printStrategy("Omission", 'omissionSimple');
-		// 	printStrategy("Naked", 'nakedSimple');
-		// 	printStrategy("All", 'allSimple');
-		// }
-
-		// if (this.candidatesMinimal.count) {
-		// 	lines.push("");
-		// 	lines.push("--- Candidates Minimal");
-
-		// 	const printStrategy = (title, property) => {
-		// 		const line = makeLineSimple(title, this.candidatesMinimal[property], this.candidatesMinimal.count);
-		// 		lines.push(line + " - " + this.candidatesMinimal[property].toLocaleString());
-		// 	}
-		// 	printStrategy("Naked2", 'naked2');
-		// 	printStrategy("Naked3", 'naked3');
-		// 	printStrategy("Naked4", 'naked4');
-		// 	printStrategy("Hidden1", 'hidden1');
-		// 	printStrategy("Hidden2", 'hidden2');
-		// 	printStrategy("Hidden3", 'hidden3');
-		// 	printStrategy("Hidden4", 'hidden4');
-		// 	printStrategy("Omissions", 'omissions');
-		// 	printStrategy("Unique Rectangle", 'uniqueRectangle');
-		// 	printStrategy("Y-Wing", 'yWing');
-		// 	printStrategy("XYZ-Wing", 'xyzWing');
-		// 	printStrategy("X-Wing", 'xWing');
-		// 	printStrategy("Swordfish", 'swordfish');
-		// 	printStrategy("Jellyfish", 'jellyfish');
-		// }
-
-		$sql = "SELECT 
-			puzzles.`naked2`>0 as naked2, MAX(puzzles.`naked2`) as naked2Max, 
-			puzzles.`naked3`>0 as naked3, MAX(puzzles.`naked3`) as naked3Max, 
-			puzzles.`naked4`>0 as naked4, MAX(puzzles.`naked4`) as naked4Max, 
-			puzzles.`hidden1`>0 as hidden1, MAX(puzzles.`hidden1`) as hidden1Max, 
-			puzzles.`hidden2`>0 as hidden2, MAX(puzzles.`hidden2`) as hidden1Max, 
-			puzzles.`hidden3`>0 as hidden3, MAX(puzzles.`hidden3`) as hidden1Max, 
-			puzzles.`hidden4`>0 as hidden4, MAX(puzzles.`hidden4`) as hidden1Max, 
-			puzzles.`omissions`>0 as omissions, MAX(puzzles.`omissions`) as omissionsMax, 
-			puzzles.`uniqueRectangle`>0 as uniqueRectangle, MAX(puzzles.`uniqueRectangle`) as uniqueRectangleMax, 
-			puzzles.`yWing`>0 as yWing, MAX(puzzles.`yWing`) as yWingMax, 
-			puzzles.`xyzWing`>0 as xyzWing, MAX(puzzles.`xyzWing`) as xyzWingMax, 
-			puzzles.`xWing`>0 as xWing, MAX(puzzles.`xWing`) as xWingMax, 
-			puzzles.`swordfish`>0 as swordfish, MAX(puzzles.`swordfish`) as swordfishMax, 
-			puzzles.`jellyfish`>0 as jellyfish, MAX(puzzles.`jellyfish`) as jellyfishMax, 
-			puzzles.`solveType` as solveType, COUNT(*) as count FROM ppuzzles001 as puzzles
-			WHERE solveType=2 OR solveType=3
-			GROUP BY naked2, naked3, naked4, hidden1, hidden2, hidden3, hidden4, 
-			omissions, uniqueRectangle, yWing, xyzWing, xWing, swordfish, jellyfish, solveType";
-
 		$strategies = [
-			"simple",
-			"simple_all",
-			"candidate",
-			"unsolvable",
+			"naked2",
+			"naked3",
+			"naked4",
+			"hidden1",
+			"hidden2",
+			"hidden3",
+			"hidden4",
+			"omissions",
+			"uniqueRectangle",
+			"yWing",
+			"xyzWing",
+			"xWing",
+			"swordfish",
+			"jellyfish",
 		];
-
-		$strategiesCount = [
-			"simple_hidden",
-			"simple_omission",
-			"simple_naked",
-			"candidate_visible",
-			"candidate_naked2",
-			"candidate_naked3",
-			"candidate_naked4",
-			"candidate_hidden1",
-			"candidate_hidden2",
-			"candidate_hidden3",
-			"candidate_hidden4",
-			"candidate_omissions",
-			"candidate_uniqueRectangle",
-			"candidate_yWing",
-			"candidate_xyzWing",
-			"candidate_xWing",
-			"candidate_swordfish",
-			"candidate_jellyfish",
-		];
-
-		$strategiesAll = [
-			"simple",
-			"simple_all",
-			"candidate",
-			"unsolvable",
-			"simple_hidden",
-			"simple_omission",
-			"simple_naked",
-			"candidate_visible",
-			"candidate_naked2",
-			"candidate_naked3",
-			"candidate_naked4",
-			"candidate_hidden1",
-			"candidate_hidden2",
-			"candidate_hidden3",
-			"candidate_hidden4",
-			"candidate_omissions",
-			"candidate_uniqueRectangle",
-			"candidate_yWing",
-			"candidate_xyzWing",
-			"candidate_xWing",
-			"candidate_swordfish",
-			"candidate_jellyfish",
-		];
-
-		$counts = [];
-		$maxs = [];
-		$candidates = 0;
-
+		$unions = [];
+		for ($i = 1; $i <= $tableCount; $i++) {
+			$table = tableName($i);
+			$sql = "SELECT ";
+			foreach ($strategies as $strategy) {
+				$isolated = tableLogic($strategy);
+				$sql .= "SUM(`{$strategy}`>0) AS {$strategy}, ";
+				$sql .= "MAX(`{$strategy}`) AS {$strategy}Max, ";
+				$sql .= "SUM(`{$strategy}`>0 AND `solveType`=3) AS {$strategy}Min, ";
+				$sql .= "MAX(IF(`solveType`=3, `{$strategy}`, 0)) AS {$strategy}MinMax, ";
+				$sql .= "SUM(`solveType`=3$isolated) as {$strategy}Iso, ";
+				$sql .= "MAX(IF(`solveType`=3$isolated, `{$strategy}`, 0)) as {$strategy}IsoMax, ";
+			}
+			$sql .= "COUNT(*) AS count FROM `$table` WHERE `solveType`=2 OR `solveType`=3";
+			$unions[] = $sql;
+		}
+		$unionString = implode(" UNION ALL ", $unions);
+		$sql = "SELECT ";
 		foreach ($strategies as $strategy) {
-			$counts[$strategy] = 0;
-			$maxs[$strategy] = 0;
+			$sql .= "SUM({$strategy}) AS {$strategy}, ";
+			$sql .= "MAX({$strategy}Max) AS {$strategy}Max, ";
+			$sql .= "SUM({$strategy}Min) AS {$strategy}Min, ";
+			$sql .= "MAX({$strategy}MinMax) AS {$strategy}MinMax, ";
+			$sql .= "SUM({$strategy}Iso) AS {$strategy}Iso, ";
+			$sql .= "MAX({$strategy}IsoMax) AS {$strategy}IsoMax, ";
+		}
+		$sql .= "SUM(count) AS count FROM ($unionString) AS puzzles";
+
+		$stmt = $db->prepare($sql);
+		$stmt->execute();
+		$result = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+		$total = (int)$result['count'];
+
+		$percent = percentage($total, $totalCount, 2);
+		$number = number_format($total);
+		echo "--- Strategies $percent $number\n";
+
+		echo "\n";
+		echo str_pad("Strategy", 17, " ", STR_PAD_BOTH);
+		echo str_pad("Percent (Max) Count", 34, " ", STR_PAD_BOTH);
+		echo str_pad("Minimal", 34, " ", STR_PAD_BOTH);
+		echo str_pad("Isolated", 34, " ", STR_PAD_BOTH);
+		echo "\n";
+		echo str_pad(str_pad("", 16, "-", STR_PAD_BOTH), 17, " ");
+		echo str_pad(str_pad("", 33, "-", STR_PAD_BOTH), 34, " ");
+		echo str_pad(str_pad("", 33, "-", STR_PAD_BOTH), 34, " ");
+		echo str_pad(str_pad("", 33, "-", STR_PAD_BOTH), 34, " ");
+		echo "\n";
+
+		$strategyNames = [
+			"Naked2",
+			"Naked3",
+			"Naked4",
+			"Hidden1",
+			"Hidden2",
+			"Hidden3",
+			"Hidden4",
+			"Omissions",
+			"Unique Rectangle",
+			"Y-Wing",
+			"XYZ-Wing",
+			"X-Wing",
+			"Swordfish",
+			"Jellyfish",
+		];
+		$strategyCount = count($strategyNames);
+		for ($i = 0; $i < $strategyCount; $i++) {
+			$title = $strategyNames[$i];
+			$strategy = $strategies[$i];
+
+			$naked2 = (int)$result[$strategy];
+			$naked2Max = (int)$result["{$strategy}Max"];
+			$naked2Min = (int)$result["{$strategy}Min"];
+			$naked2MinMax = (int)$result["{$strategy}MinMax"];
+			$naked2Iso = (int)$result["{$strategy}Iso"];
+			$naked2IsoMax = (int)$result["{$strategy}IsoMax"];
+
+			$percent = percentage($naked2, $total, 5);
+			$max = number_format($naked2Max);
+			$format = number_format($naked2);
+
+			$percentMin = percentage($naked2Min, $naked2, 5);
+			$maxMin = number_format($naked2MinMax);
+			$formatMin = number_format($naked2Min);
+
+			$percentIso = percentage($naked2Iso, $total, 5);
+			$maxIso = number_format($naked2IsoMax);
+			$formatIso = number_format($naked2Iso);
+
+			echo str_pad("{$title}", 17, " ");
+			echo str_pad("$percent ($max) $format", 34, " ");
+			echo str_pad("$percentMin ($maxMin) $formatMin", 34, " ");
+			echo str_pad("$percentIso ($maxIso) $formatIso", 34, " ");
+			echo "\n";
 		}
 
-		foreach ($tables as $table) {
-			foreach ($strategies as $strategy) {
-				$sql = "SELECT MAX(`$strategy`) AS max, COUNT(`$strategy`) AS count
-					FROM `$table` WHERE  `bruteForce`=0  AND `$strategy`>0";
-				$stmt = $db->prepare($sql);
-				$stmt->execute();
-				$result = $stmt->fetch();
-
-				$count = $result['count'];
-				$counts[$strategy] += $count;
-				$candidates += $count;
-
-				$maxs[$strategy] =  max($maxs[$strategy], $result['max']);
-			}
-		}
-
-		if ($candidates > 0) {
-			foreach ($strategies as $strategy) {
-				$count = $counts[$strategy];
-				$max = $maxs[$strategy];
-				printStat($strategy . " (" . $max . ")", $count, $candidates);
-			}
-		}
-
-		echo  "<br/>";
+		echo  "\n";
 	}
 
 	if ($mode === 6) {
