@@ -278,7 +278,6 @@
 
 		const populateGenerate = () => {
 			const timeAvg = strategyCounter.timeAvg();
-			const timeAvgInv = 1 / timeAvg;
 
 			statsGenerated = [];
 			const addGenerate = (line) => {
@@ -287,6 +286,7 @@
 			addGenerate("Sent: " + sendDataSent.toLocaleString());
 			addGenerate("Generated: " + strategyCounter.totalPuzzles.toLocaleString());
 			addGenerate(timeAvg.toFixed(3) + " seconds per puzzle");
+			const timeAvgInv = timeAvg > 0 ? 1 / timeAvg : 0;
 			addGenerate(timeAvgInv.toFixed(1) + " puzzles per second");
 
 			// displayStats();
