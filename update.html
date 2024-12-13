@@ -71,6 +71,10 @@
 		const animateFrame = () => {
 			if (animating) window.requestAnimationFrame(animateFrame);
 
+			const tick = Math.floor(Date.now() / 1000);
+			if (tick === animationTicker) return;
+			animationTicker = tick;
+
 			if (receivedNodeOverride) {
 				while (receivedNode.firstChild) receivedNode.removeChild(receivedNode.lastChild);
 				makeBold(receivedNode, "Received", receivedCount.toLocaleString());
@@ -84,18 +88,12 @@
 			if (sentNodeOverride) {
 				while (sentNode.firstChild) sentNode.removeChild(sentNode.lastChild);
 				makeBold(sentNode, "Sent", updateDataSent.toLocaleString());
-
 				if (totalCount > 0) {
 					sentNode.appendChild(document.createElement("br"));
 					makeBold(sentNode, "Progress", (100 * updateDataSent / totalCount).toFixed(2) + "%");
 				}
-
 				sentNodeOverride = false;
 			}
-
-			const tick = Math.floor(Date.now() / 1000);
-			if (tick === animationTicker) return;
-			animationTicker = tick;
 
 			while (body.firstChild) body.removeChild(body.lastChild);
 
