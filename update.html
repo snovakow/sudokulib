@@ -129,16 +129,16 @@
 							body.appendChild(document.createElement("br"));
 						}
 					}
-					if (updateDataSent > 0) {
-						if (updateDataSent < totalCount) {
-							const eta = (totalCount - updateDataSent) * passed / updateDataSent;
-							makeBold(body, "ETA", formatTime(eta));
-						} else {
-							makeBold(body, "ETA", "Complete!");
-							animating = false;
-						}
+					if (updateDataSent < totalCount) {
+						const eta = (totalCount - updateDataSent) * passed / updateDataSent;
+						makeBold(body, "ETA", formatTime(eta));
 					}
 				}
+			}
+			if (updateDataSent >= totalCount) {
+				document.body.removeChild(updateButton);
+				makeBold(body, "ETA", "Complete!");
+				animating = false;
 			}
 		}
 
@@ -248,9 +248,6 @@
 				sentNodeOverride = true;
 
 				if (updateDataStack.length > 0) updateData();
-				if (updateDataSent === totalCount) document.body.removeChild(updateButton);
-
-
 				// response.text().then((string) => { console.log(string) });
 			});
 		};
