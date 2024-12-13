@@ -122,8 +122,14 @@
 
 		const createEstimate = () => {
 			const now = Date.now();
-
 			if (animationLoop) window.requestAnimationFrame(createEstimate);
+
+			if (processStartTime === 0) {
+				processStartTime = now;
+				processStartCount = totalCount;
+				return;
+			}
+
 			const seconds = Math.floor(now / 1000);
 			if (seconds === processTimer) return;
 
@@ -134,11 +140,6 @@
 				if (!pingInitiated) return
 				populateCount();
 				displayStats();
-				return;
-			}
-			if (processStartTime === 0) {
-				processStartTime = now;
-				processStartCount = totalCount;
 				return;
 			}
 
@@ -188,7 +189,7 @@
 				statsEstimate.push(document.createElement('br'));
 			}
 
-			const fps = recordedCount * 1000 / recordedTime;
+			const fps = recordedTime > 0 ? recordedCount * 1000 / recordedTime : 0;
 			statsEstimate.push(makeBold(fps.toFixed(1)));
 			statsEstimate.push(document.createTextNode(" puzzles per second"));
 
