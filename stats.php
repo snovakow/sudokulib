@@ -64,18 +64,17 @@ function tableStatement($tableCount, $countName, $tableName, $logic, $select = n
 	$sql .= "DROP TABLE IF EXISTS `$tableName`;\n";
 	$sql .= "CREATE TABLE `$tableName` (\n";
 	$sql .= "  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,\n";
-	$sql .= "  `puzzle_id` int(10) unsigned NOT NULL,\n";
 	$sql .= "  `count` tinyint(2) unsigned NOT NULL,\n";
-	$sql .= "  `table` varchar(10) CHARACTER SET ascii NOT NULL DEFAULT '',\n";
+	$sql .= "  `puzzle_id` int(10) unsigned NOT NULL,\n";
+	$sql .= "  `table` char(10) NOT NULL DEFAULT '',\n";
 	$sql .= "  PRIMARY KEY (`id`)\n";
-	$sql .= ") ENGINE=InnoDB DEFAULT CHARSET=utf8;\n";
-
-	$sql .= "INSERT INTO `$tableName` (`puzzle_id`, `count`, `table`)\n";
+	$sql .= ") ENGINE=InnoDB DEFAULT CHARSET=ascii;\n";
+	$sql .= "INSERT INTO `$tableName` (`count`, `puzzle_id`, `table`)\n";
 
 	$unions = [];
 	for ($i = 1; $i <= $tableCount; $i++) {
 		$table = tableName($i);
-		$unions[] = "SELECT `id`, $select, '$table' AS puzzle FROM `$table` WHERE $logic";
+		$unions[] = "SELECT $select, `id`, '$table' AS puzzle FROM `$table` WHERE $logic";
 	}
 	$orderString = "ORDER BY `$countName` DESC LIMIT 1000000";
 	if (count($unions) === 1) {
@@ -83,7 +82,7 @@ function tableStatement($tableCount, $countName, $tableName, $logic, $select = n
 		$sql .= "$unionString $orderString;\n";
 	} else {
 		$unionString = implode(") \n  UNION ALL\n  (", $unions);
-		$sql .= "SELECT `id`, `$countName`, `puzzle` FROM (\n  ($unionString)\n  $orderString\n) AS puzzles;\n";
+		$sql .= "SELECT `$countName`, `id`, `puzzle` FROM (\n  ($unionString)\n  $orderString\n) AS puzzles;\n";
 	}
 
 	$sql .= "ALTER TABLE `$tableName` AUTO_INCREMENT=1;\n";
