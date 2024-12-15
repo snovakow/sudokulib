@@ -61,6 +61,8 @@
 		}
 
 		let processStartTime = 0;
+		let lastUpdateTime = 0;
+
 		let processStartCount = 0;
 		let processTimer = 0;
 
@@ -126,6 +128,7 @@
 
 			if (processStartTime === 0) {
 				processStartTime = now;
+				lastUpdateTime = now;
 				processStartCount = totalCount;
 				return;
 			}
@@ -165,7 +168,9 @@
 			statsEstimate = [];
 
 			const recordedCount = totalCount - processStartCount;
-			const recordedTime = Date.now() - processStartTime;
+
+			if (coreCount > 0) lastUpdateTime = Date.now();
+			const recordedTime = lastUpdateTime - processStartTime;
 
 			const remainingCount = MAX_SIZE - puzzleCount;
 
@@ -212,6 +217,8 @@
 					if (isNaN(tableCount)) return;
 					const puzzleCount = parseInt(fields[1]);
 					if (isNaN(puzzleCount)) return;
+
+					if (coreCount === 0) lastUpdateTime = Date.now();
 
 					setCount(tableCount, puzzleCount);
 					populateCount();
