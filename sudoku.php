@@ -85,13 +85,13 @@ try {
 		foreach ($result as $key => $row) {
 			$id = $row['id'];
 			$title = $row['title'];
-			$puzzle = $row['puzzle'];
-			$results[] = ['id' => $id, 'title' => $title, 'puzzle' => $puzzle];
+			$puzzleData = $row['puzzle'];
+			$results[] = ['id' => $id, 'title' => $title, 'puzzleData' => $puzzleData];
 		}
 		exit(json_encode($results));
 	}
 
-	$stmt = $db->prepare("SELECT `id`, `puzzle_id`, `table_id` FROM `$strategy` AS strategy   
+	$stmt = $db->prepare("SELECT `puzzle_id`, `table_id` FROM `$strategy` AS strategy   
 		JOIN (
 			SELECT FLOOR(RAND() * (SELECT MAX(`id`) FROM `$strategy`)) AS `strategy_id`
 		) AS random ON strategy.`id` > random.`strategy_id`
@@ -99,7 +99,6 @@ try {
 	$stmt->execute();
 	$result = $stmt->fetch();
 
-	$strategy_id = $result['id'];
 	$table_id = $result['table_id'];
 	$puzzle_id = $result['puzzle_id'];
 	$table = tableName($table_id);
@@ -110,13 +109,7 @@ try {
 	$puzzleData = $result['puzzleData'];
 
 	$id = "$table_id:$puzzle_id";
-
-	$result = [
-		'strategy_id' => $strategy_id,
-		'strategy' => $strategy,
-		'id' => $id,
-		'puzzleData' => $puzzleData
-	];
+	$result = ['id' => $id, 'puzzleData' => $puzzleData];
 	exit(json_encode($result));
 } catch (PDOException $e) {
 	// echo "Error: " . $e->getMessage();
