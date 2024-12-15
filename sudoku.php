@@ -1,28 +1,51 @@
 <?php
+if (!isset($_GET['version'])) die();
+$version = (int)$_GET['version'];
+if ($version !== 2) die();
 
 if (!isset($_GET['strategy'])) die();
 $type = $_GET['strategy'];
 
-$strategy = false;
+$strategy = "";
 
-if ($type == 'simple') $strategy = $type;
-if ($type == 'bruteForce') $strategy = $type;
-if ($type == 'naked2') $strategy = $type;
-if ($type == 'naked3') $strategy = $type;
-if ($type == 'naked4') $strategy = $type;
-if ($type == 'hidden2') $strategy = $type;
-if ($type == 'hidden3') $strategy = $type;
-if ($type == 'hidden4') $strategy = $type;
-if ($type == 'omissions') $strategy = $type;
-if ($type == 'uniqueRectangle') $strategy = $type;
-if ($type == 'yWing') $strategy = $type;
-if ($type == 'xyzWing') $strategy = $type;
-if ($type == 'xWing') $strategy = $type;
-if ($type == 'swordfish') $strategy = $type;
-if ($type == 'jellyfish') $strategy = $type;
-if ($type == 'custom') $strategy = $type;
+$tableNames = [
+	"simple_hidden",
+	"simple_omission",
+	"simple_naked",
+	"candidate_visible",
+	"candidate_naked2",
+	"candidate_naked3",
+	"candidate_naked4",
+	"candidate_hidden1",
+	"candidate_hidden2",
+	"candidate_hidden3",
+	"candidate_hidden4",
+	"candidate_omissions",
+	"candidate_uniqueRectangle",
+	"candidate_yWing",
+	"candidate_xyzWing",
+	"candidate_xWing",
+	"candidate_swordfish",
+	"candidate_jellyfish",
+	"unsolvable",
+	"unsolvable_filled",
+	"custom",
+	"hardcoded",
+];
+foreach ($tableNames as $tableName) {
+	if ($tableName == $type) {
+		$strategy = $type;
+		break;
+	}
+}
 
-if (!$strategy) die();
+if ($strategy == "") die();
+
+function tableName($number)
+{
+	$pad = str_pad($number, 3, "0", STR_PAD_LEFT);
+	return "puzzles$pad";
+}
 
 try {
 	$servername = "localhost";
@@ -31,7 +54,30 @@ try {
 	$dbname = "sudoku";
 	$db = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
 
-	if ($type == 'custom') {
+	if ($strategy == 'custom') {
+		$stmt = $db->prepare("SELECT `title`, `puzzle_id`, `table_id` FROM `custom`");
+		$stmt->execute();
+		$result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+		$results = [];
+		foreach ($result as $key => $row) {
+			$title = $row['title'];
+			$puzzle_id = $row['puzzle_id'];
+			$table_id = $row['table_id'];
+
+			$table = tableName($table_id);
+			$stmt = $db->prepare("SELECT HEX(`puzzleData`) AS 'puzzleData' FROM `$table` WHERE `id`=$puzzle_id");
+
+			$stmt->execute();
+			$result = $stmt->fetch();
+			$puzzleData = $result['puzzleData'];
+
+			$id = "$table_id:$puzzle_id";
+			$results[] = ['id' => $id, 'title' => $title, 'puzzleData' => $puzzleData];
+		}
+		exit(json_encode($results));
+	}
+
+	if ($strategy == 'hardcoded') {
 		$stmt = $db->prepare("SELECT `id`, `title`, `puzzle` FROM `hardcoded`");
 		$stmt->execute();
 		$result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
@@ -40,29 +86,38 @@ try {
 			$id = $row['id'];
 			$title = $row['title'];
 			$puzzle = $row['puzzle'];
-			$results[] = "$id,$title,$puzzle";
+			$results[] = ['id' => $id, 'title' => $title, 'puzzle' => $puzzle];
 		}
-		echo implode(":", $results);
-		die();
+		exit(json_encode($results));
 	}
 
-	$stmt = $db->prepare("SELECT s.`puzzle_id`, s.`table` FROM `$strategy` AS s   
+	$stmt = $db->prepare("SELECT `id`, `puzzle_id`, `table_id` FROM `$strategy` AS strategy   
 		JOIN (
-			SELECT FLOOR(RAND() * (SELECT MAX(`id`) FROM `$strategy`)) AS `rand_id`
-		) r ON s.`id` > r.`rand_id`
+			SELECT FLOOR(RAND() * (SELECT MAX(`id`) FROM `$strategy`)) AS `strategy_id`
+		) AS random ON strategy.`id` > random.`strategy_id`
 		LIMIT 1");
 	$stmt->execute();
 	$result = $stmt->fetch();
 
-	$table = $result['table'];
+	$strategy_id = $result['id'];
+	$table_id = $result['table_id'];
 	$puzzle_id = $result['puzzle_id'];
-	$stmt = $db->prepare("SELECT `id`, HEX(`puzzleData`) AS 'puzzleData' FROM `$table` WHERE `id`=$puzzle_id");
+	$table = tableName($table_id);
+	$stmt = $db->prepare("SELECT HEX(`puzzleData`) AS 'puzzleData' FROM `$table` WHERE `id`=$puzzle_id");
 
 	$stmt->execute();
 	$result = $stmt->fetch();
-	$id = $result['id'];
 	$puzzleData = $result['puzzleData'];
-	echo "$id:$puzzleData";
+
+	$id = "$table_id:$puzzle_id";
+
+	$result = [
+		'strategy_id' => $strategy_id,
+		'strategy' => $strategy,
+		'id' => $id,
+		'puzzleData' => $puzzleData
+	];
+	exit(json_encode($result));
 } catch (PDOException $e) {
 	// echo "Error: " . $e->getMessage();
 }
