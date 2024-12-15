@@ -66,15 +66,15 @@ function tableStatement($tableCount, $countName, $tableName, $logic, $select = n
 	$sql .= "  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,\n";
 	$sql .= "  `count` tinyint(2) unsigned NOT NULL,\n";
 	$sql .= "  `puzzle_id` int(10) unsigned NOT NULL,\n";
-	$sql .= "  `table` char(10) NOT NULL DEFAULT '',\n";
+	$sql .= "  `table_id` int(10) unsigned NOT NULL,\n";
 	$sql .= "  PRIMARY KEY (`id`)\n";
 	$sql .= ") ENGINE=InnoDB DEFAULT CHARSET=ascii;\n";
-	$sql .= "INSERT INTO `$tableName` (`count`, `puzzle_id`, `table`)\n";
+	$sql .= "INSERT INTO `$tableName` (`count`, `puzzle_id`, `table_id`)\n";
 
 	$unions = [];
-	for ($i = 1; $i <= $tableCount; $i++) {
-		$table = tableName($i);
-		$unions[] = "SELECT $select, `id`, '$table' AS puzzle FROM `$table` WHERE $logic";
+	for ($table_id = 1; $table_id <= $tableCount; $table_id++) {
+		$table = tableName($table_id);
+		$unions[] = "SELECT $select, `id`, '$table_id' AS puzzle FROM `$table` WHERE $logic";
 	}
 	$orderString = "ORDER BY `$countName` DESC LIMIT 1000000";
 	if (count($unions) === 1) {
