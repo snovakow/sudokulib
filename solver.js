@@ -12,35 +12,366 @@ const candidates = (cells) => {
 	}
 }
 
-const simpleNaked = (cells) => {
-	for (const cell of cells) {
-		if (cell.symbol !== 0) continue;
-		let set = 0x0000;
-		for (const index of cell.group) {
-			const symbol = cells[index].symbol;
-			if (symbol === 0) continue;
-			set |= (0x0001 << symbol);
-		}
-		let remainder = 0;
-		for (let symbol = 1; symbol <= 9; symbol++) {
-			if (((set >>> symbol) & 0x001) === 0x000) {
-				if (remainder === 0) {
-					remainder = symbol;
-				} else {
-					remainder = 0;
-					break;
-				}
+const simpleNakedCell = (cells, cell) => {
+	if (cell.symbol !== 0) return false;
+	let set = 0x0000;
+	for (const index of cell.group) {
+		const symbol = cells[index].symbol;
+		if (symbol === 0) continue;
+		set |= (0x0001 << symbol);
+	}
+	let remainder = 0;
+	for (let x = 1; x <= 9; x++) {
+		if (((set >>> x) & 0x001) === 0x000) {
+			if (remainder === 0) {
+				remainder = x;
+			} else {
+				remainder = 0;
+				break;
 			}
 		}
-		if (remainder > 0) {
-			cell.setSymbol(remainder);
-			return true;
-		}
+	}
+	if (remainder > 0) {
+		cell.setSymbol(remainder);
+		return true;
 	}
 	return false;
 }
 
-const nakedSingles = (cells) => {
+// 1-0 simple
+// 1-1/8 nakedSingles
+
+// 2-0 naked2 visual
+// 2-1 naked2 visual omission
+// 2-2/7 naked2
+
+// 3-0 naked3 visual
+// 3-1 naked3 visual omission3
+// 3-2/6 naked3
+
+// 4-1
+// 4-2/5 naked4 true
+
+// 5-1 hidden
+// 5-2
+// 5-3
+// 5-4
+
+// 6-1 hidden1 true
+// 6-2 hidden2 true
+// 6-3 hidden3 true
+
+// 7-1 hidden1 true
+// 7-2 hidden2 true
+
+// 8-1 hidden1 true
+
+// simpleHidden
+// simpleOmissions
+// simpleNaked
+
+// visibleOmissions
+// nakedSingles
+
+// nakedHidden
+// hiddenSingles  
+// omissions
+
+// type
+// 0 = simple
+// 1 = visible
+const naked2 = (cells, type = 0) => {
+	for (const group of Grid.groupBoxs) {
+		let cell1 = null;
+		let cell2 = null;
+		for (const i of group) {
+			const cell = cells[i];
+			if (cell.symbol !== 0) continue;
+			if (cell.size > 2) {
+				cell2 = null;
+				break;
+			}
+			if (cell1) {
+				if (cell2) {
+					cell2 = null;
+					break;
+				} else {
+					cell2 = cell;
+				}
+			} else {
+				cell1 = cell;
+			}
+		}
+		if (!cell2) continue;
+
+		const union = cell1.mask | cell2.mask;
+
+		let symbol1 = 0;
+		let symbol2 = 0;
+		for (let x = 1; x <= 9; x++) {
+			if (((union >>> x) & 0x0001) === 0x0001) {
+				if (symbol1 === 0) symbol1 = x;
+				else if (symbol2 === 0) symbol2 = x;
+				else {
+					symbol2 = 0;
+					break;
+				}
+			}
+		}
+
+		if (symbol2 === 0) continue;
+
+		let reduceGroup = null;
+		if (cell1.row === cell2.row) {
+			reduceGroup = Grid.groupRows[cell1.row];
+		}
+		if (cell1.col === cell2.col) {
+			reduceGroup = Grid.groupCols[cell1.col];
+		}
+		if (!reduceGroup) return false;
+
+		let reduced = false;
+		for (const i of reduceGroup) {
+			if (i === cell1.index) continue;
+			if (i === cell2.index) continue;
+			const cell = cells[i];
+			if (cell.symbol !== 0) continue;
+			if (type === 0) {
+				if (simpleNakedCell(cells, cell)) return true;
+			} else {
+				if (cell.delete(symbol1)) reduced = true;
+				if (cell.delete(symbol2)) reduced = true;
+			}
+		}
+		if (reduced) return true;
+	}
+
+	const groups = [...Grid.groupRows, ...Grid.groupCols];
+	for (const group of groups) {
+		let cell1 = null;
+		let cell2 = null;
+		for (const i of group) {
+			const cell = cells[i];
+			if (cell.symbol !== 0) continue;
+			if (cell.size > 2) {
+				cell2 = null;
+				break;
+			}
+			if (cell1 === null) {
+				cell1 = cell;
+			} else {
+				if (cell2) {
+					cell2 = null;
+					break;
+				} else {
+					if (cell.box === cell1.box) cell2 = cell;
+					else break;
+				}
+			}
+		}
+		if (!cell2) continue;
+
+		const union = cell1.mask | cell2.mask;
+
+		let symbol1 = 0;
+		let symbol2 = 0;
+		for (let x = 1; x <= 9; x++) {
+			if (((union >>> x) & 0x0001) === 0x0001) {
+				if (symbol1 === 0) symbol1 = x;
+				else if (symbol2 === 0) symbol2 = x;
+				else {
+					symbol2 = 0;
+					break;
+				}
+			}
+		}
+
+		if (symbol2 === 0) continue;
+
+		let reduced = false;
+		const reduceGroup = Grid.groupBoxs[cell1.box];
+		for (const i of reduceGroup) {
+			if (i === cell1.index) continue;
+			if (i === cell2.index) continue;
+			const cell = cells[i];
+			if (cell.symbol !== 0) continue;
+			if (type === 0) {
+				if (simpleNakedCell(cells, cell)) return true;
+			} else {
+				if (cell.delete(symbol1)) reduced = true;
+				if (cell.delete(symbol2)) reduced = true;
+			}
+		}
+		if (reduced) return true;
+	}
+	return false;
+}
+const simpleNaked2 = (cells) => {
+	return naked2(cells, 0);
+}
+const visibleNaked2 = (cells) => {
+	return naked3(cells, 1);
+}
+
+const naked3 = (cells, type = 0) => {
+	for (const group of Grid.groupBoxs) {
+		let cell1 = null;
+		let cell2 = null;
+		let cell3 = null;
+		for (const i of group) {
+			const cell = cells[i];
+			if (cell.symbol !== 0) continue;
+			if (cell.size > 3) {
+				cell3 = null;
+				break;
+			}
+			if (cell1) {
+				if (cell2) {
+					if (cell3) {
+						cell3 = null;
+						break;
+					} else {
+						cell3 = cell;
+					}
+				} else {
+					cell2 = cell;
+				}
+			} else {
+				cell1 = cell;
+			}
+		}
+		if (!cell3) continue;
+
+		const union = cell1.mask | cell2.mask | cell3.mask;
+
+		let symbol1 = 0;
+		let symbol2 = 0;
+		let symbol3 = 0;
+		for (let x = 1; x <= 9; x++) {
+			if (((union >>> x) & 0x0001) === 0x0001) {
+				if (symbol1 === 0) symbol1 = x;
+				else if (symbol2 === 0) symbol2 = x;
+				else if (symbol3 === 0) symbol3 = x;
+				else {
+					symbol3 = 0;
+					break;
+				}
+			}
+		}
+
+		if (symbol3 === 0) continue;
+
+		let reduceGroup = null;
+		if (cell1.row === cell2.row && cell2.row === cell3.row) {
+			reduceGroup = Grid.groupRows[cell1.row];
+		}
+		if (cell1.col === cell2.col && cell2.col === cell3.col) {
+			reduceGroup = Grid.groupCols[cell1.col];
+		}
+		if (!reduceGroup) return false;
+
+		let reduced = false;
+		for (const i of reduceGroup) {
+			if (i === cell1.index) continue;
+			if (i === cell2.index) continue;
+			if (i === cell3.index) continue;
+			const cell = cells[i];
+			if (cell.symbol !== 0) continue;
+			if (type === 0) {
+				if (simpleNakedCell(cells, cell)) return true;
+			} else {
+				if (cell.delete(symbol1)) reduced = true;
+				if (cell.delete(symbol2)) reduced = true;
+				if (cell.delete(symbol3)) reduced = true;
+			}
+		}
+		if (reduced) return true;
+	}
+
+	const groups = [...Grid.groupRows, ...Grid.groupCols];
+	for (const group of groups) {
+		let cell1 = null;
+		let cell2 = null;
+		let cell3 = null;
+		for (const i of group) {
+			const cell = cells[i];
+			if (cell.symbol !== 0) continue;
+			if (cell.size > 3) {
+				cell3 = null;
+				break;
+			}
+			if (cell1) {
+				if (cell2) {
+					if (cell3) {
+						cell3 = null;
+						break;
+					} else {
+						if (cell.box === cell1.box) cell3 = cell;
+						else break;
+					}
+				} else {
+					if (cell.box === cell1.box) cell2 = cell;
+					else break;
+				}
+			} else {
+				cell1 = cell;
+			}
+		}
+		if (!cell3) continue;
+
+		const union = cell1.mask | cell2.mask | cell3.mask;
+
+		let symbol1 = 0;
+		let symbol2 = 0;
+		let symbol3 = 0;
+		for (let x = 1; x <= 9; x++) {
+			if (((union >>> x) & 0x0001) === 0x0001) {
+				if (symbol1 === 0) symbol1 = x;
+				else if (symbol2 === 0) symbol2 = x;
+				else if (symbol3 === 0) symbol3 = x;
+				else {
+					symbol3 = 0;
+					break;
+				}
+			}
+		}
+
+		if (symbol3 === 0) continue;
+
+		let reduced = false;
+		for (const i of Grid.groupBoxs[cell1.box]) {
+			if (i === cell1.index) continue;
+			if (i === cell2.index) continue;
+			if (i === cell3.index) continue;
+			const cell = cells[i];
+			if (cell.symbol !== 0) continue;
+			if (type === 0) {
+				if (simpleNakedCell(cells, cell)) return true;
+			} else {
+				if (cell.delete(symbol1)) reduced = true;
+				if (cell.delete(symbol2)) reduced = true;
+				if (cell.delete(symbol3)) reduced = true;
+			}
+		}
+		if (reduced) return true;
+	}
+	return false;
+}
+const simpleNaked3 = (cells) => {
+	return naked3(cells, 0);
+}
+const visibleNaked3 = (cells) => {
+	return naked3(cells, 1);
+}
+
+const simpleNaked = (cells) => {
+	for (const cell of cells) {
+		if (simpleNakedCell(cells, cell)) return true;
+	}
+	return false;
+}
+
+const visibleNaked = (cells) => {
 	for (const cell of cells) {
 		if (cell.symbol !== 0) continue;
 		const remainder = cell.remainder;
@@ -215,6 +546,12 @@ const omissions = (cells, type = 2) => {
 
 	return false;
 }
+const simpleOmissions = (cells) => {
+	return omissions(cells, 0);
+}
+const visibleOmissions = (cells) => {
+	return omissions(cells, 1);
+}
 
 class SetUnion {
 	constructor(mask = 0x0000) {
@@ -259,7 +596,6 @@ class NakedHiddenGroups {
 		this.cells = cells;
 		for (const groupType of Grid.groupTypes) {
 			const sets = [];
-
 			for (const index of groupType) {
 				const cell = cells[index];
 				if (cell.symbol !== 0) continue;
@@ -1514,8 +1850,9 @@ const generate = (cells) => {
 }
 
 export {
-	generate, candidates, simpleNaked, simpleHidden,
-	nakedSingles, hiddenSingles, NakedHiddenGroups, omissions, uniqueRectangle,
+	generate, candidates, simpleHidden, simpleOmissions, simpleNaked2, simpleNaked3, simpleNaked,
+	visibleOmissions, visibleNaked2, visibleNaked3, visibleNaked,
+	hiddenSingles, NakedHiddenGroups, omissions, uniqueRectangle,
 	yWing, xyzWing, xWing, swordfish, jellyfish,
 	superposition, phistomefel, bruteForce
 };
