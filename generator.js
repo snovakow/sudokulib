@@ -317,43 +317,6 @@ function isValidCell(board, row, col, x) {
 	return true;
 }
 
-const isValidGrid = (grid) => {
-	let symbols = 0;
-	for (let i = 0; i < 81; i++) {
-		if (grid[i] !== 0) symbols++;
-	}
-	if (symbols < 17) return false;
-
-	for (let row = 0; row < 9; row++) {
-		for (let x = 1; x <= 9; x++) {
-			let rowCount = 0;
-			let colCount = 0;
-			let boxCount = 0;
-
-			for (let i = 0; i < 9; i++) {
-				if (grid[row * 9 + i] === x) {
-					rowCount++;
-					if (rowCount === 2) return false;
-				}
-				if (grid[i * 9 + row] === x) {
-					colCount++;
-					if (colCount === 2) return false;
-				}
-
-				const m = 3 * Math.floor(row / 3) + Math.floor(i / 3);
-				const n = 3 * Math.floor(row / 3) + i % 3;
-
-				if (grid[m * 9 + n] === x) {
-					boxCount++;
-					if (boxCount === 2) return false;
-				}
-			}
-
-		}
-	}
-	return true;
-}
-
 const sodokoSolver = (grid) => {
 	const rndx = makeArray(9);
 	for (let i = 0; i < 81; i++) {
@@ -403,11 +366,6 @@ const sudokuGenerator = (cells, target = 0) => {
 		for (let i = 0; i < 9; i++) grid[i] = i + 1;
 		sodokoSolver(grid);
 	}
-
-	// if (!isValidGrid(grid)) {
-	// 	console.log("INVALID!");
-	// 	return null;
-	// }
 
 	const savedGrid = new Uint8Array(81);
 	const puzzleFilled = new Uint8Array(81);
