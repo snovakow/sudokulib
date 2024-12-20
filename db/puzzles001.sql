@@ -7,7 +7,7 @@
 #
 # Host: localhost (MySQL 5.7.32)
 # Database: sudoku
-# Generation Time: 2024-12-13 19:05:03 +0000
+# Generation Time: 2024-12-20 14:32:05 +0000
 # ************************************************************
 
 
@@ -32,9 +32,13 @@ CREATE TABLE `puzzles001` (
   `solveType` tinyint(1) unsigned NOT NULL,
   `hiddenSimple` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `omissionSimple` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `naked2Simple` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `naked3Simple` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `nakedSimple` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `nakedVisible` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `omissionVisible` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `naked2Visible` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `naked3Visible` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `nakedVisible` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `naked2` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `naked3` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `naked4` tinyint(3) unsigned NOT NULL DEFAULT '0',
