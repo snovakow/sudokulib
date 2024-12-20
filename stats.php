@@ -732,7 +732,7 @@ try {
 	}
 
 	if ($mode === 6) {
-		flushOut("--- Clues");
+		echo "--- Clues\n";
 		$counts = [];
 		$countSimple = [];
 		$countCandidate = [];
