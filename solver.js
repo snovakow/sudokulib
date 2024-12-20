@@ -39,7 +39,7 @@ const simpleNakedCell = (cells, cell) => {
 }
 
 // 1-0 simple
-// 1-1/8 nakedSingles
+// 1-1/8 visibleNaked
 
 // 2-0 naked2 visual
 // 2-1 naked2 visual omission
@@ -68,19 +68,14 @@ const simpleNakedCell = (cells, cell) => {
 
 // simpleHidden
 // simpleOmissions
+// simpleNaked2
+// simpleNaked3
 // simpleNaked
 
 // visibleOmissions
-// nakedSingles
+// visibleNaked
 
-// nakedHidden
-// hiddenSingles  
-// omissions
-
-// type
-// 0 = simple
-// 1 = visible
-const naked2 = (cells, type = 0) => {
+const simpleNaked2 = (cells) => {
 	for (const group of Grid.groupBoxs) {
 		let cell1 = null;
 		let cell2 = null;
@@ -130,20 +125,13 @@ const naked2 = (cells, type = 0) => {
 		}
 		if (!reduceGroup) return false;
 
-		let reduced = false;
 		for (const i of reduceGroup) {
 			if (i === cell1.index) continue;
 			if (i === cell2.index) continue;
 			const cell = cells[i];
 			if (cell.symbol !== 0) continue;
-			if (type === 0) {
-				if (simpleNakedCell(cells, cell)) return true;
-			} else {
-				if (cell.delete(symbol1)) reduced = true;
-				if (cell.delete(symbol2)) reduced = true;
-			}
+			if (simpleNakedCell(cells, cell)) return true;
 		}
-		if (reduced) return true;
 	}
 
 	const groups = [...Grid.groupRows, ...Grid.groupCols];
@@ -188,32 +176,19 @@ const naked2 = (cells, type = 0) => {
 
 		if (symbol2 === 0) continue;
 
-		let reduced = false;
 		const reduceGroup = Grid.groupBoxs[cell1.box];
 		for (const i of reduceGroup) {
 			if (i === cell1.index) continue;
 			if (i === cell2.index) continue;
 			const cell = cells[i];
 			if (cell.symbol !== 0) continue;
-			if (type === 0) {
-				if (simpleNakedCell(cells, cell)) return true;
-			} else {
-				if (cell.delete(symbol1)) reduced = true;
-				if (cell.delete(symbol2)) reduced = true;
-			}
+			if (simpleNakedCell(cells, cell)) return true;
 		}
-		if (reduced) return true;
 	}
 	return false;
 }
-const simpleNaked2 = (cells) => {
-	return naked2(cells, 0);
-}
-const visibleNaked2 = (cells) => {
-	return naked3(cells, 1);
-}
 
-const naked3 = (cells, type = 0) => {
+const simpleNaked3 = (cells) => {
 	for (const group of Grid.groupBoxs) {
 		let cell1 = null;
 		let cell2 = null;
@@ -270,22 +245,14 @@ const naked3 = (cells, type = 0) => {
 		}
 		if (!reduceGroup) return false;
 
-		let reduced = false;
 		for (const i of reduceGroup) {
 			if (i === cell1.index) continue;
 			if (i === cell2.index) continue;
 			if (i === cell3.index) continue;
 			const cell = cells[i];
 			if (cell.symbol !== 0) continue;
-			if (type === 0) {
-				if (simpleNakedCell(cells, cell)) return true;
-			} else {
-				if (cell.delete(symbol1)) reduced = true;
-				if (cell.delete(symbol2)) reduced = true;
-				if (cell.delete(symbol3)) reduced = true;
-			}
+			if (simpleNakedCell(cells, cell)) return true;
 		}
-		if (reduced) return true;
 	}
 
 	const groups = [...Grid.groupRows, ...Grid.groupCols];
@@ -338,30 +305,16 @@ const naked3 = (cells, type = 0) => {
 
 		if (symbol3 === 0) continue;
 
-		let reduced = false;
 		for (const i of Grid.groupBoxs[cell1.box]) {
 			if (i === cell1.index) continue;
 			if (i === cell2.index) continue;
 			if (i === cell3.index) continue;
 			const cell = cells[i];
 			if (cell.symbol !== 0) continue;
-			if (type === 0) {
-				if (simpleNakedCell(cells, cell)) return true;
-			} else {
-				if (cell.delete(symbol1)) reduced = true;
-				if (cell.delete(symbol2)) reduced = true;
-				if (cell.delete(symbol3)) reduced = true;
-			}
+			if (simpleNakedCell(cells, cell)) return true;
 		}
-		if (reduced) return true;
 	}
 	return false;
-}
-const simpleNaked3 = (cells) => {
-	return naked3(cells, 0);
-}
-const visibleNaked3 = (cells) => {
-	return naked3(cells, 1);
 }
 
 const simpleNaked = (cells) => {
@@ -1366,17 +1319,14 @@ const solve = (cells, pairs) => {
 	do {
 		candidates(cells);
 
-		progress = nakedSingles(cells);
+		progress = simpleHidden(cells);
 		if (progress) continue;
 
-		progress = hiddenSingles(cells);
+		progress = simpleOmissions(cells);
 		if (progress) continue;
 
-		if (pairs) {
-			const nakedHidden = new NakedHiddenGroups(cells);
-			progress = nakedHidden.nakedPair();
-			if (progress) continue;
-		}
+		progress = simpleNaked(cells);
+		if (progress) continue;
 	} while (progress);
 };
 const superposition = (cells) => {
@@ -1851,8 +1801,7 @@ const generate = (cells) => {
 
 export {
 	generate, candidates, simpleHidden, simpleOmissions, simpleNaked2, simpleNaked3, simpleNaked,
-	visibleOmissions, visibleNaked2, visibleNaked3, visibleNaked,
-	hiddenSingles, NakedHiddenGroups, omissions, uniqueRectangle,
+	visibleOmissions, visibleNaked, hiddenSingles, NakedHiddenGroups, omissions, uniqueRectangle,
 	yWing, xyzWing, xWing, swordfish, jellyfish,
 	superposition, phistomefel, bruteForce
 };
