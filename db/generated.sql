@@ -7,7 +7,7 @@
 #
 # Host: localhost (MySQL 5.7.32)
 # Database: sudoku
-# Generation Time: 2024-12-20 14:33:53 +0000
+# Generation Time: 2024-12-20 18:42:41 +0000
 # ************************************************************
 
 
@@ -341,36 +341,6 @@ CREATE TABLE `unsolvable_filled` (
 DROP TABLE IF EXISTS `visible_naked`;
 
 CREATE TABLE `visible_naked` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `count` tinyint(2) unsigned NOT NULL,
-  `puzzle_id` int(10) unsigned NOT NULL,
-  `table_id` int(10) unsigned NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=ascii;
-
-
-
-# Dump of table visible_naked2
-# ------------------------------------------------------------
-
-DROP TABLE IF EXISTS `visible_naked2`;
-
-CREATE TABLE `visible_naked2` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `count` tinyint(2) unsigned NOT NULL,
-  `puzzle_id` int(10) unsigned NOT NULL,
-  `table_id` int(10) unsigned NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=ascii;
-
-
-
-# Dump of table visible_naked3
-# ------------------------------------------------------------
-
-DROP TABLE IF EXISTS `visible_naked3`;
-
-CREATE TABLE `visible_naked3` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `count` tinyint(2) unsigned NOT NULL,
   `puzzle_id` int(10) unsigned NOT NULL,
