@@ -26,10 +26,12 @@ const strategyDataArray = [];
 
 new StrategyData(simpleDataArray, STRATEGY.SIMPLE_HIDDEN, 'hiddenSimple');
 new StrategyData(simpleDataArray, STRATEGY.SIMPLE_INTERSECTION, 'omissionSimple');
+new StrategyData(simpleDataArray, STRATEGY.SIMPLE_NAKED2, 'naked2Simple');
+new StrategyData(simpleDataArray, STRATEGY.SIMPLE_NAKED3, 'naked3Simple');
 new StrategyData(simpleDataArray, STRATEGY.SIMPLE_NAKED, 'nakedSimple');
 
-new StrategyData(visibleDataArray, STRATEGY.VISIBLE_NAKED, 'nakedVisible');
 new StrategyData(visibleDataArray, STRATEGY.VISIBLE_INTERSECTION, 'omissionVisible');
+new StrategyData(visibleDataArray, STRATEGY.VISIBLE_NAKED, 'nakedVisible');
 
 new StrategyData(strategyDataArray, STRATEGY.NAKED_2, 'naked2');
 new StrategyData(strategyDataArray, STRATEGY.NAKED_3, 'naked3');
@@ -46,11 +48,14 @@ new StrategyData(strategyDataArray, STRATEGY.X_WING, 'xWing');
 new StrategyData(strategyDataArray, STRATEGY.SWORDFISH, 'swordfish');
 new StrategyData(strategyDataArray, STRATEGY.JELLYFISH, 'jellyfish');
 
-const strategies = [...strategyDataArray];
-for (const strategy of strategyDataArray) strategies.push(strategy.strategy);
-
 const simples = [...simpleDataArray];
 for (const strategy of simpleDataArray) simples.push(strategy.strategy);
+
+const visibles = [...visibleDataArray];
+for (const strategy of visibleDataArray) visibles.push(strategy.strategy);
+
+const strategies = [...strategyDataArray];
+for (const strategy of strategyDataArray) strategies.push(strategy.strategy);
 
 const step = () => {
 	let mode = stepMode;
@@ -79,7 +84,7 @@ const step = () => {
 	for (const cell of cells) if (cell.symbol === 0) cell.fill();
 	const save = cells.toData();
 
-	const result = fillSolve(cells, simples, strategies);
+	const result = fillSolve(cells, simples, visibles, strategies);
 	data.puzzleClues = data.puzzle;
 	data.puzzleFilled = puzzleFilled.join('');
 	data.clueCount = clueCount;
@@ -121,13 +126,13 @@ const step = () => {
 			}
 
 			cells.fromData(save);
-			const priorityResult = fillSolve(cells, simples, priority);
+			const priorityResult = fillSolve(cells, simples, visibles, priority);
 			if (!priorityResult.solved) minimal.push(used.strategy);
 		}
 		minimal.push(usedData[usedData.length - 1].strategy);
 
 		cells.fromData(save);
-		const minimalResult = fillSolve(cells, simples, minimal);
+		const minimalResult = fillSolve(cells, simples, visibles, minimal);
 		if (minimalResult.solved) {
 			data.solveType = 3;
 			for (const strategy of allArray) data[strategy.data] = minimalResult[strategy.data];
