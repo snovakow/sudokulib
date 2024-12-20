@@ -27,9 +27,11 @@ function addTable($number)
 		`solveType` tinyint(1) unsigned NOT NULL,
 		`hiddenSimple` tinyint(3) unsigned NOT NULL DEFAULT '0',
 		`omissionSimple` tinyint(3) unsigned NOT NULL DEFAULT '0',
+		`naked2Simple` tinyint(3) unsigned NOT NULL DEFAULT '0',
+		`naked3Simple` tinyint(3) unsigned NOT NULL DEFAULT '0',
 		`nakedSimple` tinyint(3) unsigned NOT NULL DEFAULT '0',
-		`nakedVisible` tinyint(3) unsigned NOT NULL DEFAULT '0',
 		`omissionVisible` tinyint(3) unsigned NOT NULL DEFAULT '0',
+		`nakedVisible` tinyint(3) unsigned NOT NULL DEFAULT '0',
 		`naked2` tinyint(3) unsigned NOT NULL DEFAULT '0',
 		`naked3` tinyint(3) unsigned NOT NULL DEFAULT '0',
 		`naked4` tinyint(3) unsigned NOT NULL DEFAULT '0',
@@ -53,7 +55,8 @@ function insertValues($number, $values)
 	$valueList = implode(",", $values);
 	$table = tableName($number);
 	return "INSERT INTO `$table` (id, puzzleData, clueCount, solveType,
-		hiddenSimple, omissionSimple, nakedSimple, nakedVisible, omissionVisible,
+		hiddenSimple, omissionSimple, naked2Simple, naked3Simple, nakedSimple,
+		omissionVisible, nakedVisible,
 		naked2, naked3, naked4, hidden1, hidden2, hidden3, hidden4, omissions,
 		uniqueRectangle, yWing, xyzWing, xWing, swordfish, jellyfish) VALUES $valueList";
 }
@@ -119,9 +122,11 @@ try {
 			$post->solveType,
 			$post->hiddenSimple,
 			$post->omissionSimple,
+			$post->naked2Simple,
+			$post->naked3Simple,
 			$post->nakedSimple,
-			$post->nakedVisible,
 			$post->omissionVisible,
+			$post->nakedVisible,
 			$post->naked2,
 			$post->naked3,
 			$post->naked4,
