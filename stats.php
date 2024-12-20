@@ -11,6 +11,14 @@
 
 const MAX_SIZE = 10000000;
 
+// 0 = Update Prep Statements
+// 1 = Populate Statements
+// 2 = Populated Tables
+// 3 = Totals
+// 4 = Simples Visuals
+// 5 = Strategies
+// 6 = Clues
+
 function totalCount($tableCount, $puzzleCount)
 {
 	if ($tableCount === 0) return 0;
@@ -21,11 +29,6 @@ function tableName($number, $append = "")
 {
 	$pad = str_pad($number, 3, "0", STR_PAD_LEFT);
 	return "puzzles$append$pad";
-}
-
-function flushOut($message)
-{
-	echo "$message<br/>";
 }
 
 function percentage($count, $total, $precision, $pad = 3)
@@ -124,14 +127,6 @@ function tableStrategyLogic($tableCount, $solveType, $strategy, $tableName)
 
 if (!isset($_GET['mode'])) die;
 
-// 0 = Populate Statements
-// 1 = Populated Tables
-// 2 = Totals
-// 3 = Simples
-// 4 = Visuals
-// 5 = Strategies
-// 6 = Clues
-
 $mode = (int)$_GET['mode'];
 if (!is_int($mode) || $mode < 0 || $mode > 6) die;
 
@@ -179,8 +174,6 @@ try {
   `naked3Simple` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `nakedSimple` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `omissionVisible` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `naked2Visible` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `naked3Visible` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `nakedVisible` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `naked2` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `naked3` tinyint(3) unsigned NOT NULL DEFAULT '0',
@@ -202,10 +195,10 @@ try {
 
 			$sql = "INSERT INTO `$tableName` (`id`, `puzzleData`, `clueCount`, `solveType`, 
   `hiddenSimple`, `omissionSimple`, `naked2Simple`, `naked3Simple`, `nakedSimple`, 
-  `omissionVisible`, `naked2Visible`, `naked3Visible`, `nakedVisible`, 
+  `omissionVisible`, `nakedVisible`, 
   `naked2`, `naked3`, `naked4`, `hidden1`, `hidden2`, `hidden3`, `hidden4`, 
   `omissions`, `uniqueRectangle`, `yWing`, `xyzWing`, `xWing`, `swordfish`, `jellyfish`
-) SELECT `id`, `puzzleData`, `clueCount`, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 FROM `$rename`;";
+) SELECT `id`, `puzzleData`, `clueCount`, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 FROM `$rename`;";
 			echo "$sql\n\n";
 		}
 	}
