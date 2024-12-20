@@ -17,10 +17,10 @@ function totalCount($tableCount, $puzzleCount)
 	return (($tableCount - 1) * MAX_SIZE) +  $puzzleCount;
 }
 
-function tableName($number)
+function tableName($number, $append = "")
 {
 	$pad = str_pad($number, 3, "0", STR_PAD_LEFT);
-	return "puzzles$pad";
+	return "puzzles$append$pad";
 }
 
 function flushOut($message)
@@ -156,20 +156,91 @@ try {
 	$totalCount = totalCount($tableCount, $puzzleCount);
 
 	if ($mode === 0) {
-		$logic = "`solveType`=0 AND `omissionSimple`=0 AND `nakedSimple`=0";
+		$tableNames = [];
+		for ($i = 1; $i <= $tableCount; $i++) {
+			$tableName = tableName($i);
+
+			$rename = tableName($i, "_bu");
+
+			$sql = "DROP TABLE IF EXISTS `$rename`;";
+			echo "$sql\n";
+
+			$sql = "RENAME TABLE $tableName TO $rename;";
+			echo "$sql\n";
+
+			$sql = "CREATE TABLE `$tableName` (
+  `id` int(10) unsigned NOT NULL,
+  `puzzleData` binary(32) NOT NULL DEFAULT '00000000000000000000000000000000',
+  `clueCount` tinyint(2) unsigned NOT NULL,
+  `solveType` tinyint(1) unsigned NOT NULL,
+  `hiddenSimple` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `omissionSimple` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `naked2Simple` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `naked3Simple` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `nakedSimple` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `omissionVisible` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `naked2Visible` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `naked3Visible` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `nakedVisible` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `naked2` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `naked3` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `naked4` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `hidden1` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `hidden2` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `hidden3` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `hidden4` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `omissions` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `uniqueRectangle` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `yWing` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `xyzWing` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `xWing` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `swordfish` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `jellyfish` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=ascii COLLATE=ascii_bin;";
+			echo "$sql\n";
+
+			$sql = "INSERT INTO `$tableName` (`id`, `puzzleData`, `clueCount`, `solveType`, 
+  `hiddenSimple`, `omissionSimple`, `naked2Simple`, `naked3Simple`, `nakedSimple`, 
+  `omissionVisible`, `naked2Visible`, `naked3Visible`, `nakedVisible`, 
+  `naked2`, `naked3`, `naked4`, `hidden1`, `hidden2`, `hidden3`, `hidden4`, 
+  `omissions`, `uniqueRectangle`, `yWing`, `xyzWing`, `xWing`, `swordfish`, `jellyfish`
+) SELECT `id`, `puzzleData`, `clueCount`, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 FROM `$rename`;";
+			echo "$sql\n\n";
+		}
+	}
+
+	if ($mode === 1) {
+		$logic = "`solveType`=0 AND `omissionSimple`=0 AND `naked2Simple`=0 AND `naked3Simple`=0 AND `nakedSimple`=0";
 		$sql = tableStatement($tableCount, "clueCount", "simple_hidden", $logic);
 		echo "$sql\n";
 
-		$logic = "`solveType`=0 AND `omissionSimple`>0 AND `nakedSimple`=0";
+		$logic = "`solveType`=0 AND `omissionSimple`>0 AND `naked2Simple`=0 AND `naked3Simple`=0 AND `nakedSimple`=0";
 		$sql = tableStatement($tableCount, "omissionSimple", "simple_omission", $logic);
 		echo "$sql\n";
 
-		$logic = "`solveType`=0 AND `omissionSimple`=0 AND `nakedSimple`>0";
+		$logic = "`solveType`=0 AND `naked2Simple`>0 AND `naked3Simple`=0 AND `nakedSimple`=0";
+		$sql = tableStatement($tableCount, "naked2Simple", "simple_naked2", $logic);
+		echo "$sql\n";
+
+		$logic = "`solveType`=0 AND `naked3Simple`>0 AND `nakedSimple`=0";
+		$sql = tableStatement($tableCount, "naked3Simple", "simple_naked3", $logic);
+		echo "$sql\n";
+
+		$logic = "`solveType`=0 AND `nakedSimple`>0";
 		$sql = tableStatement($tableCount, "nakedSimple", "simple_naked", $logic);
 		echo "$sql\n";
 
-		$logic = "`solveType`=1";
-		$sql = tableStatement($tableCount, "nakedVisible", "candidate_visible", $logic);
+		$logic = "`solveType`=1 AND `naked2Visible`>0 AND `naked3Visible`=0 AND `nakedVisible`=0";
+		$sql = tableStatement($tableCount, "naked2Visible", "visible_naked2", $logic);
+		echo "$sql\n";
+
+		$logic = "`solveType`=1 AND `naked3Visible`>0 AND `nakedVisible`=0";
+		$sql = tableStatement($tableCount, "naked3Visible", "visible_naked3", $logic);
+		echo "$sql\n";
+
+		$logic = "`solveType`=1 AND `nakedVisible`>0";
+		$sql = tableStatement($tableCount, "nakedVisible", "visible_naked", $logic);
 		echo "$sql\n";
 
 		echo tableStrategyLogic($tableCount, 3, "naked2", "candidate_naked2");
@@ -190,7 +261,11 @@ try {
 		$logic = "`solveType`=4";
 		$logic .= strategyLogic("hiddenSimple");
 		$logic .= strategyLogic("omissionSimple");
+		$logic .= strategyLogic("naked3Simple");
+		$logic .= strategyLogic("naked2Simple");
 		$logic .= strategyLogic("nakedSimple");
+		$logic .= strategyLogic("naked3Visible");
+		$logic .= strategyLogic("naked2Visible");
 		$logic .= strategyLogic("nakedVisible");
 		$logic .= strategyLogic("omissionVisible");
 		$logic .= tableLogic();
@@ -198,7 +273,9 @@ try {
 		echo "$sql\n";
 
 		$logic = "`solveType`=4";
-		$select = "(clueCount + hiddenSimple + omissionSimple + nakedSimple + nakedVisible) AS `filled`";
+		$select = "(";
+		$select .= "clueCount + hiddenSimple + omissionSimple + naked2Simple + naked3Simple + nakedSimple + nakedVisible";
+		$select .= ") AS `filled`";
 		echo tableStatement($tableCount, "filled", "unsolvable_filled", $logic, $select), "\n";
 
 		// Show count vs max
@@ -218,12 +295,18 @@ try {
 		echo "$sql\n";
 	}
 
-	if ($mode === 1) {
+	if ($mode === 2) {
+		echo "--- Populated Tables ", number_format($totalCount), "\n\n";
+
 		$tableNames = [
 			"simple_hidden",
 			"simple_omission",
+			"simple_naked2",
+			"simple_naked3",
 			"simple_naked",
-			"candidate_visible",
+			"visible_naked2",
+			"visible_naked3",
+			"visible_naked",
 			"candidate_naked2",
 			"candidate_naked3",
 			"candidate_naked4",
@@ -241,7 +324,6 @@ try {
 			"unsolvable",
 			"unsolvable_filled",
 		];
-		echo "--- Populated Tables ", number_format($totalCount), "\n\n";
 
 		foreach ($tableNames as $tableName) {
 			$sql = "SELECT COUNT(*) AS count, MAX(`count`) as max FROM `$tableName`";
@@ -260,7 +342,7 @@ try {
 		echo "\n";
 	}
 
-	if ($mode === 2) {
+	if ($mode === 3) {
 		$number = number_format($totalCount);
 		flushOut("--- Total $number");
 
@@ -277,8 +359,6 @@ try {
 			$sql = "SELECT `solveType`, SUM(`count`) AS count FROM\n($unionString\n)";
 			$sql .= " AS puzzles GROUP BY `solveType`;\n";
 		}
-		// echo $unions[0], ";\n";
-		// echo "$sql\n";
 
 		$counts = [];
 
@@ -320,7 +400,7 @@ try {
 		echo "\n";
 	}
 
-	if ($mode === 3) {
+	if ($mode === 4) {
 		$unions = [];
 		for ($i = 1; $i <= $tableCount; $i++) {
 			$table = tableName($i);
@@ -483,7 +563,7 @@ try {
 		echo "\n";
 	}
 
-	if ($mode === 4) {
+	if ($mode === 5) {
 		$unions = [];
 		for ($i = 1; $i <= $tableCount; $i++) {
 			$table = tableName($i);
@@ -641,24 +721,24 @@ try {
 			$title = $strategyNames[$i];
 			$strategy = $strategies[$i];
 
-			$naked2 = (int)$result[$strategy];
-			$naked2Max = (int)$result["{$strategy}Max"];
-			$naked2Min = (int)$result["{$strategy}Min"];
-			$naked2MinMax = (int)$result["{$strategy}MinMax"];
-			$naked2Iso = (int)$result["{$strategy}Iso"];
-			$naked2IsoMax = (int)$result["{$strategy}IsoMax"];
+			$strategyType = (int)$result[$strategy];
+			$strategyType_Max = (int)$result["{$strategy}Max"];
+			$strategyType_Min = (int)$result["{$strategy}Min"];
+			$strategyType_MinMax = (int)$result["{$strategy}MinMax"];
+			$strategyType_Iso = (int)$result["{$strategy}Iso"];
+			$strategyType_IsoMax = (int)$result["{$strategy}IsoMax"];
 
-			$percent = percentage($naked2, $total, 5);
-			$max = number_format($naked2Max);
-			$format = number_format($naked2);
+			$percent = percentage($strategyType, $total, 5);
+			$max = number_format($strategyType_Max);
+			$format = number_format($strategyType);
 
-			$percentMin = percentage($naked2Min, $naked2, 5);
-			$maxMin = number_format($naked2MinMax);
-			$formatMin = number_format($naked2Min);
+			$percentMin = percentage($strategyType_Min, $total, 5);
+			$maxMin = number_format($strategyType_MinMax);
+			$formatMin = number_format($strategyType_Min);
 
-			$percentIso = percentage($naked2Iso, $total, 5);
-			$maxIso = number_format($naked2IsoMax);
-			$formatIso = number_format($naked2Iso);
+			$percentIso = percentage($strategyType_Iso, $total, 5);
+			$maxIso = number_format($strategyType_IsoMax);
+			$formatIso = number_format($strategyType_Iso);
 
 			echo str_pad("{$title}", 17, " ");
 			echo str_pad("$percent ($max) $format", 34, " ");
@@ -739,7 +819,7 @@ try {
 		echo  "<br/>";
 	}
 
-	if ($mode > 0) {
+	if ($mode > 1) {
 		$time = (time() - $time) . "s";
 		echo $time;
 	}
