@@ -7,7 +7,7 @@
 #
 # Host: localhost (MySQL 5.7.32)
 # Database: sudoku
-# Generation Time: 2024-12-13 19:04:34 +0000
+# Generation Time: 2024-12-20 14:33:53 +0000
 # ************************************************************
 
 
@@ -29,7 +29,7 @@ CREATE TABLE `candidate_hidden1` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `count` tinyint(2) unsigned NOT NULL,
   `puzzle_id` int(10) unsigned NOT NULL,
-  `table` char(10) NOT NULL DEFAULT '',
+  `table_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=ascii;
 
@@ -44,7 +44,7 @@ CREATE TABLE `candidate_hidden2` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `count` tinyint(2) unsigned NOT NULL,
   `puzzle_id` int(10) unsigned NOT NULL,
-  `table` char(10) NOT NULL DEFAULT '',
+  `table_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=ascii;
 
@@ -59,7 +59,7 @@ CREATE TABLE `candidate_hidden3` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `count` tinyint(2) unsigned NOT NULL,
   `puzzle_id` int(10) unsigned NOT NULL,
-  `table` char(10) NOT NULL DEFAULT '',
+  `table_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=ascii;
 
@@ -74,7 +74,7 @@ CREATE TABLE `candidate_hidden4` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `count` tinyint(2) unsigned NOT NULL,
   `puzzle_id` int(10) unsigned NOT NULL,
-  `table` char(10) NOT NULL DEFAULT '',
+  `table_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=ascii;
 
@@ -89,7 +89,7 @@ CREATE TABLE `candidate_jellyfish` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `count` tinyint(2) unsigned NOT NULL,
   `puzzle_id` int(10) unsigned NOT NULL,
-  `table` char(10) NOT NULL DEFAULT '',
+  `table_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=ascii;
 
@@ -104,7 +104,7 @@ CREATE TABLE `candidate_naked2` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `count` tinyint(2) unsigned NOT NULL,
   `puzzle_id` int(10) unsigned NOT NULL,
-  `table` char(10) NOT NULL DEFAULT '',
+  `table_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=ascii;
 
@@ -119,7 +119,7 @@ CREATE TABLE `candidate_naked3` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `count` tinyint(2) unsigned NOT NULL,
   `puzzle_id` int(10) unsigned NOT NULL,
-  `table` char(10) NOT NULL DEFAULT '',
+  `table_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=ascii;
 
@@ -134,7 +134,7 @@ CREATE TABLE `candidate_naked4` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `count` tinyint(2) unsigned NOT NULL,
   `puzzle_id` int(10) unsigned NOT NULL,
-  `table` char(10) NOT NULL DEFAULT '',
+  `table_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=ascii;
 
@@ -149,7 +149,7 @@ CREATE TABLE `candidate_omissions` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `count` tinyint(2) unsigned NOT NULL,
   `puzzle_id` int(10) unsigned NOT NULL,
-  `table` char(10) NOT NULL DEFAULT '',
+  `table_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=ascii;
 
@@ -164,7 +164,7 @@ CREATE TABLE `candidate_swordfish` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `count` tinyint(2) unsigned NOT NULL,
   `puzzle_id` int(10) unsigned NOT NULL,
-  `table` char(10) NOT NULL DEFAULT '',
+  `table_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=ascii;
 
@@ -179,22 +179,7 @@ CREATE TABLE `candidate_uniqueRectangle` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `count` tinyint(2) unsigned NOT NULL,
   `puzzle_id` int(10) unsigned NOT NULL,
-  `table` char(10) NOT NULL DEFAULT '',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=ascii;
-
-
-
-# Dump of table candidate_visible
-# ------------------------------------------------------------
-
-DROP TABLE IF EXISTS `candidate_visible`;
-
-CREATE TABLE `candidate_visible` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `count` tinyint(2) unsigned NOT NULL,
-  `puzzle_id` int(10) unsigned NOT NULL,
-  `table` char(10) NOT NULL DEFAULT '',
+  `table_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=ascii;
 
@@ -209,7 +194,7 @@ CREATE TABLE `candidate_xWing` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `count` tinyint(2) unsigned NOT NULL,
   `puzzle_id` int(10) unsigned NOT NULL,
-  `table` char(10) NOT NULL DEFAULT '',
+  `table_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=ascii;
 
@@ -224,7 +209,7 @@ CREATE TABLE `candidate_xyzWing` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `count` tinyint(2) unsigned NOT NULL,
   `puzzle_id` int(10) unsigned NOT NULL,
-  `table` char(10) NOT NULL DEFAULT '',
+  `table_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=ascii;
 
@@ -239,7 +224,7 @@ CREATE TABLE `candidate_yWing` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `count` tinyint(2) unsigned NOT NULL,
   `puzzle_id` int(10) unsigned NOT NULL,
-  `table` char(10) NOT NULL DEFAULT '',
+  `table_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=ascii;
 
@@ -254,7 +239,7 @@ CREATE TABLE `simple_hidden` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `count` tinyint(2) unsigned NOT NULL,
   `puzzle_id` int(10) unsigned NOT NULL,
-  `table` char(10) NOT NULL DEFAULT '',
+  `table_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=ascii;
 
@@ -269,7 +254,37 @@ CREATE TABLE `simple_naked` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `count` tinyint(2) unsigned NOT NULL,
   `puzzle_id` int(10) unsigned NOT NULL,
-  `table` char(10) NOT NULL DEFAULT '',
+  `table_id` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=ascii;
+
+
+
+# Dump of table simple_naked2
+# ------------------------------------------------------------
+
+DROP TABLE IF EXISTS `simple_naked2`;
+
+CREATE TABLE `simple_naked2` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `count` tinyint(2) unsigned NOT NULL,
+  `puzzle_id` int(10) unsigned NOT NULL,
+  `table_id` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=ascii;
+
+
+
+# Dump of table simple_naked3
+# ------------------------------------------------------------
+
+DROP TABLE IF EXISTS `simple_naked3`;
+
+CREATE TABLE `simple_naked3` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `count` tinyint(2) unsigned NOT NULL,
+  `puzzle_id` int(10) unsigned NOT NULL,
+  `table_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=ascii;
 
@@ -284,7 +299,7 @@ CREATE TABLE `simple_omission` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `count` tinyint(2) unsigned NOT NULL,
   `puzzle_id` int(10) unsigned NOT NULL,
-  `table` char(10) NOT NULL DEFAULT '',
+  `table_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=ascii;
 
@@ -299,7 +314,7 @@ CREATE TABLE `unsolvable` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `count` tinyint(2) unsigned NOT NULL,
   `puzzle_id` int(10) unsigned NOT NULL,
-  `table` char(10) NOT NULL DEFAULT '',
+  `table_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=ascii;
 
@@ -314,7 +329,52 @@ CREATE TABLE `unsolvable_filled` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `count` tinyint(2) unsigned NOT NULL,
   `puzzle_id` int(10) unsigned NOT NULL,
-  `table` char(10) NOT NULL DEFAULT '',
+  `table_id` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=ascii;
+
+
+
+# Dump of table visible_naked
+# ------------------------------------------------------------
+
+DROP TABLE IF EXISTS `visible_naked`;
+
+CREATE TABLE `visible_naked` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `count` tinyint(2) unsigned NOT NULL,
+  `puzzle_id` int(10) unsigned NOT NULL,
+  `table_id` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=ascii;
+
+
+
+# Dump of table visible_naked2
+# ------------------------------------------------------------
+
+DROP TABLE IF EXISTS `visible_naked2`;
+
+CREATE TABLE `visible_naked2` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `count` tinyint(2) unsigned NOT NULL,
+  `puzzle_id` int(10) unsigned NOT NULL,
+  `table_id` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=ascii;
+
+
+
+# Dump of table visible_naked3
+# ------------------------------------------------------------
+
+DROP TABLE IF EXISTS `visible_naked3`;
+
+CREATE TABLE `visible_naked3` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `count` tinyint(2) unsigned NOT NULL,
+  `puzzle_id` int(10) unsigned NOT NULL,
+  `table_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=ascii;
 
