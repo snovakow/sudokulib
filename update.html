@@ -214,9 +214,11 @@
 					solveType: ready.solveType,
 					hiddenSimple: ready.hiddenSimple,
 					omissionSimple: ready.omissionSimple,
+					naked2Simple: ready.naked2Simple,
+					naked3Simple: ready.naked3Simple,
 					nakedSimple: ready.nakedSimple,
-					nakedVisible: ready.nakedVisible,
 					omissionVisible: ready.omissionVisible,
+					nakedVisible: ready.nakedVisible,
 					naked2: ready.naked2,
 					naked3: ready.naked3,
 					naked4: ready.naked4,
@@ -232,7 +234,7 @@
 					swordfish: ready.swordfish,
 					jellyfish: ready.jellyfish,
 				};
-				readyDataSend.push(ready);
+				readyDataSend.push(post);
 				if (readyDataSend.length === maxSend) break;
 			}
 			updateDataStack.splice(0, readyDataSend.length);
