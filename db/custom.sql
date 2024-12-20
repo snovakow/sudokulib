@@ -7,7 +7,7 @@
 #
 # Host: localhost (MySQL 5.7.32)
 # Database: sudoku
-# Generation Time: 2024-12-13 19:01:58 +0000
+# Generation Time: 2024-12-20 14:32:30 +0000
 # ************************************************************
 
 
@@ -29,17 +29,17 @@ CREATE TABLE `custom` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `title` varchar(64) NOT NULL DEFAULT '',
   `puzzle_id` int(10) unsigned NOT NULL,
-  `table` char(10) CHARACTER SET ascii NOT NULL DEFAULT '',
+  `table_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 LOCK TABLES `custom` WRITE;
 /*!40000 ALTER TABLE `custom` DISABLE KEYS */;
 
-INSERT INTO `custom` (`id`, `title`, `puzzle_id`, `table`)
+INSERT INTO `custom` (`id`, `title`, `puzzle_id`, `table_id`)
 VALUES
-	(1,'Naked Quint x2',2730126,'puzzles002'),
-	(2,'Naked Quint x2',4929001,'puzzles003');
+	(1,'Naked Quint x2 A',2730126,2),
+	(2,'Naked Quint x2 B',4929001,3);
 
 /*!40000 ALTER TABLE `custom` ENABLE KEYS */;
 UNLOCK TABLES;
