@@ -224,14 +224,6 @@ try {
 		$sql = tableStatement($tableCount, "nakedSimple", "simple_naked", $logic);
 		echo "$sql\n";
 
-		$logic = "`solveType`=1 AND `naked2Visible`>0 AND `naked3Visible`=0 AND `nakedVisible`=0";
-		$sql = tableStatement($tableCount, "naked2Visible", "visible_naked2", $logic);
-		echo "$sql\n";
-
-		$logic = "`solveType`=1 AND `naked3Visible`>0 AND `nakedVisible`=0";
-		$sql = tableStatement($tableCount, "naked3Visible", "visible_naked3", $logic);
-		echo "$sql\n";
-
 		$logic = "`solveType`=1 AND `nakedVisible`>0";
 		$sql = tableStatement($tableCount, "nakedVisible", "visible_naked", $logic);
 		echo "$sql\n";
@@ -254,11 +246,9 @@ try {
 		$logic = "`solveType`=4";
 		$logic .= strategyLogic("hiddenSimple");
 		$logic .= strategyLogic("omissionSimple");
-		$logic .= strategyLogic("naked3Simple");
 		$logic .= strategyLogic("naked2Simple");
+		$logic .= strategyLogic("naked3Simple");
 		$logic .= strategyLogic("nakedSimple");
-		$logic .= strategyLogic("naked3Visible");
-		$logic .= strategyLogic("naked2Visible");
 		$logic .= strategyLogic("nakedVisible");
 		$logic .= strategyLogic("omissionVisible");
 		$logic .= tableLogic();
@@ -297,8 +287,6 @@ try {
 			"simple_naked2",
 			"simple_naked3",
 			"simple_naked",
-			"visible_naked2",
-			"visible_naked3",
 			"visible_naked",
 			"candidate_naked2",
 			"candidate_naked3",
@@ -337,7 +325,7 @@ try {
 
 	if ($mode === 3) {
 		$number = number_format($totalCount);
-		flushOut("--- Total $number");
+		echo "--- Total $number\n\n";
 
 		$unions = [];
 		for ($i = 1; $i <= $tableCount; $i++) {
