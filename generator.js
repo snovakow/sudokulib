@@ -1,7 +1,7 @@
 import {
-	candidates, nakedSingles, hiddenSingles, NakedHiddenGroups, omissions, uniqueRectangle,
+	candidates, simpleHidden, simpleOmissions, simpleNaked2, simpleNaked3, simpleNaked,
+	visibleOmissions, visibleNaked, hiddenSingles, NakedHiddenGroups, omissions, uniqueRectangle,
 	yWing, xyzWing, xWing, swordfish, jellyfish, aCells, bCells,
-	simpleNaked, simpleHidden
 } from "./solver.js";
 
 const consoleOut = (result) => {
@@ -12,8 +12,10 @@ const consoleOut = (result) => {
 	lines.push("Simple Hidden: " + result.hiddenSimple);
 	lines.push("Simple Omission: " + result.omissionSimple);
 	lines.push("Simple Naked: " + result.nakedSimple);
-	lines.push("Visual Naked: " + result.nakedVisible);
+
 	lines.push("Visual Omission: " + result.omissionVisible);
+	lines.push("Visual Naked: " + result.nakedVisible);
+
 	lines.push("Naked 2: " + result.naked2);
 	lines.push("Naked 3: " + result.naked3);
 	lines.push("Naked 4: " + result.naked4);
@@ -59,43 +61,54 @@ const emptyCount = (cells) => {
 	return count;
 }
 
+let VAL = 0;
 const STRATEGY = {
-	SIMPLE_HIDDEN: 0,
-	SIMPLE_INTERSECTION: 1,
-	SIMPLE_NAKED: 2,
+	SIMPLE_HIDDEN: VAL++,
+	SIMPLE_INTERSECTION: VAL++,
+	SIMPLE_NAKED2: VAL++,
+	SIMPLE_NAKED3: VAL++,
+	SIMPLE_NAKED: VAL++,
 
-	VISIBLE_NAKED: 3,
-	VISIBLE_INTERSECTION: 4,
+	VISIBLE_INTERSECTION: VAL++,
+	VISIBLE_NAKED: VAL++,
 
-	NAKED_2: 5,
-	NAKED_3: 6,
-	NAKED_4: 7,
-	HIDDEN_1: 8,
-	HIDDEN_2: 9,
-	HIDDEN_3: 10,
-	HIDDEN_4: 11,
-	INTERSECTION_REMOVAL: 12,
-	DEADLY_PATTERN: 13,
-	Y_WING: 14,
-	XYZ_WING: 15,
-	X_WING: 16,
-	SWORDFISH: 17,
-	JELLYFISH: 18,
+	NAKED_2: VAL++,
+	NAKED_3: VAL++,
+	NAKED_4: VAL++,
+	HIDDEN_1: VAL++,
+	HIDDEN_2: VAL++,
+	HIDDEN_3: VAL++,
+	HIDDEN_4: VAL++,
+	INTERSECTION_REMOVAL: VAL++,
+	DEADLY_PATTERN: VAL++,
+	Y_WING: VAL++,
+	XYZ_WING: VAL++,
+	X_WING: VAL++,
+	SWORDFISH: VAL++,
+	JELLYFISH: VAL++,
 };
 Object.freeze(STRATEGY);
 
-const fillSolve = (cells, simples, strategies, visible = true) => {
-	simples = simples ?? [STRATEGY.SIMPLE_HIDDEN, STRATEGY.SIMPLE_INTERSECTION, STRATEGY.SIMPLE_NAKED];
+const fillSolve = (cells, simples, visibles, strategies) => {
+	simples = simples ?? [
+		STRATEGY.SIMPLE_HIDDEN,
+		STRATEGY.SIMPLE_INTERSECTION,
+		STRATEGY.SIMPLE_NAKED2,
+		STRATEGY.SIMPLE_NAKED3,
+		STRATEGY.SIMPLE_NAKED
+	];
+	visibles = visibles ?? [
+		STRATEGY.VISIBLE_INTERSECTION,
+		STRATEGY.VISIBLE_NAKED
+	];
 	strategies = strategies ?? [
 		STRATEGY.NAKED_2,
 		STRATEGY.NAKED_3,
 		STRATEGY.NAKED_4,
-		STRATEGY.NAKED_5_2,
-		STRATEGY.NAKED_5_3,
-		STRATEGY.NAKED_5_4,
 		STRATEGY.HIDDEN_1,
 		STRATEGY.HIDDEN_2,
 		STRATEGY.HIDDEN_3,
+		STRATEGY.HIDDEN_4,
 		STRATEGY.INTERSECTION_REMOVAL,
 		STRATEGY.DEADLY_PATTERN,
 		STRATEGY.Y_WING,
@@ -107,7 +120,10 @@ const fillSolve = (cells, simples, strategies, visible = true) => {
 
 	let hiddenSimple = 0;
 	let omissionSimple = 0;
+	let naked2Simple = 0;
+	let naked3Simple = 0;
 	let nakedSimple = 0;
+
 	const solveSimple = () => {
 		let remaining = emptyCount(cells);
 		while (remaining > 0) {
