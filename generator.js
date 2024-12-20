@@ -11,6 +11,8 @@ const consoleOut = (result) => {
 	lines.push("Visual: " + (result.candidateVisible ? "Yes" : "No"));
 	lines.push("Simple Hidden: " + result.hiddenSimple);
 	lines.push("Simple Omission: " + result.omissionSimple);
+	lines.push("Simple Naked2: " + result.naked2Simple);
+	lines.push("Simple Naked3: " + result.naked3Simple);
 	lines.push("Simple Naked: " + result.nakedSimple);
 
 	lines.push("Visual Omission: " + result.omissionVisible);
@@ -134,8 +136,18 @@ const fillSolve = (cells, simples, visibles, strategies) => {
 					found = true;
 					break;
 				}
-				if (simple === STRATEGY.SIMPLE_INTERSECTION && omissions(cells, 0)) {
+				if (simple === STRATEGY.SIMPLE_INTERSECTION && simpleOmissions(cells)) {
 					omissionSimple++;
+					found = true;
+					break;
+				}
+				if (simple === STRATEGY.SIMPLE_NAKED2 && simpleNaked2(cells)) {
+					naked2Simple++;
+					found = true;
+					break;
+				}
+				if (simple === STRATEGY.SIMPLE_NAKED3 && simpleNaked3(cells)) {
+					naked3Simple++;
 					found = true;
 					break;
 				}
@@ -151,8 +163,8 @@ const fillSolve = (cells, simples, visibles, strategies) => {
 		return remaining > 0;
 	}
 
-	let nakedVisible = 0;
 	let omissionVisible = 0;
+	let nakedVisible = 0;
 
 	let naked2Reduced = 0;
 	let naked3Reduced = 0;
@@ -285,9 +297,11 @@ const fillSolve = (cells, simples, visibles, strategies) => {
 		candidateVisible,
 		hiddenSimple,
 		omissionSimple,
+		naked2Simple,
+		naked3Simple,
 		nakedSimple,
-		nakedVisible,
 		omissionVisible,
+		nakedVisible,
 		naked2: naked2Reduced,
 		naked3: naked3Reduced,
 		naked4: naked4Reduced,
