@@ -368,6 +368,49 @@ try {
 		for ($i = 1; $i <= $tableCount; $i++) {
 			$table = tableName($i);
 			$sql = "SELECT ";
+			$sql .= "SUM(`hiddenSimple`>0) AS hiddenSimple, MAX(`hiddenSimple`) AS hiddenSimpleMax, ";
+			$sql .= "SUM(`hiddenSimple`>0 AND `omissionSimple`=0 AND `naked2Simple`=0 AND `naked3Simple`=0 AND `nakedSimple`=0 AND `omissionVisible`=0 AND `nakedVisible`=0) AS hiddenSimpleIso, ";
+
+			$sql .= "SUM(`omissionSimple`>0) AS omissionSimple, MAX(`omissionSimple`) AS omissionSimpleMax, ";
+			$sql .= "SUM(`omissionSimple`>0 AND `naked2Simple`=0 AND `naked3Simple`=0 AND `nakedSimple`=0 AND `omissionVisible`=0 AND `nakedVisible`=0) AS omissionSimpleIso, ";
+
+			$sql .= "SUM(`naked2Simple`>0) AS naked2Simple, MAX(`naked2Simple`) AS naked2SimpleMax, ";
+			$sql .= "SUM(`naked3Simple`>0) AS naked3Simple, MAX(`naked3Simple`) AS naked3SimpleMax, ";
+			$sql .= "SUM(`nakedSimple`>0) AS nakedSimple, MAX(`nakedSimple`) AS nakedSimpleMax, ";
+
+			$sql .= "SUM(`nakedVisible`>0) AS nakedVisible, MAX(`nakedVisible`) AS nakedVisibleMax, ";
+			$sql .= "SUM(`omissionVisible`>0) AS omissionVisible, MAX(`omissionVisible`) AS omissionVisibleMax, ";
+			$sql .= "COUNT(*) AS count FROM `$table` WHERE `solveType`<=1";
+			$unions[] = $sql;
+		}
+		$unionString = implode(" UNION ALL ", $unions);
+		$sql = "SELECT ";
+		$sql .= "SUM(hiddenSimple) AS hiddenSimple, MAX(hiddenSimpleMax) AS hiddenSimpleMax, ";
+		$sql .= "SUM(hiddenSimpleIso) AS hiddenSimpleIso, ";
+
+		$sql .= "SUM(omissionSimple) AS omissionSimple, MAX(omissionSimpleMax) AS omissionSimpleMax, ";
+		$sql .= "SUM(omissionSimpleIso) AS omissionSimpleIso, ";
+
+		$sql .= "SUM(naked2Simple) AS naked2Simple, MAX(naked2SimpleMax) AS naked2SimpleMax, ";
+		$sql .= "SUM(naked3Simple) AS naked3Simple, MAX(naked3SimpleMax) AS naked3SimpleMax, ";
+		$sql .= "SUM(nakedSimple) AS nakedSimple, MAX(nakedSimpleMax) AS nakedSimpleMax, ";
+
+		$sql .= "SUM(nakedVisible) AS nakedVisible, MAX(nakedVisibleMax) AS nakedVisibleMax, ";
+		$sql .= "SUM(omissionVisible) AS omissionVisible, MAX(omissionVisibleMax) AS omissionVisibleMax, ";
+		$sql .= "SUM(count) AS count FROM ($unionString) AS puzzles";
+
+		exit($sql);
+		$stmt = $db->prepare($sql);
+		$stmt->execute();
+		$result = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+		$total = (int)$result['count'];
+
+
+		$unions = [];
+		for ($i = 1; $i <= $tableCount; $i++) {
+			$table = tableName($i);
+			$sql = "SELECT ";
 			$sql .= "`hiddenSimple`>0 AS hiddenSimple, MAX(`hiddenSimple`) AS hiddenSimpleMax, ";
 			$sql .= "`omissionSimple`>0 AS omissionSimple, MAX(`omissionSimple`) AS omissionSimpleMax, ";
 			$sql .= "`nakedSimple`>0 AS nakedSimple, MAX(`nakedSimple`) AS nakedSimpleMax, ";
@@ -382,10 +425,6 @@ try {
 		$sql .= "nakedSimple, MAX(nakedSimpleMax) AS nakedSimpleMax, ";
 		$sql .= "SUM(`count`) AS count FROM ($unionString) AS puzzles ";
 		$sql .= "GROUP BY hiddenSimple, omissionSimple, nakedSimple";
-
-		$stmt = $db->prepare($sql);
-		$stmt->execute();
-		$result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
 		$total = 0;
 		$counts = [];
@@ -526,7 +565,7 @@ try {
 		echo "\n";
 	}
 
-	if ($mode === 5) {
+	if ($mode === 4) {
 		$unions = [];
 		for ($i = 1; $i <= $tableCount; $i++) {
 			$table = tableName($i);
