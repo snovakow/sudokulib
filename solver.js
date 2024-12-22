@@ -73,6 +73,7 @@ const simpleNakedCell = (cells, cell) => {
 // simpleNaked
 
 // visibleOmissions
+// visibleNaked2
 // visibleNaked
 
 const simpleNaked2 = (cells) => {
@@ -183,6 +184,70 @@ const simpleNaked2 = (cells) => {
 			const cell = cells[i];
 			if (cell.symbol !== 0) continue;
 			if (simpleNakedCell(cells, cell)) return true;
+		}
+	}
+	return false;
+}
+
+const visibleNaked2 = (cells) => {
+	for (const group of Grid.groupBoxs) {
+		const cellGroup = [];
+		for (const i of group) {
+			const cell = cells[i];
+			if (cell.symbol !== 0) continue;
+			cellGroup.push(cell);
+		}
+		const len = cellGroup.length;
+		if (len < 2) continue;
+
+		const len_1 = len - 1;
+		for (let i1 = 0; i1 < len_1; i1++) {
+			const cell1 = cellGroup[i1];
+			for (let i2 = i1 + 1; i2 < len; i2++) {
+				const cell2 = cellGroup[i2];
+				if (cell1.row !== cell2.row && cell1.col !== cell2.col) continue;
+
+				const union = cell1.mask | cell2.mask;
+				let symbol1 = 0;
+				let symbol2 = 0;
+				for (let x = 1; x <= 9; x++) {
+					if (((union >>> x) & 0x001) === 0x001) {
+						if (symbol1 === 0) symbol1 = x;
+						else if (symbol2 === 0) symbol2 = x;
+						else {
+							symbol2 = 0;
+							break;
+						}
+					}
+				}
+				if (symbol2 === 0) continue;
+
+				let reduced = false;
+				if (len > 2) {
+					for (let i = 0; i < len; i++) {
+						if (i === i1 || i === i2) continue;
+
+						const cell = cellGroup[i];
+						if (cell.delete(symbol1)) reduced = true;
+						if (cell.delete(symbol2)) reduced = true;
+					}
+				}
+
+				let crossGroup = null;
+				if (cell1.row === cell2.row) crossGroup = Grid.groupRows[cell1.row];
+				else if (cell1.col === cell2.col) crossGroup = Grid.groupCols[cell1.col];
+
+				if (crossGroup) {
+					for (const i of crossGroup) {
+						const cell = cells[i];
+						if (cell.box === cell1.box) continue;
+						if (cell.delete(symbol1)) reduced = true;
+						if (cell.delete(symbol2)) reduced = true;
+					}
+				}
+
+				if (reduced) return true;
+			}
 		}
 	}
 	return false;
@@ -1801,7 +1866,7 @@ const generate = (cells) => {
 
 export {
 	generate, candidates, simpleHidden, simpleOmissions, simpleNaked2, simpleNaked3, simpleNaked,
-	visibleOmissions, visibleNaked, hiddenSingles, NakedHiddenGroups, omissions, uniqueRectangle,
+	visibleOmissions, visibleNaked2, visibleNaked, hiddenSingles, NakedHiddenGroups, omissions, uniqueRectangle,
 	yWing, xyzWing, xWing, swordfish, jellyfish,
 	superposition, phistomefel, bruteForce
 };
