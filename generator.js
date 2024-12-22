@@ -268,28 +268,46 @@ const fillSolve = (cells, simples, visibles, strategies) => {
 		candidates(cells);
 
 		let progress = 0;
-		if (strategies.length > 0) {
-			do {
-				if (visible) {
-					if (omissions(cells, 1)) {
-						progress = 1;
+		do {
+			if (visibles.length > 0) {
+				let progressVisible = 0;
+
+				for (const strategy of visibles) {
+					if (strategy === STRATEGY.VISIBLE_INTERSECTION && visibleOmissions(cells)) {
+						progressVisible = 1;
 						omissionVisible++;
-						continue;
+						break;
 					}
-					if (nakedSingles(cells)) {
-						progress = 2;
+					if (strategy === STRATEGY.VISIBLE_NAKED2 && visibleNaked2(cells)) {
+						progressVisible = 1;
+						naked2Visible++;
+						break;
+					}
+					if (strategy === STRATEGY.VISIBLE_NAKED && visibleNaked(cells)) {
+						progressVisible = 2;
 						nakedVisible++;
 						break;
 					}
 				}
-				candidateVisible = false;
-				for (const strategy of strategies) {
-					progress = solvePriority(strategy);
-					if (progress > 0) break;
+				if (progressVisible === 1) {
+					progress = 1;
+					continue;
 				}
-				nakedHidden = null;
-			} while (progress === 1);
-		}
+				if (progressVisible === 2) {
+					progress = 2;
+					break;
+				}
+			}
+
+			candidateVisible = false;
+
+			for (const strategy of strategies) {
+				progress = solvePriority(strategy);
+				if (progress > 0) break;
+			}
+			nakedHidden = null;
+		} while (progress === 1);
+
 		if (progress === 0) solved = false;
 	} while (solved);
 
