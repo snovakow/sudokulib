@@ -208,19 +208,7 @@ try {
 		$sql = tableStatement($tableCount, "omissionSimple", "simple_omission", $logic);
 		echo "$sql\n";
 
-		$logic = "`solveType`=0 AND `naked2Simple`>0 AND `naked3Simple`=0 AND `nakedSimple`=0";
-		$sql = tableStatement($tableCount, "naked2Simple", "simple_naked2", $logic);
-		echo "$sql\n";
-
-		$logic = "`solveType`=0 AND `naked3Simple`>0 AND `nakedSimple`=0";
-		$sql = tableStatement($tableCount, "naked3Simple", "simple_naked3", $logic);
-		echo "$sql\n";
-
-		$logic = "`solveType`=0 AND `nakedSimple`>0";
-		$sql = tableStatement($tableCount, "nakedSimple", "simple_naked", $logic);
-		echo "$sql\n";
-
-		$logic = "`solveType`=1 AND `nakedVisible`>0";
+		$logic = "`solveType`=1";
 		$sql = tableStatement($tableCount, "nakedVisible", "visible_naked", $logic);
 		echo "$sql\n";
 
