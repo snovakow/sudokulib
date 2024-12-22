@@ -245,8 +245,9 @@ try {
 		$logic .= strategyLogic("naked2Simple");
 		$logic .= strategyLogic("naked3Simple");
 		$logic .= strategyLogic("nakedSimple");
-		$logic .= strategyLogic("nakedVisible");
 		$logic .= strategyLogic("omissionVisible");
+		$logic .= strategyLogic("naked2Visible");
+		$logic .= strategyLogic("nakedVisible");
 		$logic .= tableLogic();
 		$sql = tableStatement($tableCount, "clueCount", "unsolvable", $logic);
 		echo "$sql\n";
