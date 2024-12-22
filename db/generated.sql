@@ -7,7 +7,7 @@
 #
 # Host: localhost (MySQL 5.7.32)
 # Database: sudoku
-# Generation Time: 2024-12-20 18:42:41 +0000
+# Generation Time: 2024-12-22 20:14:57 +0000
 # ************************************************************
 
 
@@ -236,51 +236,6 @@ CREATE TABLE `candidate_yWing` (
 DROP TABLE IF EXISTS `simple_hidden`;
 
 CREATE TABLE `simple_hidden` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `count` tinyint(2) unsigned NOT NULL,
-  `puzzle_id` int(10) unsigned NOT NULL,
-  `table_id` int(10) unsigned NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=ascii;
-
-
-
-# Dump of table simple_naked
-# ------------------------------------------------------------
-
-DROP TABLE IF EXISTS `simple_naked`;
-
-CREATE TABLE `simple_naked` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `count` tinyint(2) unsigned NOT NULL,
-  `puzzle_id` int(10) unsigned NOT NULL,
-  `table_id` int(10) unsigned NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=ascii;
-
-
-
-# Dump of table simple_naked2
-# ------------------------------------------------------------
-
-DROP TABLE IF EXISTS `simple_naked2`;
-
-CREATE TABLE `simple_naked2` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `count` tinyint(2) unsigned NOT NULL,
-  `puzzle_id` int(10) unsigned NOT NULL,
-  `table_id` int(10) unsigned NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=ascii;
-
-
-
-# Dump of table simple_naked3
-# ------------------------------------------------------------
-
-DROP TABLE IF EXISTS `simple_naked3`;
-
-CREATE TABLE `simple_naked3` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `count` tinyint(2) unsigned NOT NULL,
   `puzzle_id` int(10) unsigned NOT NULL,
