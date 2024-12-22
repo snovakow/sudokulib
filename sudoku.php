@@ -11,7 +11,6 @@ $strategy = "";
 $tableNames = [
 	"simple_hidden",
 	"simple_omission",
-	"simple_naked",
 	"candidate_visible",
 	"candidate_naked2",
 	"candidate_naked3",
@@ -55,11 +54,12 @@ try {
 	$db = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
 
 	if ($strategy == 'custom') {
-		$stmt = $db->prepare("SELECT `title`, `puzzle_id`, `table_id` FROM `custom`");
+		$stmt = $db->prepare("SELECT `id`, `title`, `puzzle_id`, `table_id` FROM `custom`");
 		$stmt->execute();
 		$result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 		$results = [];
 		foreach ($result as $key => $row) {
+			$id = $row['id'];
 			$title = $row['title'];
 			$puzzle_id = $row['puzzle_id'];
 			$table_id = $row['table_id'];
@@ -71,7 +71,6 @@ try {
 			$result = $stmt->fetch();
 			$puzzleData = $result['puzzleData'];
 
-			$id = "$table_id:$puzzle_id";
 			$results[] = ['id' => $id, 'title' => $title, 'puzzleData' => $puzzleData];
 		}
 		exit(json_encode($results));
