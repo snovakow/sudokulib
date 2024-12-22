@@ -1,6 +1,6 @@
 import {
 	candidates, simpleHidden, simpleOmissions, simpleNaked2, simpleNaked3, simpleNaked,
-	visibleOmissions, visibleNaked, hiddenSingles, NakedHiddenGroups, omissions, uniqueRectangle,
+	visibleOmissions, visibleNaked2, visibleNaked, hiddenSingles, NakedHiddenGroups, omissions, uniqueRectangle,
 	yWing, xyzWing, xWing, swordfish, jellyfish, aCells, bCells,
 } from "./solver.js";
 
@@ -16,6 +16,7 @@ const consoleOut = (result) => {
 	lines.push("Simple Naked: " + result.nakedSimple);
 
 	lines.push("Visual Omission: " + result.omissionVisible);
+	lines.push("Visual Naked2: " + result.naked2Visible);
 	lines.push("Visual Naked: " + result.nakedVisible);
 
 	lines.push("Naked 2: " + result.naked2);
@@ -72,6 +73,7 @@ const STRATEGY = {
 	SIMPLE_NAKED: VAL++,
 
 	VISIBLE_INTERSECTION: VAL++,
+	VISIBLE_NAKED2: VAL++,
 	VISIBLE_NAKED: VAL++,
 
 	NAKED_2: VAL++,
@@ -101,6 +103,7 @@ const fillSolve = (cells, simples, visibles, strategies) => {
 	];
 	visibles = visibles ?? [
 		STRATEGY.VISIBLE_INTERSECTION,
+		STRATEGY.VISIBLE_NAKED2,
 		STRATEGY.VISIBLE_NAKED
 	];
 	strategies = strategies ?? [
@@ -164,6 +167,7 @@ const fillSolve = (cells, simples, visibles, strategies) => {
 	}
 
 	let omissionVisible = 0;
+	let naked2Visible = 0;
 	let nakedVisible = 0;
 
 	let naked2Reduced = 0;
@@ -301,6 +305,7 @@ const fillSolve = (cells, simples, visibles, strategies) => {
 		naked3Simple,
 		nakedSimple,
 		omissionVisible,
+		naked2Visible,
 		nakedVisible,
 		naked2: naked2Reduced,
 		naked3: naked3Reduced,
