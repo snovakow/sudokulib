@@ -31,6 +31,7 @@ new StrategyData(simpleDataArray, STRATEGY.SIMPLE_NAKED3, 'naked3Simple');
 new StrategyData(simpleDataArray, STRATEGY.SIMPLE_NAKED, 'nakedSimple');
 
 new StrategyData(visibleDataArray, STRATEGY.VISIBLE_INTERSECTION, 'omissionVisible');
+new StrategyData(visibleDataArray, STRATEGY.VISIBLE_NAKED2, 'naked2Visible');
 new StrategyData(visibleDataArray, STRATEGY.VISIBLE_NAKED, 'nakedVisible');
 
 new StrategyData(strategyDataArray, STRATEGY.NAKED_2, 'naked2');
