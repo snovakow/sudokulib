@@ -38,9 +38,21 @@
 			if (tableCount > 0) totalCount = (tableCount - 1) * MAX_SIZE + puzzleCount;
 		}
 
+		const searchParams = new URLSearchParams(window.location.search);
+
+		let coreCount = 1;
+		const searchCores = parseInt(searchParams.get("cores"));
+		if (!isNaN(searchCores) && searchCores <= 10 && searchCores > 0) coreCount = searchCores;
+
+		let startTableCount = 1;
+		const searchStartTableCount = parseInt(searchParams.get("table"));
+		if (!isNaN(searchStartTableCount)) startTableCount = searchStartTableCount;
+
+		const startCount = (startTableCount - 1) * MAX_SIZE;
+
 		let strategyCounter = null;
 		let startTime = 0;
-		let receivedCount = 0;
+		let receivedCount = startCount;
 		let updateDataSent = 0;
 
 		let receivedNodeOverride = true;
@@ -88,9 +100,10 @@
 			if (sentNodeOverride) {
 				while (sentNode.firstChild) sentNode.removeChild(sentNode.lastChild);
 				makeBold(sentNode, "Sent", updateDataSent.toLocaleString());
-				if (totalCount > 0) {
+				const progressTotal = totalCount - startCount;
+				if (progressTotal > 0) {
 					sentNode.appendChild(document.createElement("br"));
-					makeBold(sentNode, "Progress", (100 * updateDataSent / totalCount).toFixed(2) + "%");
+					makeBold(sentNode, "Progress", (100 * updateDataSent / progressTotal).toFixed(2) + "%");
 				}
 				sentNodeOverride = false;
 			}
@@ -116,6 +129,7 @@
 				body.appendChild(document.createElement("br"));
 			}
 
+			const currentCount = startCount + updateDataSent;
 			if (startTime > 0 && updateDataSent > 0) {
 				const passed = Date.now() - startTime;
 				if (passed > 3 * 1000) {
@@ -129,13 +143,13 @@
 							body.appendChild(document.createElement("br"));
 						}
 					}
-					if (updateDataSent < totalCount) {
-						const eta = (totalCount - updateDataSent) * passed / updateDataSent;
+					if (currentCount < totalCount) {
+						const eta = (totalCount - currentCount) * passed / updateDataSent;
 						makeBold(body, "ETA", formatTime(eta));
 					}
 				}
 			}
-			if (updateDataSent >= totalCount) {
+			if (currentCount >= totalCount) {
 				document.body.removeChild(updateButton);
 				makeBold(body, "ETA", "Complete!");
 				animating = false;
@@ -149,11 +163,6 @@
 		updateButton.style.position = 'absolute';
 		updateButton.style.width = '80px';
 		updateButton.style.height = '32px';
-
-		let coreCount = 1;
-		const searchParams = new URLSearchParams(window.location.search);
-		const searchCores = parseInt(searchParams.get("cores"));
-		if (!isNaN(searchCores) && searchCores <= 10 && searchCores > 0) coreCount = searchCores;
 
 		const url = './tables.php?version=1';
 		fetch(url, { cache: "no-store" }).then(response => {
