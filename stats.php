@@ -288,6 +288,8 @@ try {
 			"unsolvable_filled",
 		];
 
+		printf("%-26s%8s%4s%10s\n", "Table", "Percent", "Max", "Count");
+		printf("%'-26s%'-9s%'-4s%'-10s\n", " ", " ", " ", " ");
 		foreach ($tableNames as $tableName) {
 			$sql = "SELECT COUNT(*) AS count, MAX(`count`) as max FROM `$tableName`";
 			$stmt = $db->prepare($sql);
@@ -296,11 +298,10 @@ try {
 			$count = (int)$result['count'];
 			$maxCount = (int)$result['max'];
 
-			if ($count === 1000000) $percent = "Filled";
-			else $percent = percentage($count, $totalCount, 5, 2);
+			$percent = percentage($count, 1000000, 3, 2);
 			$max = number_format($maxCount);
 			$format = number_format($count);
-			echo "$tableName: $percent ($max) $format\n";
+			printf("%-26s%8s%4s%10s\n", $tableName, $percent, $max, $format);
 		}
 		echo "\n";
 	}
