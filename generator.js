@@ -188,6 +188,21 @@ const fillSolve = (cells, simples, visibles, strategies) => {
 	// 0 none
 	// 1 reduced
 	// 2 placed
+	const solveVisiblePriority = (strategy) => {
+		if (strategy === STRATEGY.VISIBLE_INTERSECTION && visibleOmissions(cells)) {
+			omissionVisible++;
+			return 1;
+		}
+		if (strategy === STRATEGY.VISIBLE_NAKED2 && visibleNaked2(cells)) {
+			naked2Visible++;
+			return 1;
+		}
+		if (strategy === STRATEGY.VISIBLE_NAKED && visibleNaked(cells)) {
+			nakedVisible++;
+			return 2;
+		}
+		return 0;
+	}
 	const solvePriority = (strategy) => {
 		if (!nakedHidden) {
 			if (strategy === STRATEGY.NAKED_2 ||
@@ -269,31 +284,16 @@ const fillSolve = (cells, simples, visibles, strategies) => {
 
 		let progress = 0;
 		do {
-			if (visibles.length > 0) {
-				progress = 0;
-				for (const strategy of visibles) {
-					if (strategy === STRATEGY.VISIBLE_INTERSECTION && visibleOmissions(cells)) {
-						progress = 1;
-						omissionVisible++;
-						break;
-					}
-					if (strategy === STRATEGY.VISIBLE_NAKED2 && visibleNaked2(cells)) {
-						progress = 1;
-						naked2Visible++;
-						break;
-					}
-					if (strategy === STRATEGY.VISIBLE_NAKED && visibleNaked(cells)) {
-						progress = 2;
-						nakedVisible++;
-						break;
-					}
-				}
-				if (progress === 1) continue;
-				if (progress === 2) break;
+			for (const strategy of visibles) {
+				progress = solveVisiblePriority(strategy);
+				if (progress > 0) break;
 			}
+		} while (progress === 1);
+		if (progress === 2) continue;
 
-			candidateVisible = false;
+		candidateVisible = false;
 
+		do {
 			for (const strategy of strategies) {
 				progress = solvePriority(strategy);
 				if (progress > 0) break;
