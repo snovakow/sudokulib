@@ -63,6 +63,8 @@ function tableStatement($tableCount, $countName, $tableName, $logic, $select = n
 {
 	if ($select === null) $select = "`$countName`";
 
+	$tableName_tmp = "{$tableName}_tmp";
+
 	$sql = "";
 	$sql .= "DROP TABLE IF EXISTS `$tableName`;\n";
 	$sql .= "CREATE TABLE `$tableName` (\n";
@@ -72,24 +74,58 @@ function tableStatement($tableCount, $countName, $tableName, $logic, $select = n
 	$sql .= "  `table_id` int(10) unsigned NOT NULL,\n";
 	$sql .= "  PRIMARY KEY (`id`)\n";
 	$sql .= ") ENGINE=InnoDB DEFAULT CHARSET=ascii;\n";
-	$sql .= "INSERT INTO `$tableName` (`count`, `puzzle_id`, `table_id`)\n";
 
-	$unions = [];
-	for ($table_id = 1; $table_id <= $tableCount; $table_id++) {
-		$table = tableName($table_id);
-		$unions[] = "SELECT $select, `id`, '$table_id' AS puzzle FROM `$table` WHERE $logic";
+	if ($tableCount > 1) {
+		$sql .= "DROP TEMPORARY TABLE IF EXISTS `$tableName_tmp`;\n";
+		$sql .= "CREATE TEMPORARY TABLE `$tableName_tmp` (\n";
+		$sql .= "  `count` tinyint(2) unsigned NOT NULL,\n";
+		$sql .= "  `puzzle_id` int(10) unsigned NOT NULL,\n";
+		$sql .= "  `table_id` int(10) unsigned NOT NULL\n";
+		$sql .= ") ENGINE=InnoDB DEFAULT CHARSET=ascii;\n";
 	}
-	$orderString = "ORDER BY `$countName` DESC LIMIT 1000000";
-	if (count($unions) === 1) {
-		$unionString = $unions[0];
-		$sql .= "$unionString $orderString;\n";
-	} else {
-		$unionString = implode(") \n  UNION ALL\n  (", $unions);
-		$sql .= "SELECT `$countName`, `id`, `puzzle` FROM (\n  ($unionString)\n  $orderString\n) AS puzzles;\n";
+
+	for ($table_id = 1; $table_id <= $tableCount; $table_id++) {
+		$tableLead = $tableName;
+		$tableSwap = $tableName_tmp;
+		if ($tableCount % 2 !=  $table_id % 2) {
+			$tableLead = $tableName_tmp;
+			$tableSwap = $tableName;
+		}
+
+		if ($table_id > 2) {
+			$sql .= "TRUNCATE TABLE `$tableLead`;\n";
+			if ($table_id == $tableCount) {
+				$sql .= "ALTER TABLE `$tableLead` AUTO_INCREMENT=1;\n";
+			}
+		}
+
+		$sql .= "INSERT INTO `$tableLead` (`count`, `puzzle_id`, `table_id`)\n";
+
+		$table = tableName($table_id);
+
+		$selectLogic = "SELECT $select AS count, `id` AS puzzle_id, '$table_id' AS table_id FROM `$table` WHERE $logic";
+		if ($table_id > 1) {
+			$sql .= "($selectLogic) \n";
+			$sql .= "UNION ALL (SELECT `count`, `puzzle_id`, `table_id` FROM `$tableSwap`) \n";
+		} else {
+			$sql .= "$selectLogic \n";
+		}
+		$sql .= "ORDER BY `count` DESC LIMIT 1000000;\n";
+	}
+
+	if ($tableCount > 1) {
+		$sql .= "DROP TEMPORARY TABLE `$tableName_tmp`;\n";
 	}
 
 	$sql .= "ALTER TABLE `$tableName` AUTO_INCREMENT=1;\n";
 	return $sql;
+}
+function tableStrategyLogic($tableCount, $solveType, $strategy, $tableName)
+{
+	$logic = "`solveType`=$solveType";
+	$logic .= tableLogic($strategy);
+	$sql = tableStatement($tableCount, $strategy, $tableName, $logic);
+	return "$sql\n";
 }
 
 function strategyLogic($strategy, $priority = "")
@@ -115,14 +151,6 @@ function tableLogic($strategy = "")
 	$logic .= strategyLogic("swordfish", $strategy);
 	$logic .= strategyLogic("jellyfish", $strategy);
 	return $logic;
-}
-
-function tableStrategyLogic($tableCount, $solveType, $strategy, $tableName)
-{
-	$logic = "`solveType`=$solveType";
-	$logic .= tableLogic($strategy);
-	$sql = tableStatement($tableCount, $strategy, $tableName, $logic);
-	return "$sql\n";
 }
 
 if (!isset($_GET['mode'])) die;
