@@ -270,33 +270,26 @@ const fillSolve = (cells, simples, visibles, strategies) => {
 		let progress = 0;
 		do {
 			if (visibles.length > 0) {
-				let progressVisible = 0;
-
+				progress = 0;
 				for (const strategy of visibles) {
 					if (strategy === STRATEGY.VISIBLE_INTERSECTION && visibleOmissions(cells)) {
-						progressVisible = 1;
+						progress = 1;
 						omissionVisible++;
 						break;
 					}
 					if (strategy === STRATEGY.VISIBLE_NAKED2 && visibleNaked2(cells)) {
-						progressVisible = 1;
+						progress = 1;
 						naked2Visible++;
 						break;
 					}
 					if (strategy === STRATEGY.VISIBLE_NAKED && visibleNaked(cells)) {
-						progressVisible = 2;
+						progress = 2;
 						nakedVisible++;
 						break;
 					}
 				}
-				if (progressVisible === 1) {
-					progress = 1;
-					continue;
-				}
-				if (progressVisible === 2) {
-					progress = 2;
-					break;
-				}
+				if (progress === 1) continue;
+				if (progress === 2) break;
 			}
 
 			candidateVisible = false;
