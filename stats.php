@@ -59,10 +59,8 @@ function queryStrategy($db, $table)
 	return $result;
 }
 
-function tableStatement($tableCount, $countName, $tableName, $logic, $select = null)
+function tableStatement($tableCount, $select, $tableName, $logic)
 {
-	if ($select === null) $select = "`$countName`";
-
 	$tableName_tmp = "{$tableName}_tmp";
 
 	$sql = "";
@@ -269,10 +267,8 @@ try {
 		echo "$sql\n";
 
 		$logic = "`solveType`=4";
-		$select = "(";
-		$select .= "clueCount + hiddenSimple + omissionSimple + naked2Simple + naked3Simple + nakedSimple + nakedVisible";
-		$select .= ") AS `filled`";
-		echo tableStatement($tableCount, "filled", "unsolvable_filled", $logic, $select), "\n";
+		$select = "(clueCount + hiddenSimple + omissionSimple + naked2Simple + naked3Simple + nakedSimple + nakedVisible)";
+		echo tableStatement($tableCount, $select, "unsolvable_filled", $logic), "\n";
 
 		// Show count vs max
 		$unions = [];
