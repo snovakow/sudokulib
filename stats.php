@@ -420,10 +420,10 @@ try {
 		$format = number_format($hiddenSimple);
 		echo "Hidden: $percent $format\n";
 		$percent = percentage($hiddenSimpleIso, $totalCount, 2);
-		$min = number_format($hiddenSimpleIsoMin);
-		$max = number_format($hiddenSimpleIsoMax);
+		$min = number_format(81 - $hiddenSimpleIsoMin);
+		$max = number_format(81 - $hiddenSimpleIsoMax);
 		$format = number_format($hiddenSimpleIso);
-		echo "Hidden Iso: $percent ($min $max) $format\n";
+		echo "Hidden Iso: $percent ($max $min) $format\n";
 
 		// $count = $counts[0];
 		// $percent = percentage($count, $total, 2);
