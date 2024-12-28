@@ -334,29 +334,19 @@ try {
 		$number = number_format($totalCount);
 		echo "--- Total $number\n\n";
 
-		$unions = [];
+		$counts = [];
 		for ($i = 1; $i <= $tableCount; $i++) {
 			$table = tableName($i);
-			$unions[] = "SELECT `solveType`, COUNT(*) AS count FROM `$table` GROUP BY `solveType`";
-		}
-		if (count($unions) === 1) {
-			$unionString = $unions[0];
-			$sql = "$unionString;\n";
-		} else {
-			$unionString = implode("\n UNION ALL\n ", $unions);
-			$sql = "SELECT `solveType`, SUM(`count`) AS count FROM\n($unionString\n)";
-			$sql .= " AS puzzles GROUP BY `solveType`;\n";
-		}
-
-		$counts = [];
-
-		$stmt = $db->prepare($sql);
-		$stmt->execute();
-		$result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-		foreach ($result as $key => $row) {
-			$solveType = (int)$row['solveType'];
-			$count = (int)$row['count'];
-			$counts[$solveType] = $count;
+			$sql = "SELECT `solveType`, COUNT(*) AS count FROM `$table` GROUP BY `solveType`";
+			$stmt = $db->prepare($sql);
+			$stmt->execute();
+			$result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+			foreach ($result as $key => $row) {
+				$solveType = (int)$row['solveType'];
+				$count = (int)$row['count'];
+				if (!array_key_exists($solveType, $counts)) $counts[$solveType] = $count;
+				else $counts[$solveType] += $count;
+			}
 		}
 
 		$simple = $counts[0];
@@ -389,273 +379,132 @@ try {
 	}
 
 	if ($mode === 4) {
-		$unions = [];
+		$hiddenSimple = 0;
+		$hiddenSimpleIso = 0;
+		$hiddenSimpleIsoMin = 81;
+		$hiddenSimpleIsoMax = 0;
+
 		for ($i = 1; $i <= $tableCount; $i++) {
 			$table = tableName($i);
 			$sql = "SELECT ";
-			$sql .= "SUM(`hiddenSimple`>0) AS hiddenSimple, MAX(`hiddenSimple`) AS hiddenSimpleMax, ";
-			$sql .= "SUM(`hiddenSimple`>0 AND `omissionSimple`=0 AND `naked2Simple`=0 AND `naked3Simple`=0 AND `nakedSimple`=0 AND `omissionVisible`=0 AND `nakedVisible`=0) AS hiddenSimpleIso, ";
+			$sql .= "SUM(`hiddenSimple`>0) AS hiddenSimple ";
+			$sql .= ", SUM(`solveType`=0 AND `hiddenSimple`>0 AND `omissionSimple`=0 AND `naked2Simple`=0 AND `naked3Simple`=0 AND `nakedSimple`=0) AS hiddenSimpleIso ";
+			$sql .= ", MAX((`solveType`=0) * (81 - `hiddenSimple`) * (`hiddenSimple`>0) * (`omissionSimple`=0) * (`naked2Simple`=0) * (`naked3Simple`=0) * (`nakedSimple`=0)) AS hiddenSimpleIsoMin ";
+			$sql .= ", MAX((`solveType`=0) * (`hiddenSimple`) * (`omissionSimple`=0) * (`naked2Simple`=0) * (`naked3Simple`=0) * (`nakedSimple`=0)) AS hiddenSimpleIsoMax ";
 
-			$sql .= "SUM(`omissionSimple`>0) AS omissionSimple, MAX(`omissionSimple`) AS omissionSimpleMax, ";
-			$sql .= "SUM(`omissionSimple`>0 AND `naked2Simple`=0 AND `naked3Simple`=0 AND `nakedSimple`=0 AND `omissionVisible`=0 AND `nakedVisible`=0) AS omissionSimpleIso, ";
+			// $sql .= "SUM(`omissionSimple`>0) AS omissionSimple, MAX(`omissionSimple`) AS omissionSimpleMax, ";
+			// $sql .= "SUM(`omissionSimple`>0 AND `naked2Simple`=0 AND `naked3Simple`=0 AND `nakedSimple`=0 AND `omissionVisible`=0 AND `nakedVisible`=0) AS omissionSimpleIso, ";
 
-			$sql .= "SUM(`naked2Simple`>0) AS naked2Simple, MAX(`naked2Simple`) AS naked2SimpleMax, ";
-			$sql .= "SUM(`naked3Simple`>0) AS naked3Simple, MAX(`naked3Simple`) AS naked3SimpleMax, ";
-			$sql .= "SUM(`nakedSimple`>0) AS nakedSimple, MAX(`nakedSimple`) AS nakedSimpleMax, ";
+			// $sql .= "SUM(`naked2Simple`>0) AS naked2Simple, MAX(`naked2Simple`) AS naked2SimpleMax, ";
+			// $sql .= "SUM(`naked3Simple`>0) AS naked3Simple, MAX(`naked3Simple`) AS naked3SimpleMax, ";
+			// $sql .= "SUM(`nakedSimple`>0) AS nakedSimple, MAX(`nakedSimple`) AS nakedSimpleMax, ";
 
-			$sql .= "SUM(`nakedVisible`>0) AS nakedVisible, MAX(`nakedVisible`) AS nakedVisibleMax, ";
-			$sql .= "SUM(`omissionVisible`>0) AS omissionVisible, MAX(`omissionVisible`) AS omissionVisibleMax, ";
-			$sql .= "COUNT(*) AS count FROM `$table` WHERE `solveType`<=1";
-			$unions[] = $sql;
-		}
-		$unionString = implode(" UNION ALL ", $unions);
-		$sql = "SELECT ";
-		$sql .= "SUM(hiddenSimple) AS hiddenSimple, MAX(hiddenSimpleMax) AS hiddenSimpleMax, ";
-		$sql .= "SUM(hiddenSimpleIso) AS hiddenSimpleIso, ";
+			// $sql .= "SUM(`nakedVisible`>0) AS nakedVisible, MAX(`nakedVisible`) AS nakedVisibleMax, ";
+			// $sql .= "SUM(`omissionVisible`>0) AS omissionVisible, MAX(`omissionVisible`) AS omissionVisibleMax, ";
+			$sql .= "FROM `$table`";
 
-		$sql .= "SUM(omissionSimple) AS omissionSimple, MAX(omissionSimpleMax) AS omissionSimpleMax, ";
-		$sql .= "SUM(omissionSimpleIso) AS omissionSimpleIso, ";
+			$stmt = $db->prepare($sql);
+			$stmt->execute();
+			$result = $stmt->fetch(\PDO::FETCH_ASSOC);
 
-		$sql .= "SUM(naked2Simple) AS naked2Simple, MAX(naked2SimpleMax) AS naked2SimpleMax, ";
-		$sql .= "SUM(naked3Simple) AS naked3Simple, MAX(naked3SimpleMax) AS naked3SimpleMax, ";
-		$sql .= "SUM(nakedSimple) AS nakedSimple, MAX(nakedSimpleMax) AS nakedSimpleMax, ";
-
-		$sql .= "SUM(nakedVisible) AS nakedVisible, MAX(nakedVisibleMax) AS nakedVisibleMax, ";
-		$sql .= "SUM(omissionVisible) AS omissionVisible, MAX(omissionVisibleMax) AS omissionVisibleMax, ";
-		$sql .= "SUM(count) AS count FROM ($unionString) AS puzzles";
-
-		exit($sql);
-		$stmt = $db->prepare($sql);
-		$stmt->execute();
-		$result = $stmt->fetch(\PDO::FETCH_ASSOC);
-
-		$total = (int)$result['count'];
-
-
-		$unions = [];
-		for ($i = 1; $i <= $tableCount; $i++) {
-			$table = tableName($i);
-			$sql = "SELECT ";
-			$sql .= "`hiddenSimple`>0 AS hiddenSimple, MAX(`hiddenSimple`) AS hiddenSimpleMax, ";
-			$sql .= "`omissionSimple`>0 AS omissionSimple, MAX(`omissionSimple`) AS omissionSimpleMax, ";
-			$sql .= "`nakedSimple`>0 AS nakedSimple, MAX(`nakedSimple`) AS nakedSimpleMax, ";
-			$sql .= "COUNT(*) AS count FROM `$table` WHERE `solveType`=0 ";
-			$sql .= "GROUP BY hiddenSimple, omissionSimple, nakedSimple";
-			$unions[] = $sql;
-		}
-		$unionString = implode(" UNION ALL ", $unions);
-		$sql = "SELECT ";
-		$sql .= "hiddenSimple, MAX(hiddenSimpleMax) AS hiddenSimpleMax, ";
-		$sql .= "omissionSimple, MAX(omissionSimpleMax) AS omissionSimpleMax, ";
-		$sql .= "nakedSimple, MAX(nakedSimpleMax) AS nakedSimpleMax, ";
-		$sql .= "SUM(`count`) AS count FROM ($unionString) AS puzzles ";
-		$sql .= "GROUP BY hiddenSimple, omissionSimple, nakedSimple";
-
-		$total = 0;
-		$counts = [];
-		$countsIsolated = [];
-		$maxs = [];
-		$maxsIsolated = [];
-		$maxsAll = [];
-		for ($i = 0; $i < 3; $i++) {
-			$counts[$i] = 0;
-			$countsIsolated[$i] = 0;
-			$maxs[$i] = 0;
-			$maxsIsolated[$i] = 0;
-			$maxsAll[$i] = 0;
-		}
-		$countsIsolated[3] = 0;
-
-		$results = [];
-		foreach ($result as $row) {
-			$hiddenSimple = (int)$row['hiddenSimple'];
-			$omissionSimple = (int)$row['omissionSimple'];
-			$nakedSimple = (int)$row['nakedSimple'];
-			$hiddenSimpleMax = (int)$row['hiddenSimpleMax'];
-			$omissionSimpleMax = (int)$row['omissionSimpleMax'];
-			$nakedSimpleMax = (int)$row['nakedSimpleMax'];
-			$count = (int)$row['count'];
-
-			if ($hiddenSimple > 0) $counts[0] += $count;
-			if ($omissionSimple > 0) $counts[1] += $count;
-			if ($nakedSimple > 0) $counts[2] += $count;
-			if ($hiddenSimpleMax > $maxs[0]) $maxs[0] = $hiddenSimpleMax;
-			if ($omissionSimpleMax > $maxs[1]) $maxs[1] = $omissionSimpleMax;
-			if ($nakedSimpleMax > $maxs[2]) $maxs[2] = $nakedSimpleMax;
-
-			if ($omissionSimple == 0 && $nakedSimple == 0) {
-				$countsIsolated[0] += $count;
-				if ($hiddenSimpleMax > $maxsIsolated[0]) $maxsIsolated[0] = $hiddenSimpleMax;
-			}
-			if ($omissionSimple > 0 && $nakedSimple == 0) {
-				$countsIsolated[1] += $count;
-				if ($omissionSimpleMax > $maxsIsolated[1]) $maxsIsolated[1] = $omissionSimpleMax;
-			}
-			if ($omissionSimple == 0 && $nakedSimple > 0) {
-				$countsIsolated[2] += $count;
-				if ($nakedSimpleMax > $maxsIsolated[2]) $maxsIsolated[2] = $nakedSimpleMax;
-			}
-			if ($omissionSimple > 0 && $nakedSimple > 0) {
-				$countsIsolated[3] += $count;
-
-				if ($hiddenSimpleMax > $maxsAll[0]) $maxsAll[0] = $hiddenSimpleMax;
-				if ($omissionSimpleMax > $maxsAll[1]) $maxsAll[1] = $omissionSimpleMax;
-				if ($nakedSimpleMax > $maxsAll[2]) $maxsAll[2] = $nakedSimpleMax;
-			}
-
-			$total += $count;
+			$hiddenSimple += (int)$result['hiddenSimple'];
+			$hiddenSimpleIso += (int)$result['hiddenSimpleIso'];
+			$hiddenSimpleIsoMin = min($hiddenSimpleIsoMin, 81 - (int)$result['hiddenSimpleIsoMin']);
+			$hiddenSimpleIsoMax = max($hiddenSimpleIsoMax, (int)$result['hiddenSimpleIsoMax']);
 		}
 
-		$percent = percentage($total, $totalCount, 2);
-		$number = number_format($total);
-		echo "--- Simples $percent $number\n";
+		$number = number_format($totalCount);
+		echo "Total: $number\n";
 
-		$count = $counts[0];
-		$percent = percentage($count, $total, 2);
-		$max = number_format($maxs[0]);
-		$format = number_format($count);
-		echo "Hidden: $percent ($max) $format\n";
-
-		$count = $counts[1];
-		$percent = percentage($count, $total, 2);
-		$max = number_format($maxs[1]);
-		$format = number_format($count);
-		echo "Omission: $percent ($max) $format\n";
-
-		$max = number_format($maxs[2]);
-		$count = $counts[2];
-		$percent = percentage($count, $total, 2);
-		$format = number_format($count);
-		echo "Naked: $percent ($max) $format\n";
-
-		echo "\nIsolated\n";
-
-		if ($omissionSimple == 0 && $nakedSimple == 0) {
-			$percent = percentage($count, $total, 2);
-			$max = number_format($hiddenSimpleMax);
-			$format = number_format($count);
-			$results[0] = "Hidden: $percent ($max) $format\n";
-		}
-
-		foreach ($result as $row) {
-			$hiddenSimple = (int)$row['hiddenSimple'];
-			$omissionSimple = (int)$row['omissionSimple'];
-			$nakedSimple = (int)$row['nakedSimple'];
-			$hiddenSimpleMax = (int)$row['hiddenSimpleMax'];
-			$omissionSimpleMax = (int)$row['omissionSimpleMax'];
-			$nakedSimpleMax = (int)$row['nakedSimpleMax'];
-			$count = (int)$row['count'];
-
-			$format = number_format($count);
-			if ($omissionSimple == 0 && $nakedSimple == 0) {
-				$percent = percentage($count, $total, 2);
-				$max = number_format($hiddenSimpleMax);
-				$results[0] = "Hidden: $percent ($max) $format\n";
-			}
-			if ($omissionSimple > 0 && $nakedSimple == 0) {
-				$percent = percentage($count, $total, 2);
-				$max = number_format($omissionSimpleMax);
-				$results[1] = "Omission: $percent ($max) $format\n";
-			}
-			if ($omissionSimple == 0 && $nakedSimple > 0) {
-				$percent = percentage($count, $total, 2);
-				$max = number_format($nakedSimpleMax);
-				$results[2] = "Naked: $percent ($max) $format\n";
-			}
-			if ($omissionSimple > 0 && $nakedSimple > 0) {
-				$percent = percentage($count, $total, 2);
-				$results[3] = "All: $percent $format\n";
-
-				$percent = percentage($countsAll[0], $count, 2);
-				$max = number_format($hiddenSimpleMax);
-				$results[4] = "  ($max Hidden)\n";
-
-				$percent = percentage($countsAll[1], $count, 2);
-				$max = number_format($omissionSimpleMax);
-				$results[5] = "  ($max Omission)\n";
-
-				$percent = percentage($countsAll[2], $count, 2);
-				$max = number_format($nakedSimpleMax);
-				$results[6] = "  ($max Naked)\n";
-			}
-		}
-		echo $results[0];
-		echo $results[1];
-		echo $results[2];
-		echo $results[3];
-		echo $results[4];
-		echo $results[5];
-		echo $results[6];
-
-		echo "\n";
-	}
-
-	if ($mode === 4) {
-		$unions = [];
-		for ($i = 1; $i <= $tableCount; $i++) {
-			$table = tableName($i);
-			$sql = "SELECT ";
-			$sql .= "SUM(`hiddenSimple`>0) AS hiddenSimple, MAX(`hiddenSimple`) AS hiddenSimpleMax, ";
-			$sql .= "SUM(`omissionSimple`>0) AS omissionSimple, MAX(`omissionSimple`) AS omissionSimpleMax, ";
-			$sql .= "SUM(`nakedSimple`>0) AS nakedSimple, MAX(`nakedSimple`) AS nakedSimpleMax, ";
-			$sql .= "SUM(`nakedVisible`>0) AS nakedVisible, MAX(`nakedVisible`) AS nakedVisibleMax, ";
-			$sql .= "SUM(`omissionVisible`>0) AS omissionVisible, MAX(`omissionVisible`) AS omissionVisibleMax, ";
-			$sql .= "COUNT(*) AS count FROM `$table` WHERE `solveType`=1";
-			$unions[] = $sql;
-		}
-		$unionString = implode(" UNION ALL ", $unions);
-		$sql = "SELECT ";
-		$sql .= "SUM(hiddenSimple) AS hiddenSimple, MAX(hiddenSimpleMax) AS hiddenSimpleMax, ";
-		$sql .= "SUM(omissionSimple) AS omissionSimple, MAX(omissionSimpleMax) AS omissionSimpleMax, ";
-		$sql .= "SUM(nakedSimple) AS nakedSimple, MAX(nakedSimpleMax) AS nakedSimpleMax, ";
-		$sql .= "SUM(nakedVisible) AS nakedVisible, MAX(nakedVisibleMax) AS nakedVisibleMax, ";
-		$sql .= "SUM(omissionVisible) AS omissionVisible, MAX(omissionVisibleMax) AS omissionVisibleMax, ";
-		$sql .= "SUM(count) AS count FROM ($unionString) AS puzzles";
-
-		$stmt = $db->prepare($sql);
-		$stmt->execute();
-		$result = $stmt->fetch(\PDO::FETCH_ASSOC);
-
-		$total = (int)$result['count'];
-
-		$percent = percentage($total, $totalCount, 2);
-		$number = number_format($total);
-		echo "--- Visuals $percent $number\n";
-
-		$hiddenSimple = (int)$result['hiddenSimple'];
-		$hiddenSimpleMax = (int)$result['hiddenSimpleMax'];
-		$percent = percentage($hiddenSimple, $total, 2);
-		$max = number_format($hiddenSimpleMax);
+		$percent = percentage($hiddenSimple, $totalCount, 2);
 		$format = number_format($hiddenSimple);
-		echo "Simple Hidden: $percent ($max) $format\n";
+		echo "Hidden: $percent $format\n";
+		$percent = percentage($hiddenSimpleIso, $totalCount, 2);
+		$min = number_format($hiddenSimpleIsoMin);
+		$max = number_format($hiddenSimpleIsoMax);
+		$format = number_format($hiddenSimpleIso);
+		echo "Hidden Iso: $percent ($min $max) $format\n";
 
-		$omissionSimple = (int)$result['omissionSimple'];
-		$omissionSimpleMax = (int)$result['omissionSimpleMax'];
-		$percent = percentage($omissionSimple, $total, 2);
-		$max = number_format($omissionSimpleMax);
-		$format = number_format($omissionSimple);
-		echo "Simple Omission: $percent ($max) $format\n";
+		// $count = $counts[0];
+		// $percent = percentage($count, $total, 2);
+		// $max = number_format($maxs[0]);
+		// $format = number_format($count);
+		// echo "Hidden: $percent ($max) $format\n";
 
-		$nakedSimple = (int)$result['nakedSimple'];
-		$nakedSimpleMax = (int)$result['nakedSimpleMax'];
-		$percent = percentage($nakedSimple, $total, 2);
-		$max = number_format($nakedSimpleMax);
-		$format = number_format($nakedSimple);
-		echo "Simple Naked: $percent ($max) $format\n";
+		// $count = $counts[1];
+		// $percent = percentage($count, $total, 2);
+		// $max = number_format($maxs[1]);
+		// $format = number_format($count);
+		// echo "Omission: $percent ($max) $format\n";
 
-		$nakedVisible = (int)$result['nakedVisible'];
-		$nakedVisibleMax = (int)$result['nakedVisibleMax'];
-		$percent = percentage($nakedVisible, $total, 2);
-		$max = number_format($nakedVisibleMax);
-		$format = number_format($nakedVisible);
-		echo "Naked: $percent ($max) $format\n";
+		// $max = number_format($maxs[2]);
+		// $count = $counts[2];
+		// $percent = percentage($count, $total, 2);
+		// $format = number_format($count);
+		// echo "Naked: $percent ($max) $format\n";
 
-		$omissionVisible = (int)$result['omissionVisible'];
-		$omissionVisibleMax = (int)$result['omissionVisibleMax'];
-		$percent = percentage($omissionVisible, $total, 2);
-		$max = number_format($omissionVisibleMax);
-		$format = number_format($omissionVisible);
-		echo "Omission: $percent ($max) $format\n";
+		// echo "\nIsolated\n";
+
+		// if ($omissionSimple == 0 && $nakedSimple == 0) {
+		// 	$percent = percentage($count, $total, 2);
+		// 	$max = number_format($hiddenSimpleMax);
+		// 	$format = number_format($count);
+		// 	$results[0] = "Hidden: $percent ($max) $format\n";
+		// }
+
+		// foreach ($result as $row) {
+		// 	$hiddenSimple = (int)$row['hiddenSimple'];
+		// 	$omissionSimple = (int)$row['omissionSimple'];
+		// 	$nakedSimple = (int)$row['nakedSimple'];
+		// 	$hiddenSimpleMax = (int)$row['hiddenSimpleMax'];
+		// 	$omissionSimpleMax = (int)$row['omissionSimpleMax'];
+		// 	$nakedSimpleMax = (int)$row['nakedSimpleMax'];
+		// 	$count = (int)$row['count'];
+
+		// 	$format = number_format($count);
+		// 	if ($omissionSimple == 0 && $nakedSimple == 0) {
+		// 		$percent = percentage($count, $total, 2);
+		// 		$max = number_format($hiddenSimpleMax);
+		// 		$results[0] = "Hidden: $percent ($max) $format\n";
+		// 	}
+		// 	if ($omissionSimple > 0 && $nakedSimple == 0) {
+		// 		$percent = percentage($count, $total, 2);
+		// 		$max = number_format($omissionSimpleMax);
+		// 		$results[1] = "Omission: $percent ($max) $format\n";
+		// 	}
+		// 	if ($omissionSimple == 0 && $nakedSimple > 0) {
+		// 		$percent = percentage($count, $total, 2);
+		// 		$max = number_format($nakedSimpleMax);
+		// 		$results[2] = "Naked: $percent ($max) $format\n";
+		// 	}
+		// 	if ($omissionSimple > 0 && $nakedSimple > 0) {
+		// 		$percent = percentage($count, $total, 2);
+		// 		$results[3] = "All: $percent $format\n";
+
+		// 		$percent = percentage($countsAll[0], $count, 2);
+		// 		$max = number_format($hiddenSimpleMax);
+		// 		$results[4] = "  ($max Hidden)\n";
+
+		// 		$percent = percentage($countsAll[1], $count, 2);
+		// 		$max = number_format($omissionSimpleMax);
+		// 		$results[5] = "  ($max Omission)\n";
+
+		// 		$percent = percentage($countsAll[2], $count, 2);
+		// 		$max = number_format($nakedSimpleMax);
+		// 		$results[6] = "  ($max Naked)\n";
+		// 	}
+		// }
+		// echo $results[0];
+		// echo $results[1];
+		// echo $results[2];
+		// echo $results[3];
+		// echo $results[4];
+		// echo $results[5];
+		// echo $results[6];
+
+		// $percent = percentage($total, $totalCount, 2);
+		// $number = number_format($total);
+		// echo "--- Visuals $percent $number\n";
 
 		echo "\n";
 	}
@@ -797,8 +646,6 @@ try {
 			$sql = "SELECT `clueCount`, `solveType`, SUM(`count`) AS count FROM\n($unionString\n)";
 			$sql .= " AS puzzles GROUP BY `clueCount`, `solveType`;\n";
 		}
-		// echo $unions[0], ";\n";
-		// echo "$sql\n";
 
 		$stmt = $db->prepare($sql);
 		$stmt->execute();
