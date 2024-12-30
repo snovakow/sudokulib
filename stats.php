@@ -269,22 +269,6 @@ try {
 		$logic = "`solveType`=4";
 		$select = "(clueCount + hiddenSimple + omissionSimple + naked2Simple + naked3Simple + nakedSimple + nakedVisible)";
 		echo tableStatement($tableCount, $select, "unsolvable_filled", $logic), "\n";
-
-		// Show count vs max
-		$unions = [];
-		for ($i = 1; $i <= $tableCount; $i++) {
-			$table = tableName($i);
-			$unions[] = "SELECT COUNT(`id`) AS count, Max(`id`) AS max FROM `$table`";
-		}
-		if (count($unions) === 1) {
-			$unionString = $unions[0];
-			$sql = "$unionString;";
-		} else {
-			$unionString = implode("\n UNION ALL\n ", $unions);
-			$sql = "SELECT FORMAT(SUM(`count`),0) AS 'count', FORMAT(SUM(`max`),0) AS 'max' FROM (\n $unionString\n)";
-			$sql .= " AS puzzles;";
-		}
-		echo "$sql\n";
 	}
 
 	if ($mode === 2) {
