@@ -122,6 +122,8 @@
 		let pingRun = false;
 		let pingRunBusy = false;
 
+		let coreCount = 0;
+
 		const createEstimate = () => {
 			const now = Date.now();
 			if (animationLoop) window.requestAnimationFrame(createEstimate);
@@ -203,7 +205,7 @@
 
 		let prevPingTime = Date.now();
 		let prevPingCount = 0;
-		const pingSend = () => {
+		const pingSend = (responder) => {
 			pingRunBusy = true;
 			const url = './tables.php?version=1';
 			fetch(url, { cache: "no-store" }).then(response => {
@@ -243,12 +245,12 @@
 						pingRun = false;
 						animationLoop = false;
 					}
+					if (responder) responder();
 				});
 			});
 		};
-		pingSend();
+		if (coreCount === 0) pingSend();
 
-		let coreCount = 0;
 		const search = new URLSearchParams(window.location.search);
 		const searchCores = parseInt(search.get("cores"));
 		if (!isNaN(searchCores) && searchCores <= 10 && searchCores > 0) coreCount = searchCores;
@@ -415,7 +417,7 @@
 		};
 
 		if (coreCount > 0) {
-			generateButton.addEventListener('click', () => {
+			const responder = () => {
 				pingInitiated = true;
 				pingFound = true;
 				if (processTimer === 0) createEstimate();
@@ -428,10 +430,11 @@
 				} else {
 					generateMode = false;
 				}
+			}
+			generateButton.addEventListener('click', () => {
+				pingSend(responder);
 			});
 			document.body.appendChild(generateButton);
-			// } else {
-			// 	displayStats();
 		}
 	</script>
 
