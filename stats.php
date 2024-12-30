@@ -385,7 +385,6 @@ try {
 			"naked2Simple",
 			"naked3Simple",
 			"nakedSimple",
-
 			"omissionVisible",
 			"naked2Visible",
 			"nakedVisible",
@@ -397,7 +396,6 @@ try {
 		$titles['naked2Simple'] = "Simple Naked2";
 		$titles['naked3Simple'] = "Simple Naked3";
 		$titles['nakedSimple'] = "Simple Naked";
-
 		$titles['omissionVisible'] = "Visible Omission";
 		$titles['naked2Visible'] = "Visible Naked2";
 		$titles['nakedVisible'] = "Visible Naked";
@@ -408,7 +406,6 @@ try {
 		$solveTypes['naked2Simple'] = 0;
 		$solveTypes['naked3Simple'] = 0;
 		$solveTypes['nakedSimple'] = 0;
-
 		$solveTypes['omissionVisible'] = 1;
 		$solveTypes['naked2Visible'] = 1;
 		$solveTypes['nakedVisible'] = 1;
@@ -444,7 +441,7 @@ try {
 
 			$sql = implode(",", $sqls);
 
-			$sql = "SELECT $sql FROM `$table`";
+			$sql = "SELECT $sql FROM `$table` WHERE `solveType`<=1";
 
 			$stmt = $db->prepare($sql);
 			$stmt->execute();
@@ -461,27 +458,46 @@ try {
 		$number = number_format($totalCount);
 		echo "Total: $number\n\n";
 
+		$len1 = 17;
+		$len2 = 19;
+		$len3 = 24;
+		$len4 = 8;
+		echo str_pad("Strategy", $len1, " ", STR_PAD_BOTH);
+		echo str_pad("Total", $len2, " ", STR_PAD_BOTH);
+		echo str_pad("Isolated", $len3, " ", STR_PAD_BOTH);
+		echo str_pad("Percent", $len4, " ", STR_PAD_BOTH);
+		echo "\n";
+		echo str_pad(str_pad("", $len1 - 1, "-", STR_PAD_BOTH), $len1, " ");
+		echo str_pad(str_pad("", $len2 - 1, "-", STR_PAD_BOTH), $len2, " ");
+		echo str_pad(str_pad("", $len3 - 1, "-", STR_PAD_BOTH), $len3, " ");
+		echo str_pad(str_pad("", $len4 - 1, "-", STR_PAD_BOTH), $len4, " ");
+		echo "\n";
+
 		$runningTotoal = 0;
 
 		foreach ($strategies as $strategy) {
 			$value = &$values[$strategy];
-			$omissionVisible = $value[0];
-			$omissionVisibleIso = $value[1];
-			$omissionVisibleIsoMax = $value[2];
+			$strategyValue = $value[0];
+			$strategyIso = $value[1];
+			$strategyIsoMax = $value[2];
 
 			$title = $titles[$strategy];
 
-			$percent = percentage($omissionVisible, $totalCount, 2);
-			$format = number_format($omissionVisible);
-			echo "$title: $percent $format\n";
+			$percent = percentage($strategyValue, $totalCount, 2);
+			$format = number_format($strategyValue);
 
-			$runningTotoal += $omissionVisibleIso;
+			$runningTotoal += $strategyIso;
 			$runningPercent = percentage($runningTotoal, $totalCount, 2);
 
-			$percent = percentage($omissionVisibleIso, $totalCount, 2);
-			$max = number_format($omissionVisibleIsoMax);
-			$format = number_format($omissionVisibleIso);
-			echo "$title Iso: $runningPercent ($percent $max) $format\n";
+			$percentIso = percentage($strategyIso, $totalCount, 2);
+			$max = number_format($strategyIsoMax);
+			$formatIso = number_format($strategyIso);
+
+			echo str_pad("{$title}", $len1, " ");
+			echo str_pad("$percent $format", $len2, " ");
+			echo str_pad("$percentIso ($max) $formatIso", $len3, " ");
+			echo str_pad("$runningPercent", $len4, " ");
+			echo "\n";
 		}
 
 		echo "\n";
@@ -504,9 +520,13 @@ try {
 			"swordfish",
 			"jellyfish",
 		];
-		$unions = [];
+
+		$results = [];
+		$total = 0;
+
 		for ($i = 1; $i <= $tableCount; $i++) {
 			$table = tableName($i);
+
 			$sql = "SELECT ";
 			foreach ($strategies as $strategy) {
 				$isolated = tableLogic($strategy);
@@ -518,25 +538,14 @@ try {
 				$sql .= "MAX(IF(`solveType`=3$isolated, `{$strategy}`, 0)) as {$strategy}IsoMax, ";
 			}
 			$sql .= "COUNT(*) AS count FROM `$table` WHERE `solveType`=2 OR `solveType`=3";
-			$unions[] = $sql;
-		}
-		$unionString = implode(" UNION ALL ", $unions);
-		$sql = "SELECT ";
-		foreach ($strategies as $strategy) {
-			$sql .= "SUM({$strategy}) AS {$strategy}, ";
-			$sql .= "MAX({$strategy}Max) AS {$strategy}Max, ";
-			$sql .= "SUM({$strategy}Min) AS {$strategy}Min, ";
-			$sql .= "MAX({$strategy}MinMax) AS {$strategy}MinMax, ";
-			$sql .= "SUM({$strategy}Iso) AS {$strategy}Iso, ";
-			$sql .= "MAX({$strategy}IsoMax) AS {$strategy}IsoMax, ";
-		}
-		$sql .= "SUM(count) AS count FROM ($unionString) AS puzzles";
 
-		$stmt = $db->prepare($sql);
-		$stmt->execute();
-		$result = $stmt->fetch(\PDO::FETCH_ASSOC);
+			$stmt = $db->prepare($sql);
+			$stmt->execute();
+			$result = $stmt->fetch(\PDO::FETCH_ASSOC);
 
-		$total = (int)$result['count'];
+			$results[] = $result;
+			$total += (int)$result['count'];
+		}
 
 		$percent = percentage($total, $totalCount, 2);
 		$number = number_format($total);
@@ -574,12 +583,21 @@ try {
 			$title = $strategyNames[$i];
 			$strategy = $strategies[$i];
 
-			$strategyType = (int)$result[$strategy];
-			$strategyType_Max = (int)$result["{$strategy}Max"];
-			$strategyType_Min = (int)$result["{$strategy}Min"];
-			$strategyType_MinMax = (int)$result["{$strategy}MinMax"];
-			$strategyType_Iso = (int)$result["{$strategy}Iso"];
-			$strategyType_IsoMax = (int)$result["{$strategy}IsoMax"];
+			$strategyType = 0;
+			$strategyType_Max = 0;
+			$strategyType_Min = 0;
+			$strategyType_MinMax = 0;
+			$strategyType_Iso = 0;
+			$strategyType_IsoMax = 0;
+
+			foreach ($results as $result) {
+				$strategyType += (int)$result[$strategy];
+				$strategyType_Max = max($strategyType_Max, (int)$result["{$strategy}Max"]);
+				$strategyType_Min += (int)$result["{$strategy}Min"];
+				$strategyType_MinMax = max($strategyType_MinMax, (int)$result["{$strategy}MinMax"]);
+				$strategyType_Iso += (int)$result["{$strategy}Iso"];
+				$strategyType_IsoMax = max($strategyType_IsoMax, (int)$result["{$strategy}IsoMax"]);
+			}
 
 			$percent = percentage($strategyType, $total, 5);
 			$max = number_format($strategyType_Max);
@@ -604,45 +622,37 @@ try {
 	}
 
 	if ($mode === 6) {
-		echo "--- Clues\n";
+		echo "--- Clues\n\n";
 		$counts = [];
 		$countSimple = [];
+		$countVisible = [];
 		$countCandidate = [];
 		$countUnsolvable = [];
 
-		$unions = [];
 		for ($i = 1; $i <= $tableCount; $i++) {
 			$table = tableName($i);
-			$unions[] = "SELECT `clueCount`, `solveType`, COUNT(*) AS count FROM `$table` GROUP BY `clueCount`, `solveType`";
-		}
-		if (count($unions) === 1) {
-			$unionString = $unions[0];
-			$sql = "$unionString;\n";
-		} else {
-			$unionString = implode("\n UNION ALL\n ", $unions);
-			$sql = "SELECT `clueCount`, `solveType`, SUM(`count`) AS count FROM\n($unionString\n)";
-			$sql .= " AS puzzles GROUP BY `clueCount`, `solveType`;\n";
-		}
+			$sql = "SELECT `clueCount`, `solveType`, COUNT(*) AS count FROM `$table` GROUP BY `clueCount`, `solveType`";
+			$stmt = $db->prepare($sql);
+			$stmt->execute();
+			$result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+			foreach ($result as $key => $row) {
+				$clueCount = $row['clueCount'];
+				$solveType = (int)$row['solveType'];
+				$count = (int)$row['count'];
 
-		$stmt = $db->prepare($sql);
-		$stmt->execute();
-		$result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-		foreach ($result as $key => $row) {
-			$clueCount = $row['clueCount'];
-			$solveType = (int)$row['solveType'];
-			$count = (int)$row['count'];
+				if (!$counts[$clueCount]) $counts[$clueCount] = 0;
+				if (!$countSimple[$clueCount]) $countSimple[$clueCount] = 0;
+				if (!$countVisible[$clueCount]) $countVisible[$clueCount] = 0;
+				if (!$countCandidate[$clueCount]) $countCandidate[$clueCount] = 0;
+				if (!$countUnsolvable[$clueCount]) $countUnsolvable[$clueCount] = 0;
 
-			if (!$counts[$clueCount]) $counts[$clueCount] = 0;
-			if (!$countSimple[$clueCount]) $countSimple[$clueCount] = 0;
-			if (!$countCandidate[$clueCount]) $countCandidate[$clueCount] = 0;
-			if (!$countUnsolvable[$clueCount]) $countUnsolvable[$clueCount] = 0;
-
-			$counts[$clueCount] += $count;
-			if ($solveType == 0) $countSimple[$clueCount] += $count;
-			if ($solveType == 1) $countCandidate[$clueCount] += $count;
-			if ($solveType == 2) $countCandidate[$clueCount] += $count;
-			if ($solveType == 3) $countCandidate[$clueCount] += $count;
-			if ($solveType == 4) $countUnsolvable[$clueCount] += $count;
+				$counts[$clueCount] += $count;
+				if ($solveType == 0) $countSimple[$clueCount] += $count;
+				if ($solveType == 1) $countVisible[$clueCount] += $count;
+				if ($solveType == 2) $countCandidate[$clueCount] += $count;
+				if ($solveType == 3) $countCandidate[$clueCount] += $count;
+				if ($solveType == 4) $countUnsolvable[$clueCount] += $count;
+			}
 		}
 
 		foreach ($counts as $clueCount => $count) {
@@ -651,14 +661,20 @@ try {
 		echo  "<br/>";
 
 		$countsSimple = 0;
+		$countsVisible = 0;
 		$countsCandidate = 0;
 		$countsUnsolvable = 0;
 		foreach ($countSimple as $clueCount => $count) $countsSimple += $count;
+		foreach ($countVisible as $clueCount => $count) $countsVisible += $count;
 		foreach ($countCandidate as $clueCount => $count) $countsCandidate += $count;
 		foreach ($countUnsolvable as $clueCount => $count) $countsUnsolvable += $count;
 
 		printStat("Simple", $countsSimple, $totalCount, 2);
 		foreach ($counts as $clueCount => $count) printStat($clueCount, $countSimple[$clueCount], $count, 2);
+		echo  "<br/>";
+
+		printStat("Visible", $countsVisible, $totalCount, 2);
+		foreach ($counts as $clueCount => $count) printStat($clueCount, $countVisible[$clueCount], $count, 2);
 		echo  "<br/>";
 
 		printStat("Candidate", $countsCandidate, $totalCount, 2);
