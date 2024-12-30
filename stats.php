@@ -622,7 +622,8 @@ try {
 	}
 
 	if ($mode === 6) {
-		echo "--- Clues\n\n";
+		$number = number_format($totalCount);
+		echo "--- Clues $number\n\n";
 		$counts = [];
 		$countSimple = [];
 		$countVisible = [];
