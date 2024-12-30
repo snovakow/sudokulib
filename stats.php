@@ -15,7 +15,7 @@ const MAX_SIZE = 10000000;
 // 1 = Populate Statements
 // 2 = Populated Tables
 // 3 = Totals
-// 4 = Simples Visuals
+// 4 = Simples and Visuals
 // 5 = Strategies
 // 6 = Clues
 
@@ -379,141 +379,110 @@ try {
 	}
 
 	if ($mode === 4) {
-		$hiddenSimple = 0;
-		$hiddenSimpleIso = 0;
-		$hiddenSimpleIsoMin = 81;
-		$hiddenSimpleIsoMax = 0;
+		$strategies = [
+			"hiddenSimple",
+			"omissionSimple",
+			"naked2Simple",
+			"naked3Simple",
+			"nakedSimple",
 
-		$omissionSimple = 0;
-		$omissionSimpleIso = 0;
-		$omissionSimpleIsoMax = 0;
+			"omissionVisible",
+			"naked2Visible",
+			"nakedVisible",
+		];
 
-		$naked2Simple = 0;
-		$naked2SimpleIso = 0;
-		$naked2SimpleIsoMax = 0;
+		$titles = [];
+		$titles['hiddenSimple'] = "Simple Hidden";
+		$titles['omissionSimple'] = "Simple Omission";
+		$titles['naked2Simple'] = "Simple Naked2";
+		$titles['naked3Simple'] = "Simple Naked3";
+		$titles['nakedSimple'] = "Simple Naked";
 
-		$naked3Simple = 0;
-		$naked3SimpleIso = 0;
-		$naked3SimpleIsoMax = 0;
+		$titles['omissionVisible'] = "Visible Omission";
+		$titles['naked2Visible'] = "Visible Naked2";
+		$titles['nakedVisible'] = "Visible Naked";
 
-		$nakedSimple = 0;
-		$nakedSimpleIso = 0;
-		$nakedSimpleIsoMax = 0;
+		$solveTypes = [];
+		$solveTypes['hiddenSimple'] = 0;
+		$solveTypes['omissionSimple'] = 0;
+		$solveTypes['naked2Simple'] = 0;
+		$solveTypes['naked3Simple'] = 0;
+		$solveTypes['nakedSimple'] = 0;
+
+		$solveTypes['omissionVisible'] = 1;
+		$solveTypes['naked2Visible'] = 1;
+		$solveTypes['nakedVisible'] = 1;
+
+		$values = [];
+		foreach ($strategies as $strategy) $values[$strategy] = [0, 0, 0];
 
 		for ($i = 1; $i <= $tableCount; $i++) {
 			$table = tableName($i);
-			$sql = "SELECT ";
-			$sql .= "SUM(`hiddenSimple`>0) AS hiddenSimple ";
-			$sql .= ", SUM(`solveType`=0 AND `hiddenSimple`>0 AND `omissionSimple`=0 AND `naked2Simple`=0 AND `naked3Simple`=0 AND `nakedSimple`=0) AS hiddenSimpleIso ";
-			$sql .= ", MAX((`solveType`=0) * (81 - `hiddenSimple`) * (`hiddenSimple`>0) * (`omissionSimple`=0) * (`naked2Simple`=0) * (`naked3Simple`=0) * (`nakedSimple`=0)) AS hiddenSimpleIsoMin ";
-			$sql .= ", MAX((`solveType`=0) * (`hiddenSimple`) * (`omissionSimple`=0) * (`naked2Simple`=0) * (`naked3Simple`=0) * (`nakedSimple`=0)) AS hiddenSimpleIsoMax ";
 
-			$sql .= ", SUM(`omissionSimple`>0) AS omissionSimple ";
-			$sql .= ", SUM(`solveType`=0 AND `omissionSimple`>0 AND `naked2Simple`=0 AND `naked3Simple`=0 AND `nakedSimple`=0) AS omissionSimpleIso ";
-			$sql .= ", MAX((`solveType`=0) * (`omissionSimple`) * (`naked2Simple`=0) * (`naked3Simple`=0) * (`nakedSimple`=0)) AS omissionSimpleIsoMax ";
+			$sqls = [];
 
-			$sql .= ", SUM(`naked2Simple`>0) AS naked2Simple ";
-			$sql .= ", SUM(`solveType`=0 AND `naked2Simple`>0 AND `naked3Simple`=0 AND `nakedSimple`=0) AS naked2SimpleIso ";
-			$sql .= ", MAX((`solveType`=0) * (`naked2Simple`) * (`naked3Simple`=0) * (`nakedSimple`=0)) AS naked2SimpleIsoMax ";
+			$strategyLogic = $strategies;
+			foreach ($strategies as $strategy) {
+				$sqls[] = "SUM(`$strategy`>0) AS $strategy";
 
-			$sql .= ", SUM(`naked3Simple`>0) AS naked3Simple ";
-			$sql .= ", SUM(`solveType`=0 AND `naked3Simple`>0 AND `nakedSimple`=0) AS naked3SimpleIso ";
-			$sql .= ", MAX((`solveType`=0) * (`naked3Simple`) * (`nakedSimple`=0)) AS naked3SimpleIsoMax ";
+				$solveType = $solveTypes[$strategy];
+				$isoList = ["`solveType`=$solveType"];
+				$maxList = ["(`solveType`=$solveType)"];
 
-			$sql .= ", SUM(`nakedSimple`>0) AS nakedSimple ";
-			$sql .= ", SUM(`solveType`=0 AND `nakedSimple`>0) AS nakedSimpleIso ";
-			$sql .= ", MAX((`solveType`=0) * (`nakedSimple`) * (`nakedSimple`=0)) AS nakedSimpleIsoMax ";
+				$logic = array_shift($strategyLogic);
+				$isoList[] = "`$logic`>0";
+				$maxList[] = "`$logic`";
+				foreach ($strategyLogic as $iso) {
+					$isoList[] = "`$iso`=0";
+					$maxList[] = "(`$iso`=0)";
+				}
+				$sql = implode(" AND ", $isoList);
+				$sqls[] = "SUM($sql) AS {$strategy}Iso";
+				$sql = implode(" * ", $maxList);
+				$sqls[] = "MAX($sql) AS {$strategy}IsoMax";
+			}
 
-			$sql .= ", SUM(`nakedSimple`>0) AS nakedSimple ";
-			$sql .= ", SUM(`solveType`=0 AND `nakedSimple`>0) AS nakedSimpleIso ";
-			$sql .= ", MAX((`solveType`=1) * (`nakedSimple`) * (`nakedSimple`=0)) AS nakedSimpleIsoMax ";
+			$sql = implode(",", $sqls);
 
-			$sql .= "FROM `$table`";
+			$sql = "SELECT $sql FROM `$table`";
 
 			$stmt = $db->prepare($sql);
 			$stmt->execute();
 			$result = $stmt->fetch(\PDO::FETCH_ASSOC);
 
-			$hiddenSimple += (int)$result['hiddenSimple'];
-			$hiddenSimpleIso += (int)$result['hiddenSimpleIso'];
-			$hiddenSimpleIsoMin = min($hiddenSimpleIsoMin, 81 - (int)$result['hiddenSimpleIsoMin']);
-			$hiddenSimpleIsoMax = max($hiddenSimpleIsoMax, (int)$result['hiddenSimpleIsoMax']);
-
-			$omissionSimple += (int)$result['omissionSimple'];
-			$omissionSimpleIso += (int)$result['omissionSimpleIso'];
-			$omissionSimpleIsoMax += max($omissionSimpleIsoMax, (int)$result['omissionSimpleIsoMax']);
-
-			$naked2Simple += (int)$result['naked2Simple'];
-			$naked2SimpleIso += (int)$result['naked2SimpleIso'];
-			$naked2SimpleIsoMax += max($naked2SimpleIsoMax, (int)$result['naked2SimpleIsoMax']);
-
-			$naked3Simple += (int)$result['naked3Simple'];
-			$naked3SimpleIso += (int)$result['naked3SimpleIso'];
-			$naked3SimpleIsoMax += max($naked3SimpleIsoMax, (int)$result['naked3SimpleIsoMax']);
-
-			$nakedSimple += (int)$result['nakedSimple'];
-			$nakedSimpleIso += (int)$result['nakedSimpleIso'];
-			$nakedSimpleIsoMax += max($nakedSimpleIsoMax, (int)$result['nakedSimpleIsoMax']);
+			foreach ($strategies as $strategy) {
+				$value = &$values[$strategy];
+				$value[0] += (int)$result[$strategy];
+				$value[1] += (int)$result["{$strategy}Iso"];
+				$value[2] = max($value[2], (int)$result["{$strategy}IsoMax"]);
+			}
 		}
 
 		$number = number_format($totalCount);
-		echo "Total: $number\n";
+		echo "Total: $number\n\n";
 
 		$runningTotoal = 0;
-		$runningTotoal += $hiddenSimpleIso;
 
-		$percent = percentage($hiddenSimple, $totalCount, 2);
-		$format = number_format($hiddenSimple);
-		echo "Simple Hidden: $percent $format\n";
-		$percent = percentage($hiddenSimpleIso, $totalCount, 2);
-		$min = number_format(81 - $hiddenSimpleIsoMin);
-		$max = number_format(81 - $hiddenSimpleIsoMax);
-		$format = number_format($hiddenSimpleIso);
-		echo "Simple Hidden Iso: $percent ($max $min) $format\n";
+		foreach ($strategies as $strategy) {
+			$value = &$values[$strategy];
+			$omissionVisible = $value[0];
+			$omissionVisibleIso = $value[1];
+			$omissionVisibleIsoMax = $value[2];
 
-		$runningTotoal += $omissionSimpleIso;
-		$runningPercent = percentage($runningTotoal, $totalCount, 2);
+			$title = $titles[$strategy];
 
-		$percent = percentage($omissionSimple, $totalCount, 2);
-		$format = number_format($omissionSimple);
-		echo "Simple Omission: $percent $format\n";
-		$percent = percentage($omissionSimpleIso, $totalCount, 2);
-		$max = number_format($omissionSimpleIsoMax);
-		$format = number_format($omissionSimpleIso);
-		echo "Simple Omission Iso: $runningPercent ($percent $max) $format\n";
+			$percent = percentage($omissionVisible, $totalCount, 2);
+			$format = number_format($omissionVisible);
+			echo "$title: $percent $format\n";
 
-		$runningTotoal += $naked2SimpleIso;
-		$runningPercent = percentage($runningTotoal, $totalCount, 2);
+			$runningTotoal += $omissionVisibleIso;
+			$runningPercent = percentage($runningTotoal, $totalCount, 2);
 
-		$percent = percentage($naked2Simple, $totalCount, 2);
-		$format = number_format($naked2Simple);
-		echo "Simple Naked2: $percent $format\n";
-		$percent = percentage($naked2SimpleIso, $totalCount, 2);
-		$max = number_format($naked2SimpleIsoMax);
-		$format = number_format($naked2SimpleIso);
-		echo "Simple Naked2 Iso: $runningPercent ($percent $max) $format\n";
-
-		$runningTotoal += $naked3SimpleIso;
-		$runningPercent = percentage($runningTotoal, $totalCount, 2);
-
-		$percent = percentage($naked3Simple, $totalCount, 2);
-		$format = number_format($naked3Simple);
-		echo "Simple Naked3: $percent $format\n";
-		$percent = percentage($naked3SimpleIso, $totalCount, 2);
-		$max = number_format($naked3SimpleIsoMax);
-		$format = number_format($naked3SimpleIso);
-		echo "Simple Naked3 Iso: $runningPercent ($percent $max) $format\n";
-
-		$runningTotoal += $nakedSimpleIso;
-		$runningPercent = percentage($runningTotoal, $totalCount, 2);
-
-		$percent = percentage($nakedSimple, $totalCount, 2);
-		$format = number_format($nakedSimple);
-		echo "Simple Naked: $percent $format\n";
-		$percent = percentage($nakedSimpleIso, $totalCount, 2);
-		$max = number_format($nakedSimpleIsoMax);
-		$format = number_format($nakedSimpleIso);
-		echo "Simple Naked Iso: $runningPercent ($percent $max) $format\n";
+			$percent = percentage($omissionVisibleIso, $totalCount, 2);
+			$max = number_format($omissionVisibleIsoMax);
+			$format = number_format($omissionVisibleIso);
+			echo "$title Iso: $runningPercent ($percent $max) $format\n";
+		}
 
 		echo "\n";
 	}
@@ -571,9 +540,8 @@ try {
 
 		$percent = percentage($total, $totalCount, 2);
 		$number = number_format($total);
-		echo "--- Strategies $percent $number\n";
+		echo "--- Strategies $percent $number\n\n";
 
-		echo "\n";
 		echo str_pad("Strategy", 17, " ", STR_PAD_BOTH);
 		echo str_pad("Percent (Max) Count", 34, " ", STR_PAD_BOTH);
 		echo str_pad("Minimal", 34, " ", STR_PAD_BOTH);
