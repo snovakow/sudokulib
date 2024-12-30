@@ -1379,7 +1379,7 @@ const uniqueRectangle = (cells) => {
 	}
 }
 
-const solve = (cells, pairs) => {
+const solve = (cells) => {
 	let progress = false;
 	do {
 		candidates(cells);
