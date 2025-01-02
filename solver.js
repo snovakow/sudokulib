@@ -1136,59 +1136,46 @@ const uniqueRectangle = (cells) => {
 }
 
 const superpositionSolve = (cells) => {
-	const emptyCount = (cells) => {
-		let count = 0;
-		for (let i = 0; i < 81; i++) {
-			const cell = cells[i];
-			if (cell.symbol === 0) count++;
-		}
-		return count;
+	let remaining = 0;
+	for (let i = 0; i < 81; i++) {
+		const cell = cells[i];
+		if (cell.symbol === 0) remaining++;
 	}
 
-	const solveSimple = () => {
-		let remaining = emptyCount(cells);
-		while (remaining > 0) {
-			if (simpleHidden(cells)) {
-				remaining--;
-				continue;
-			}
-			// if (level === 0) break;
-			if (simpleOmissions(cells)) {
-				remaining--;
-				continue;
-			}
-			// if (simpleNaked2(cells)) {
-			// 	remaining--;
-			// 	continue;
-			// }
-			// if (simpleNaked3(cells)) {
-			// 	remaining--;
-			// 	continue;
-			// }
-			if (simpleNaked(cells)) {
-				remaining--;
-				continue;
-			}
-			break;
+	const progress = remaining;
+	while (remaining > 0) {
+		if (simpleHidden(cells)) {
+			remaining--;
+			continue;
 		}
-		return remaining > 0;
+		if (simpleOmissions(cells)) {
+			remaining--;
+			continue;
+		}
+		if (simpleNaked(cells)) {
+			remaining--;
+			continue;
+		}
+		break;
 	}
-
-
-	const remaining = solveSimple();
-	const solved = !remaining;
 
 	// 0 = solved
 	// 1 = incomplete
 	// 2 = invalid
 	let result = 0;
+	if (remaining > 0) {
+		result = 1;
 
-	for (const cell of cells) {
-		if (cell.symbol === 0) {
-			result = 1;
-			if (cell.size === 0) {
-				result = 2;
-				break;
+		if (progress > remaining) {
+			candidates(cells);
+
+			for (const cell of cells) {
+				if (cell.symbol === 0) {
+					if (cell.size === 0) {
+						result = 2;
+						break;
+					}
+				}
 			}
 		}
 	}
