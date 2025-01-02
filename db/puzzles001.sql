@@ -7,7 +7,7 @@
 #
 # Host: localhost (MySQL 5.7.32)
 # Database: sudoku
-# Generation Time: 2024-12-22 20:14:17 +0000
+# Generation Time: 2025-01-02 20:29:43 +0000
 # ************************************************************
 
 
@@ -32,8 +32,6 @@ CREATE TABLE `puzzles001` (
   `solveType` tinyint(1) unsigned NOT NULL,
   `hiddenSimple` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `omissionSimple` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `naked2Simple` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `naked3Simple` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `nakedSimple` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `omissionVisible` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `naked2Visible` tinyint(3) unsigned NOT NULL DEFAULT '0',
@@ -52,6 +50,9 @@ CREATE TABLE `puzzles001` (
   `xWing` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `swordfish` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `jellyfish` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `superSize` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `superRank` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `superCount` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=ascii COLLATE=ascii_bin;
 
