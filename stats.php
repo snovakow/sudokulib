@@ -603,19 +603,16 @@ try {
 		$number = number_format($totalCount);
 		echo "--- Superpositions $number\n\n";
 
-		$len1 = 5;
-		$len2 = 5;
-		$len3 = 5;
-		$len4 = 22;
-		echo str_pad("Rank", $len1, " ", STR_PAD_BOTH);
-		echo str_pad("Size", $len2, " ", STR_PAD_BOTH);
-		echo str_pad("Count", $len3, " ", STR_PAD_BOTH);
-		echo str_pad("Total", $len4, " ", STR_PAD_BOTH);
+		$len1 = 6;
+		$len2 = 6;
+		$len3 = 20;
+		echo str_pad("Size", $len1, " ", STR_PAD_BOTH);
+		echo str_pad("Count", $len2, " ", STR_PAD_BOTH);
+		echo str_pad("Total", $len3, " ", STR_PAD_BOTH);
 		echo "\n";
 		echo str_pad(str_pad("", $len1 - 1, "-", STR_PAD_BOTH), $len1, " ");
 		echo str_pad(str_pad("", $len2 - 1, "-", STR_PAD_BOTH), $len2, " ");
 		echo str_pad(str_pad("", $len3 - 1, "-", STR_PAD_BOTH), $len3, " ");
-		echo str_pad(str_pad("", $len4 - 1, "-", STR_PAD_BOTH), $len4, " ");
 		echo "\n";
 
 		$rows1 = [];
@@ -637,9 +634,8 @@ try {
 				$superCount = (int)$row['superCount'];
 				$count = (int)$row['count'];
 
-				$title = str_pad("$superRank", $len1, " ");
-				$title .=  str_pad("$superSize", $len2, " ");
-				$title .=  str_pad("$superCount", $len3, " ");
+				$title =  str_pad("$superSize", $len1, " ");
+				$title .=  str_pad("$superCount", $len2, " ");
 
 				$total1 += $count;
 				if ($superRank === 1) {
@@ -658,20 +654,20 @@ try {
 			$format = number_format($count);
 
 			echo $title;
-			echo str_pad("$percent $format", $len4, " ");
+			echo str_pad("$percent $format", $len3, " ");
 			echo  "\n";
 		}
 
 		$percent = percentage($total2, $total1, 3);
 		$format = number_format($total2);
-		echo "Rank 2: $percent $format\n";
+		echo "\nRank 2: $percent $format\n";
 
 		foreach ($rows2 as $title => $count) {
 			$percent = percentage($count, $total2, 3);
 			$format = number_format($count);
 
 			echo $title;
-			echo str_pad("$percent $format", $len4, " ");
+			echo str_pad("$percent $format", $len3, " ");
 			echo  "\n";
 		}
 		echo  "\n";
