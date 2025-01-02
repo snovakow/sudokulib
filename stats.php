@@ -601,6 +601,84 @@ try {
 
 	if ($mode === 6) {
 		$number = number_format($totalCount);
+		echo "--- Superpositions $number\n\n";
+
+		$len1 = 5;
+		$len2 = 5;
+		$len3 = 5;
+		$len4 = 22;
+		echo str_pad("Rank", $len1, " ", STR_PAD_BOTH);
+		echo str_pad("Size", $len2, " ", STR_PAD_BOTH);
+		echo str_pad("Count", $len3, " ", STR_PAD_BOTH);
+		echo str_pad("Total", $len4, " ", STR_PAD_BOTH);
+		echo "\n";
+		echo str_pad(str_pad("", $len1 - 1, "-", STR_PAD_BOTH), $len1, " ");
+		echo str_pad(str_pad("", $len2 - 1, "-", STR_PAD_BOTH), $len2, " ");
+		echo str_pad(str_pad("", $len3 - 1, "-", STR_PAD_BOTH), $len3, " ");
+		echo str_pad(str_pad("", $len4 - 1, "-", STR_PAD_BOTH), $len4, " ");
+		echo "\n";
+
+		$rows1 = [];
+		$rows2 = [];
+		$total1 = 0;
+		$total2 = 0;
+
+		for ($i = 1; $i <= $tableCount; $i++) {
+			$table = tableName($i);
+			$sql = "SELECT `superRank`, `superSize`, `superCount`, COUNT(*) AS count ";
+			$sql .= "FROM `$table` WHERE `solveType`=4 GROUP BY `superRank`, `superSize`, `superCount`";
+			$stmt = $db->prepare($sql);
+			$stmt->execute();
+
+			$result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+			foreach ($result as $key => $row) {
+				$superRank = (int)$row['superRank'];
+				$superSize = (int)$row['superSize'];
+				$superCount = (int)$row['superCount'];
+				$count = (int)$row['count'];
+
+				$title = str_pad("$superRank", $len1, " ");
+				$title .=  str_pad("$superSize", $len2, " ");
+				$title .=  str_pad("$superCount", $len3, " ");
+
+				$total1 += $count;
+				if ($superRank === 1) {
+					if (array_key_exists($title, $rows1)) $rows1[$title] += $count;
+					else $rows1[$title] = $count;
+				} else {
+					$total2 += $count;
+					if (array_key_exists($title, $rows2)) $rows2[$title] += $count;
+					else $rows2[$title] = $count;
+				}
+			}
+		}
+
+		foreach ($rows1 as $title => $count) {
+			$percent = percentage($count, $total1, 3);
+			$format = number_format($count);
+
+			echo $title;
+			echo str_pad("$percent $format", $len4, " ");
+			echo  "\n";
+		}
+
+		$percent = percentage($total2, $total1, 3);
+		$format = number_format($total2);
+		echo "Rank 2: $percent $format\n";
+
+		foreach ($rows2 as $title => $count) {
+			$percent = percentage($count, $total2, 3);
+			$format = number_format($count);
+
+			echo $title;
+			echo str_pad("$percent $format", $len4, " ");
+			echo  "\n";
+		}
+		echo  "\n";
+	}
+
+	if ($mode === 7) {
+		$number = number_format($totalCount);
 		echo "--- Clues $number\n\n";
 		$counts = [];
 		$countSimple = [];
