@@ -1,7 +1,7 @@
 import {
 	candidates, simpleHidden, simpleOmissions, simpleNaked,
 	visibleOmissions, visibleNaked2, visibleNaked, hiddenSingles, NakedHiddenGroups, omissions, uniqueRectangle,
-	yWing, xyzWing, xWing, swordfish, jellyfish, aCells, bCells,
+	yWing, xyzWing, xWing, swordfish, jellyfish, superposition, aCells, bCells,
 } from "./solver.js";
 
 const consoleOut = (result) => {
@@ -281,10 +281,23 @@ const fillSolve = (cells, simples, visibles, strategies, superpositions) => {
 			nakedHidden = null;
 		} while (progress === 1);
 
+		if (progress === 0 && superpositions) {
+			const result = superposition(cells);
+			if (result.rank > 0) {
+				superRank = Math.max(superRank, result.rank);
+				superSize = Math.max(superSize, result.size);
+
+				progress = 2;
+				superCount++;
+			}
+		}
+
 		if (progress === 0) solved = false;
 	} while (solved);
 
 	if (simple) candidateVisible = false;
+
+	if (superCount > 0) solved = false;
 
 	return {
 		solved,
