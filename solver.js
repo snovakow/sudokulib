@@ -1379,30 +1379,91 @@ const uniqueRectangle = (cells) => {
 	}
 }
 
-const solve = (cells) => {
-	let progress = false;
-	do {
-		candidates(cells);
+const superpositionSolve = (cells) => {
+	const emptyCount = (cells) => {
+		let count = 0;
+		for (let i = 0; i < 81; i++) {
+			const cell = cells[i];
+			if (cell.symbol === 0) count++;
+		}
+		return count;
+	}
 
-		progress = simpleHidden(cells);
-		if (progress) continue;
+	const solveSimple = () => {
+		let remaining = emptyCount(cells);
+		while (remaining > 0) {
+			if (simpleHidden(cells)) {
+				remaining--;
+				continue;
+			}
+			// if (level === 0) break;
+			if (simpleOmissions(cells)) {
+				remaining--;
+				continue;
+			}
+			// if (simpleNaked2(cells)) {
+			// 	remaining--;
+			// 	continue;
+			// }
+			// if (simpleNaked3(cells)) {
+			// 	remaining--;
+			// 	continue;
+			// }
+			if (simpleNaked(cells)) {
+				remaining--;
+				continue;
+			}
+			break;
+		}
+		return remaining > 0;
+	}
 
-		progress = simpleOmissions(cells);
-		if (progress) continue;
 
-		progress = simpleNaked(cells);
-		if (progress) continue;
-	} while (progress);
+	const remaining = solveSimple();
+	const solved = !remaining;
+
+	// 0 = solved
+	// 1 = incomplete
+	// 2 = invalid
+	let result = 0;
+
+	for (const cell of cells) {
+		if (cell.symbol === 0) {
+			result = 1;
+			if (cell.size === 0) {
+				result = 2;
+				break;
+			}
+		}
+	}
+	// if(result===0) {
+	// 	for (const group of Grid.groupTypes) {
+	// 		let set = 0x0000;
+	// 		for (const i of group) {
+	// 			const cell = cells[i];
+	// 			set |= 0x0001 << cell.symbol;
+	// 		}
+	// 		if (set !== 0x03FE) {
+	// 			result = 2;
+	// 			console.log("INVALID!!!");
+	// 			break;
+	// 		}
+	// 	}	
+	// }
+
+	return result;
 };
+
 const superposition = (cells) => {
 	const startBoard = cells.toData();
 
-	class Result {
-		constructor(type, symbol, cell, size) {
-			this.type = type;
+	class SuperpositionResult {
+		constructor(type, symbol, cell, size, complete = false) {
+			this.type = type; // 0 = Cell Candidates, 1 = Group Candidate
 			this.symbol = symbol;
 			this.cell = cell;
 			this.size = size;
+			this.complete = complete;
 		}
 	}
 
@@ -1415,39 +1476,6 @@ const superposition = (cells) => {
 			for (const result of supers) {
 				const resultCell = result[checkCell.index];
 				if (resultCell.symbol === 0) {
-					// if (resultCell.size === 0) {
-					// 	if (size === 2) {
-					// 		let super1 = supers[0];
-					// 		let super2 = supers[1];
-					// 		const valid = result === super1 ? super2 : super1;
-
-					// 		for (let i = 0; i < 81; i++) {
-					// 			const cell = cells[i];
-					// 			if (cell.symbol !== 0) continue;
-					// 			const validCell = valid[i];
-
-					// 			let reduction = false;
-					// 			if (validCell.symbol === 0) {
-					// 				for (let x = 1; x <= 9; x++) {
-					// 					if (cell.has(x) && (((validCell.mask >>> x) & 0x0001) === 0x0000)) {
-					// 						console.log("!!!1");
-					// 						reduced.push(new Result(type, x, cell, size));
-					// 						reduction = true;
-					// 					}
-					// 				}
-					// 			} else {
-					// 				for (let x = 1; x <= 9; x++) {
-					// 					if (x !== validCell.symbol && cell.has(x)) {
-					// 						reduced.push(new Result(type, x, cell, size));
-					// 						reduction = true;
-					// 					}
-					// 				}
-					// 			}
-
-					// 			if (reduction) return reduced;
-					// 		}
-					// 	}
-					// }
 					for (let x = 1; x <= 9; x++) {
 						if (((resultCell.mask >>> x) & 0x0001) === 0x001) {
 							symbolSet.add(x);
@@ -1461,14 +1489,14 @@ const superposition = (cells) => {
 				if (!checkCell.has(x)) continue;
 				if (symbolSet.has(x)) continue;
 
-				reduced.push(new Result(type, x, checkCell, size));
+				reduced.push(new SuperpositionResult(type, x, checkCell, size));
 			}
 		}
 		return reduced;
 	};
 
-	const results = [];
-	const superCandidates = (targetSize, pairs) => {
+	const superCandidates = (targetSize) => {
+		const results = [];
 		const masterCandidates = [];
 		for (let index = 0; index < 81; index++) {
 			const cell = cells[index];
@@ -1480,22 +1508,38 @@ const superposition = (cells) => {
 				if (!cell.has(x)) continue;
 
 				cell.setSymbol(x);
-				solve(cells, pairs);
-				const result = cells.toData();
-				supers.push(result);
-
-				cells.fromData(startBoard);
+				const state = superpositionSolve(cells);
+				if (state === 0) {
+					return [new SuperpositionResult(0, x, cell, targetSize, true)];
+				}
+				if (state === 1) {
+					const result = cells.toData();
+					supers.push(result);
+					cells.fromData(startBoard);
+				}
+				if (state === 2) {
+					cells.fromData(startBoard);
+					results.push(new SuperpositionResult(0, x, cell, targetSize));
+					// return results;
+				}
 			}
-			masterCandidates.push(supers);
+			if (supers.length === 1) {
+				const result = supers[0];
+				cells.fromData(result);
+				return [new SuperpositionResult(0, 0, cell, targetSize, true)];
+			} else {
+				masterCandidates.push(supers);
+			}
 		}
 		for (const supers of masterCandidates) {
-			const title = pairs ? "Cell Candidates Pair" : "Cell Candidates";
-			const reduced = checkCells(title, cells, supers, supers.length);
+			const reduced = checkCells(0, cells, supers, supers.length);
 			if (reduced.length > 0) results.push(...reduced);
 		}
+		return results;
 	};
 
-	const superSymbols = (targetSize, pairs) => {
+	const superSymbols = (targetSize) => {
+		const results = [];
 		const masterSymbols = [];
 		for (let x = 1; x <= 9; x++) {
 			for (const group of Grid.groupTypes) {
@@ -1515,41 +1559,69 @@ const superposition = (cells) => {
 				const supers = [];
 				for (const cell of symbolCells) {
 					cell.setSymbol(x);
-					solve(cells, pairs);
-					const result = cells.toData();
-					supers.push(result);
-
-					cells.fromData(startBoard);
+					const state = superpositionSolve(cells);
+					if (state === 0) {
+						return [new SuperpositionResult(1, x, cell, targetSize, true)];
+					}
+					if (state === 1) {
+						const result = cells.toData();
+						supers.push(result);
+						cells.fromData(startBoard);
+					}
+					if (state === 2) {
+						cells.fromData(startBoard);
+						results.push(new SuperpositionResult(1, x, cell, targetSize));
+						// return results;
+					}
 				}
 
-				masterSymbols.push(supers);
+				if (supers.length === 1) {
+					const result = supers[0];
+					cells.fromData(result);
+					return [new SuperpositionResult(1, x, null, targetSize, true)];
+				} else {
+					masterSymbols.push(supers);
+				}
 			}
 		}
 		for (const supers of masterSymbols) {
-			const title = pairs ? "Group Symbol Pair" : "Group Symbol";
-			const reduced = checkCells(title, cells, supers, targetSize);
+			const reduced = checkCells(1, cells, supers, targetSize);
 			if (reduced.length > 0) results.push(...reduced);
 		}
+		return results;
 	}
+
+	const results = [];
 
 	for (let target = 2; target <= 9; target++) {
-		superCandidates(target, false);
+		results.push(...superCandidates(target));
 		if (results.length > 0) break;
-		superSymbols(target, false);
-		if (results.length > 0) break;
-		superCandidates(target, true);
-		if (results.length > 0) break;
-		superSymbols(target, true);
+		results.push(...superSymbols(target));
 		if (results.length > 0) break;
 	}
-	// if (results.length === 0) tri();
 
+	if (results.length === 0) {
+		return {
+			rank: 0,
+			size: 0,
+		};
+	}
+
+	const result = results[0];
+	if (results.length === 1 && result.complete) {
+		return {
+			rank: 1,
+			size: result.size,
+		};
+	}
 
 	for (const result of results) {
 		result.cell.delete(result.symbol);
 	}
-
-	return results;
+	return {
+		rank: 2,
+		size: result.size,
+	};
 }
 
 // 00 01 02|03 04 05|06 07 08
