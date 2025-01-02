@@ -31,13 +31,13 @@ try {
 		if (!$stmt) {
 			$puzzleName = tableName($tableNumber);
 			$sql = "UPDATE `$puzzleName` SET solveType=:solveType, 
-			hiddenSimple=:hiddenSimple, omissionSimple=:omissionSimple, 
-			naked2Simple=:naked2Simple, naked3Simple=:naked3Simple, nakedSimple=:nakedSimple, 
+			hiddenSimple=:hiddenSimple, omissionSimple=:omissionSimple, nakedSimple=:nakedSimple, 
 			omissionVisible=:omissionVisible, naked2Visible=:naked2Visible, nakedVisible=:nakedVisible, 
 			naked2=:naked2, naked3=:naked3, naked4=:naked4, 
 			hidden1=:hidden1, hidden2=:hidden2, hidden3=:hidden3, hidden4=:hidden4, 
 			omissions=:omissions, uniqueRectangle=:uniqueRectangle, yWing=:yWing, xyzWing=:xyzWing, 
-			xWing=:xWing, swordfish=:swordfish, jellyfish=:jellyfish 
+			xWing=:xWing, swordfish=:swordfish, jellyfish=:jellyfish, 
+			superSize=:superSize, superRank=:superRank, superCount=:superCount 
 			WHERE id=:id";
 			$stmt = $db->prepare($sql);
 			$stmts[$tableNumber] = $stmt;
@@ -47,8 +47,6 @@ try {
 			'solveType' => $post->solveType,
 			'hiddenSimple' => $post->hiddenSimple,
 			'omissionSimple' => $post->omissionSimple,
-			'naked2Simple' => $post->naked2Simple,
-			'naked3Simple' => $post->naked3Simple,
 			'nakedSimple' => $post->nakedSimple,
 			'omissionVisible' => $post->omissionVisible,
 			'naked2Visible' => $post->naked2Visible,
@@ -67,6 +65,9 @@ try {
 			'xWing' => $post->xWing,
 			'swordfish' => $post->swordfish,
 			'jellyfish' => $post->jellyfish,
+			'superSize' => $post->superSize,
+			'superRank' => $post->superRank,
+			'superCount' => $post->superCount,
 			'id' => $id
 		]);
 	}
