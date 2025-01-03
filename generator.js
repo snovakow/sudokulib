@@ -348,11 +348,10 @@ const grid = new Uint8Array(81);
 
 function isValidCell(board, row, col, x) {
 	for (let i = 0; i < 9; i++) {
+		if (board[row * 9 + i] === x || board[i * 9 + col] === x) return false;
 		const m = 3 * Math.floor(row / 3) + Math.floor(i / 3);
 		const n = 3 * Math.floor(col / 3) + i % 3;
-		if (board[row * 9 + i] == x || board[i * 9 + col] == x || board[m * 9 + n] == x) {
-			return false;
-		}
+		if (board[m * 9 + n] === x) return false;
 	}
 	return true;
 }
@@ -422,9 +421,8 @@ const sudokuGenerator = (cells, target = 0) => {
 			grid[index] = 0;
 
 			savedGrid.set(grid);
+			const result = solutionCount(savedGrid, index, symbol);
 
-			const result = solutionCount(grid, index, symbol);
-			grid.set(savedGrid);
 			if (result) grid[index] = symbol;
 		}
 	} else {
