@@ -606,15 +606,8 @@ try {
 		$len1 = 6;
 		$len2 = 6;
 		$len3 = 20;
-		echo str_pad("Size", $len1, " ", STR_PAD_BOTH);
-		echo str_pad("Count", $len2, " ", STR_PAD_BOTH);
-		echo str_pad("Total", $len3, " ", STR_PAD_BOTH);
-		echo "\n";
-		echo str_pad(str_pad("", $len1 - 1, "-", STR_PAD_BOTH), $len1, " ");
-		echo str_pad(str_pad("", $len2 - 1, "-", STR_PAD_BOTH), $len2, " ");
-		echo str_pad(str_pad("", $len3 - 1, "-", STR_PAD_BOTH), $len3, " ");
-		echo "\n";
 
+		$rows0 = [];
 		$rows1 = [];
 		$rows2 = [];
 		$total1 = 0;
@@ -638,16 +631,36 @@ try {
 				$title .=  str_pad("$superCount", $len2, " ");
 
 				$total1 += $count;
+				if ($superRank === 0) {
+					if (array_key_exists($title, $rows0)) $rows0[$title] += $count;
+					else $rows0[$title] = $count;
+				}
 				if ($superRank === 1) {
 					if (array_key_exists($title, $rows1)) $rows1[$title] += $count;
 					else $rows1[$title] = $count;
-				} else {
+				}
+				if ($superRank === 2) {
 					$total2 += $count;
 					if (array_key_exists($title, $rows2)) $rows2[$title] += $count;
 					else $rows2[$title] = $count;
 				}
 			}
 		}
+
+		foreach ($rows0 as $title => $count) {
+			$percent = percentage($count, $total1, 3);
+			$format = number_format($count);
+			echo "Incomplete: $percent $format\n\n";
+		}
+
+		echo str_pad("Size", $len1, " ", STR_PAD_BOTH);
+		echo str_pad("Count", $len2, " ", STR_PAD_BOTH);
+		echo str_pad("Total", $len3, " ", STR_PAD_BOTH);
+		echo "\n";
+		echo str_pad(str_pad("", $len1 - 1, "-", STR_PAD_BOTH), $len1, " ");
+		echo str_pad(str_pad("", $len2 - 1, "-", STR_PAD_BOTH), $len2, " ");
+		echo str_pad(str_pad("", $len3 - 1, "-", STR_PAD_BOTH), $len3, " ");
+		echo "\n";
 
 		foreach ($rows1 as $title => $count) {
 			$percent = percentage($count, $total1, 3);
