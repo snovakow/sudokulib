@@ -77,7 +77,6 @@ class BaseCell {
 		this.groupRow = [...rowSet];
 		this.groupCol = [...colSet];
 		this.groupBox = [...boxSet];
-		this.groupType = [rowSet, colSet, boxSet];
 		this.group = [...groupSet];
 		this.groupSet = groupSet;
 
@@ -89,7 +88,6 @@ class BaseCell {
 		Object.freeze(this.rowGroup);
 		Object.freeze(this.colGroup);
 		Object.freeze(this.boxGroup);
-		Object.freeze(this.groupType);
 		Object.freeze(this.group);
 		Object.freeze(this.groupSet);
 	}
