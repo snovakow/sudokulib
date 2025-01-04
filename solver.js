@@ -36,11 +36,27 @@ const candidates = (cells) => {
 const simpleNakedCell = (cells, cell) => {
 	if (cell.symbol !== 0) return false;
 	let set = 0x0000;
+	/*
 	for (const index of cell.group) {
 		const symbol = cells[index].symbol;
 		if (symbol === 0) continue;
 		set |= (0x0001 << symbol);
 	}
+	*/
+	const row = Math.floor(cell.index / 9);
+	const col = cell.index % 9;
+	for (let i = 0; i < 9; i++) {
+		const linkedRow = cells[row * 9 + i];
+		if (linkedRow.symbol !== 0) set |= (0x0001 << linkedRow.symbol);
+		const linkedCol = cells[i * 9 + col];
+		if (linkedCol.symbol !== 0) set |= (0x0001 << linkedCol.symbol);
+
+		const m = 3 * Math.floor(row / 3) + Math.floor(i / 3);
+		const n = 3 * Math.floor(col / 3) + i % 3;
+		const linkedBox = cells[m * 9 + n];
+		if (linkedBox.symbol !== 0) set |= (0x0001 << linkedBox.symbol);
+	}
+
 	let remainder = 0;
 	for (let x = 1; x <= 9; x++) {
 		if (((set >>> x) & 0x001) === 0x000) {
