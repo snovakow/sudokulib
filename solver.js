@@ -1,6 +1,7 @@
 import { Grid } from "./Grid.js";
 
 const candidates = (cells) => {
+/*
 	for (const cell of cells) {
 		const symbol = cell.symbol;
 		if (symbol === 0) continue;
@@ -8,6 +9,26 @@ const candidates = (cells) => {
 		for (const i of cell.group) {
 			const linked = cells[i];
 			if (linked.symbol === 0) linked.delete(symbol);
+		}
+	}
+*/
+	for (let index = 0; index < 81; index++) {
+		const cell = cells[index];
+		const symbol = cell.symbol;
+		if (symbol === 0) continue;
+
+		const row = Math.floor(index / 9);
+		const col = index % 9;
+		for (let i = 0; i < 9; i++) {
+			const linkedRow = cells[row * 9 + i];
+			if (linkedRow.symbol === 0) linkedRow.delete(symbol);
+			const linkedCol = cells[i * 9 + col];
+			if (linkedCol.symbol === 0) linkedCol.delete(symbol);
+
+			const m = 3 * Math.floor(row / 3) + Math.floor(i / 3);
+			const n = 3 * Math.floor(col / 3) + i % 3;
+			const linkedBox = cells[m * 9 + n];
+			if (linkedBox.symbol === 0) linkedBox.delete(symbol);
 		}
 	}
 }
