@@ -1,7 +1,7 @@
 import { Grid } from "./Grid.js";
 
 const candidates = (cells) => {
-/*
+	/*
 	for (const cell of cells) {
 		const symbol = cell.symbol;
 		if (symbol === 0) continue;
@@ -11,7 +11,7 @@ const candidates = (cells) => {
 			if (linked.symbol === 0) linked.delete(symbol);
 		}
 	}
-*/
+	*/
 	for (let index = 0; index < 81; index++) {
 		const cell = cells[index];
 		const symbol = cell.symbol;
@@ -160,14 +160,18 @@ const visibleNaked2 = (cells) => {
 }
 
 const simpleNaked = (cells) => {
-	for (const cell of cells) {
+	// for (const cell of cells) {
+	for (let index = 0; index < 81; index++) {
+		const cell = cells[index];
 		if (simpleNakedCell(cells, cell)) return true;
 	}
 	return false;
 }
 
 const visibleNaked = (cells) => {
-	for (const cell of cells) {
+	// for (const cell of cells) {
+	for (let index = 0; index < 81; index++) {
+		const cell = cells[index];
 		if (cell.symbol !== 0) continue;
 		const remainder = cell.remainder;
 		if (remainder === 0) continue;
