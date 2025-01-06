@@ -1,5 +1,5 @@
 import {
-	candidates, simpleHidden, simpleOmissions, simpleNaked,
+	candidates, simpleHidden, simpleOmissions, simpleNaked2, simpleNaked3, simpleNaked,
 	visibleOmissions, visibleNaked2, visibleNaked, hiddenSingles, NakedHiddenGroups, omissions, uniqueRectangle,
 	yWing, xyzWing, xWing, swordfish, jellyfish, superposition, aCells, bCells,
 } from "./solver.js";
@@ -11,6 +11,8 @@ const consoleOut = (result) => {
 	lines.push("Visual: " + (result.candidateVisible ? "Yes" : "No"));
 	lines.push("Simple Hidden: " + result.hiddenSimple);
 	lines.push("Simple Omission: " + result.omissionSimple);
+	lines.push("Simple Naked 2: " + result.naked2Simple);
+	lines.push("Simple Naked 3: " + result.naked3Simple);
 	lines.push("Simple Naked: " + result.nakedSimple);
 
 	lines.push("Visual Omission: " + result.omissionVisible);
@@ -59,6 +61,8 @@ let VAL = 0;
 const STRATEGY = {
 	SIMPLE_HIDDEN: VAL++,
 	SIMPLE_INTERSECTION: VAL++,
+	SIMPLE_NAKED2: VAL++,
+	SIMPLE_NAKED3: VAL++,
 	SIMPLE_NAKED: VAL++,
 
 	VISIBLE_INTERSECTION: VAL++,
@@ -86,12 +90,14 @@ const fillSolve = (cells, simples, visibles, strategies, superpositions) => {
 	simples = simples ?? [
 		STRATEGY.SIMPLE_HIDDEN,
 		STRATEGY.SIMPLE_INTERSECTION,
-		STRATEGY.SIMPLE_NAKED
+		STRATEGY.SIMPLE_NAKED2,
+		STRATEGY.SIMPLE_NAKED3,
+		STRATEGY.SIMPLE_NAKED,
 	];
 	visibles = visibles ?? [
 		STRATEGY.VISIBLE_INTERSECTION,
 		STRATEGY.VISIBLE_NAKED2,
-		STRATEGY.VISIBLE_NAKED
+		STRATEGY.VISIBLE_NAKED,
 	];
 	strategies = strategies ?? [
 		STRATEGY.NAKED_2,
@@ -112,6 +118,8 @@ const fillSolve = (cells, simples, visibles, strategies, superpositions) => {
 
 	let hiddenSimple = 0;
 	let omissionSimple = 0;
+	let naked2Simple = 0;
+	let naked3Simple = 0;
 	let nakedSimple = 0;
 
 	const solveSimple = () => {
@@ -126,6 +134,16 @@ const fillSolve = (cells, simples, visibles, strategies, superpositions) => {
 				}
 				if (simple === STRATEGY.SIMPLE_INTERSECTION && simpleOmissions(cells)) {
 					omissionSimple++;
+					found = true;
+					break;
+				}
+				if (simple === STRATEGY.SIMPLE_NAKED2 && simpleNaked2(cells)) {
+					naked2Simple++;
+					found = true;
+					break;
+				}
+				if (simple === STRATEGY.SIMPLE_NAKED3 && simpleNaked3(cells)) {
+					naked3Simple++;
 					found = true;
 					break;
 				}
@@ -305,6 +323,8 @@ const fillSolve = (cells, simples, visibles, strategies, superpositions) => {
 		candidateVisible,
 		hiddenSimple,
 		omissionSimple,
+		naked2Simple,
+		naked3Simple,
 		nakedSimple,
 		omissionVisible,
 		naked2Visible,
