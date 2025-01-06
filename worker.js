@@ -85,7 +85,7 @@ const step = () => {
 	for (const cell of cells) if (cell.symbol === 0) cell.fill();
 	const save = cells.toData();
 
-	const result = fillSolve(cells, simples, visibles, strategies, true);
+	const result = fillSolve(cells, simples, visibles, strategies, false);
 	data.puzzleClues = data.puzzle;
 	data.puzzleFilled = puzzleFilled.join('');
 	data.clueCount = clueCount;
