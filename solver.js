@@ -199,7 +199,9 @@ const visibleNaked = (cells) => {
 		if (cell.symbol !== 0) continue;
 		const remainder = cell.remainder;
 		if (remainder === 0) continue;
-		cell.setSymbol(remainder);
+		// cell.setSymbol(remainder);
+		cell.symbol = remainder;
+		cell.mask = 0x0000;
 		return true;
 	}
 	return false;
