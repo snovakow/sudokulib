@@ -437,7 +437,7 @@ const omissions = (cells, type = 2) => {
 			}
 
 			if (type === 0) {
-				if (reduced.size > 0) {
+				if (reduced && reduced.size > 0) {
 					if (simpleHiddenSymbol(cells, x, reduced)) return true;
 				}
 			} else {
