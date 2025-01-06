@@ -31,7 +31,8 @@ try {
 		if (!$stmt) {
 			$puzzleName = tableName($tableNumber);
 			$sql = "UPDATE `$puzzleName` SET solveType=:solveType, 
-			hiddenSimple=:hiddenSimple, omissionSimple=:omissionSimple, nakedSimple=:nakedSimple, 
+			hiddenSimple=:hiddenSimple, omissionSimple=:omissionSimple, 
+			naked2Simple=:naked2Simple, naked3Simple=:naked3Simple, nakedSimple=:nakedSimple, 
 			omissionVisible=:omissionVisible, naked2Visible=:naked2Visible, nakedVisible=:nakedVisible, 
 			naked2=:naked2, naked3=:naked3, naked4=:naked4, 
 			hidden1=:hidden1, hidden2=:hidden2, hidden3=:hidden3, hidden4=:hidden4, 
@@ -47,6 +48,8 @@ try {
 			'solveType' => $post->solveType,
 			'hiddenSimple' => $post->hiddenSimple,
 			'omissionSimple' => $post->omissionSimple,
+			'naked2Simple' => $post->naked2Simple,
+			'naked3Simple' => $post->naked3Simple,
 			'nakedSimple' => $post->nakedSimple,
 			'omissionVisible' => $post->omissionVisible,
 			'naked2Visible' => $post->naked2Visible,
