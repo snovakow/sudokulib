@@ -181,9 +181,13 @@ const visibleNaked2 = (cells) => {
 
 const simpleNaked = (cells) => {
 	// for (const cell of cells) {
+	// 	if (simpleNakedCell(cells, cell)) return true;
 	for (let index = 0; index < 81; index++) {
-		const cell = cells[index];
-		if (simpleNakedCell(cells, cell)) return true;
+		if (simpleNakedCell(cells, index)) return true;
+	}
+	return false;
+}
+
 	}
 	return false;
 }
