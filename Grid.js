@@ -134,37 +134,24 @@ export class CellCandidate extends Cell {
 		this.group = baseCell.group;
 		this.groupSet = baseCell.groupSet;
 
-		this._symbol = 0;
-		this._mask = 0x0000;
+		this.symbol = 0;
+		this.mask = 0x0000;
 	}
 
-	get symbol() {
-		return this._symbol;
-	}
-	get mask() {
-		return this._mask;
-	}
 	get size() {
 		let size = 0;
-		for (let x = 1; x <= 9; x++) size += (this._mask >>> x) & 0x0001;
+		for (let x = 1; x <= 9; x++) size += (this.mask >>> x) & 0x0001;
 		return size;
 	}
 	get remainder() {
 		let remainder = 0;
 		for (let x = 1; x <= 9; x++) {
-			if ((this._mask >>> x) & 0x0001 === 0x0001) {
+			if (((this.mask >>> x) & 0x0001) === 0x0001) {
 				if (remainder === 0) remainder = x;
 				else return 0;
 			}
 		}
 		return remainder;
-	}
-
-	set symbol(x) {
-		this._symbol = x;
-	}
-	set mask(mask) {
-		this._mask = mask;
 	}
 
 	fill() {
