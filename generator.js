@@ -286,17 +286,15 @@ const fillSolve = (cells, simples, visibles, strategies, superpositions) => {
 				progress = solveVisiblePriority(strategy);
 				if (progress > 0) break;
 			}
-		} while (progress === 1);
-		if (progress === 2) continue;
+			if (progress === 0) {
+				candidateVisible = false;
 
-		candidateVisible = false;
-
-		do {
-			for (const strategy of strategies) {
-				progress = solvePriority(strategy);
-				if (progress > 0) break;
+				for (const strategy of strategies) {
+					progress = solvePriority(strategy);
+					if (progress > 0) break;
+				}
+				nakedHidden = null;
 			}
-			nakedHidden = null;
 		} while (progress === 1);
 
 		if (progress === 0 && superpositions) {
