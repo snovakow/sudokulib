@@ -216,6 +216,8 @@ const simpleHidden = (cells) => {
 				if (cell.symbol !== 0) continue;
 
 				let valid = true;
+
+				/*
 				for (const i of cell.group) {
 					const symbol = cells[i].symbol;
 					if (symbol === 0) continue;
@@ -224,13 +226,31 @@ const simpleHidden = (cells) => {
 						break;
 					}
 				}
+				*/
+				const row = Math.floor(index / 9);
+				const col = index % 9;
+				for (let i = 0; i < 9; i++) {
+					const linkedRow = cells[row * 9 + i];
+					if (x === linkedRow.symbol) { valid = false; break; }
+
+					const linkedCol = cells[i * 9 + col];
+					if (x === linkedCol.symbol) { valid = false; break; }
+
+					const m = 3 * Math.floor(row / 3) + Math.floor(i / 3);
+					const n = 3 * Math.floor(col / 3) + i % 3;
+					const linkedBox = cells[m * 9 + n];
+					if (x === linkedBox.symbol) { valid = false; break; }
+				}
+
 				if (!valid) continue;
 
 				if (symbolCell === null) symbolCell = cell;
 				else { symbolCell = null; break; }
 			}
 			if (symbolCell !== null) {
-				symbolCell.setSymbol(x);
+				// symbolCell.setSymbol(x);
+				symbolCell.symbol = x;
+				symbolCell.mask = 0x0000;
 				return true;
 			}
 		}
