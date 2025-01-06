@@ -26,6 +26,8 @@ const strategyDataArray = [];
 
 new StrategyData(simpleDataArray, STRATEGY.SIMPLE_HIDDEN, 'hiddenSimple');
 new StrategyData(simpleDataArray, STRATEGY.SIMPLE_INTERSECTION, 'omissionSimple');
+new StrategyData(simpleDataArray, STRATEGY.SIMPLE_NAKED2, 'naked2Simple');
+new StrategyData(simpleDataArray, STRATEGY.SIMPLE_NAKED3, 'naked3Simple');
 new StrategyData(simpleDataArray, STRATEGY.SIMPLE_NAKED, 'nakedSimple');
 
 new StrategyData(visibleDataArray, STRATEGY.VISIBLE_INTERSECTION, 'omissionVisible');
