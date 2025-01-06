@@ -197,6 +197,8 @@ try {
   `solveType` tinyint(1) unsigned NOT NULL,
   `hiddenSimple` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `omissionSimple` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `naked2Simple` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `naked3Simple` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `nakedSimple` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `omissionVisible` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `naked2Visible` tinyint(3) unsigned NOT NULL DEFAULT '0',
@@ -228,11 +230,11 @@ try {
 	}
 
 	if ($mode === 1) {
-		$logic = "`solveType`=0 AND `omissionSimple`=0 AND `nakedSimple`=0";
+		$logic = "`solveType`=0 AND `omissionSimple`=0 AND `naked2Simple`=0 AND `naked3Simple`=0 AND `nakedSimple`=0";
 		$sql = tableStatement($tableCount, "clueCount", "simple_hidden", $logic);
 		echo "$sql\n";
 
-		$logic = "`solveType`=0 AND `omissionSimple`>0 AND `nakedSimple`=0";
+		$logic = "`solveType`=0 AND `omissionSimple`>0 AND `naked2Simple`=0 AND `naked3Simple`=0 AND `nakedSimple`=0";
 		$sql = tableStatement($tableCount, "omissionSimple", "simple_omission", $logic);
 		echo "$sql\n";
 
@@ -258,6 +260,8 @@ try {
 		$logic = "`solveType`=4";
 		$logic .= strategyLogic("hiddenSimple");
 		$logic .= strategyLogic("omissionSimple");
+		$logic .= strategyLogic("naked2Simple");
+		$logic .= strategyLogic("naked3Simple");
 		$logic .= strategyLogic("nakedSimple");
 		$logic .= strategyLogic("omissionVisible");
 		$logic .= strategyLogic("naked2Visible");
@@ -267,7 +271,7 @@ try {
 		echo "$sql\n";
 
 		$logic = "`solveType`=4";
-		$select = "(clueCount + hiddenSimple + omissionSimple + nakedSimple + nakedVisible)";
+		$select = "(clueCount + hiddenSimple + omissionSimple + naked2Simple + naked3Simple + nakedSimple + nakedVisible)";
 		echo tableStatement($tableCount, $select, "unsolvable_filled", $logic), "\n";
 	}
 
@@ -366,6 +370,8 @@ try {
 		$strategies = [
 			"hiddenSimple",
 			"omissionSimple",
+			"naked2Simple",
+			"naked3Simple",
 			"nakedSimple",
 			"omissionVisible",
 			"naked2Visible",
@@ -375,6 +381,8 @@ try {
 		$titles = [];
 		$titles['hiddenSimple'] = "Simple Hidden";
 		$titles['omissionSimple'] = "Simple Omission";
+		$titles['naked2Simple'] = "Simple Naked2";
+		$titles['naked3Simple'] = "Simple Naked3";
 		$titles['nakedSimple'] = "Simple Naked";
 		$titles['omissionVisible'] = "Visible Omission";
 		$titles['naked2Visible'] = "Visible Naked2";
@@ -383,6 +391,8 @@ try {
 		$solveTypes = [];
 		$solveTypes['hiddenSimple'] = 0;
 		$solveTypes['omissionSimple'] = 0;
+		$solveTypes['naked2Simple'] = 0;
+		$solveTypes['naked3Simple'] = 0;
 		$solveTypes['nakedSimple'] = 0;
 		$solveTypes['omissionVisible'] = 1;
 		$solveTypes['naked2Visible'] = 1;
