@@ -345,9 +345,12 @@ const omissions = (cells, type = 2) => {
 				if (cell.symbol !== 0) continue;
 
 				if (type === 2) {
-					if (!cell.has(x)) continue;
+					// if (!cell.has(x)) continue;
+					if ((cell.mask & (0x0001 << x)) === 0x0000) continue;
 				} else {
 					let valid = true;
+
+					/*
 					for (const i of cell.group) {
 						const symbol = cells[i].symbol;
 						if (symbol === 0) continue;
@@ -356,10 +359,40 @@ const omissions = (cells, type = 2) => {
 							break;
 						}
 					}
+					*/
+					const row = Math.floor(index / 9);
+					const col = index % 9;
+					for (let i = 0; i < 9; i++) {
+						const linkedRow = cells[row * 9 + i];
+						if (x === linkedRow.symbol) { valid = false; break; }
+
+						const linkedCol = cells[i * 9 + col];
+						if (x === linkedCol.symbol) { valid = false; break; }
+
+						const m = 3 * Math.floor(row / 3) + Math.floor(i / 3);
+						const n = 3 * Math.floor(col / 3) + i % 3;
+						const linkedBox = cells[m * 9 + n];
+						if (x === linkedBox.symbol) { valid = false; break; }
+					}
+
 					if (!valid) continue;
 				}
 
-				const typeIndex = cell[srcGroupType];
+				let typeIndex = 0;
+				if (srcGroupType === 'row') {
+					typeIndex = Math.floor(index / 9);
+				}
+				if (srcGroupType === 'col') {
+					typeIndex = index % 9;
+				}
+				if (srcGroupType === 'box') {
+					const row = Math.floor(index / 9);
+					const col = index % 9;
+					const box = Math.floor(row / 3) * 3 + Math.floor(col / 3);
+					typeIndex = box;
+				}
+				// const typeIndex = cell[srcGroupType];
+
 				if (groupForGroup === -1) {
 					groupForGroup = typeIndex;
 				} else if (groupForGroup !== typeIndex) {
@@ -373,14 +406,32 @@ const omissions = (cells, type = 2) => {
 				for (const index of dstGroups[groupForGroup]) {
 					const cell = cells[index];
 					if (cell.symbol !== 0) continue;
-					if (cell[dstGroupType] === groupIndex) continue;
+
+					let typeIndex = 0;
+					if (dstGroupType === 'row') {
+						typeIndex = Math.floor(index / 9);
+					}
+					if (dstGroupType === 'col') {
+						typeIndex = index % 9;
+					}
+					if (dstGroupType === 'box') {
+						const row = Math.floor(index / 9);
+						const col = index % 9;
+						const box = Math.floor(row / 3) * 3 + Math.floor(col / 3);
+						typeIndex = box;
+					}
+					if (typeIndex === groupIndex) continue;
+					// if (cell[dstGroupType] === groupIndex) continue;
 
 					if (type === 0) {
 						if (!reduced) reduced = new Set();
 						reduced.add(index);
 					} else {
-						const had = cell.delete(x);
-						if (had) reduced = true;
+						// const had = cell.delete(x);
+						// if (had) reduced = true;
+						const mask = cell.mask;
+						cell.mask &= ~(0x0001 << x);
+						if (mask !== cell.mask) reduced = true;
 					}
 				}
 			}
