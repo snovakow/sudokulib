@@ -21,14 +21,14 @@ const candidates = (cells) => {
 		const col = index % 9;
 		for (let i = 0; i < 9; i++) {
 			const linkedRow = cells[row * 9 + i];
-			if (linkedRow.symbol === 0) linkedRow.delete(symbol);
+			if (linkedRow.symbol === 0) linkedRow.mask &= ~(0x0001 << symbol);
 			const linkedCol = cells[i * 9 + col];
-			if (linkedCol.symbol === 0) linkedCol.delete(symbol);
+			if (linkedCol.symbol === 0) linkedCol.mask &= ~(0x0001 << symbol);
 
 			const m = 3 * Math.floor(row / 3) + Math.floor(i / 3);
 			const n = 3 * Math.floor(col / 3) + i % 3;
 			const linkedBox = cells[m * 9 + n];
-			if (linkedBox.symbol === 0) linkedBox.delete(symbol);
+			if (linkedBox.symbol === 0) linkedBox.mask &= ~(0x0001 << symbol);
 		}
 	}
 }
