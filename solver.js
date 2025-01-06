@@ -265,12 +265,15 @@ const hiddenSingles = (cells) => {
 			for (const index of group) {
 				const cell = cells[index];
 				if (cell.symbol !== 0) continue;
-				if (!cell.has(x)) continue;
+				if ((cell.mask & (0x0001 << x)) === 0x0000) continue;
+				// if (!cell.has(x)) continue;
 				if (symbolCell === null) symbolCell = cell;
 				else { symbolCell = null; break; }
 			}
 			if (symbolCell !== null) {
-				symbolCell.setSymbol(x);
+				// symbolCell.setSymbol(x);
+				symbolCell.symbol = x;
+				symbolCell.mask = 0x0000;
 				return true;
 			}
 		}
