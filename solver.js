@@ -305,7 +305,9 @@ const simpleHiddenSymbol = (cells, x, reduced) => {
 			else { symbolCell = null; break; }
 		}
 		if (symbolCell !== null) {
-			symbolCell.setSymbol(x);
+			// symbolCell.setSymbol(x);
+			symbolCell.symbol = x;
+			symbolCell.mask = 0x0000;
 			return true;
 		}
 	}
