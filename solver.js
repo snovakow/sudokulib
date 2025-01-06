@@ -33,18 +33,20 @@ const candidates = (cells) => {
 	}
 }
 
-const simpleNakedCell = (cells, cell) => {
+const simpleNakedCell = (cells, index) => {
+	const cell = cells[index];
+
 	if (cell.symbol !== 0) return false;
 	let set = 0x0000;
 	/*
-	for (const index of cell.group) {
-		const symbol = cells[index].symbol;
+	for (const i of cell.group) {
+		const symbol = cells[i].symbol;
 		if (symbol === 0) continue;
 		set |= (0x0001 << symbol);
 	}
 	*/
-	const row = Math.floor(cell.index / 9);
-	const col = cell.index % 9;
+	const row = Math.floor(index / 9);
+	const col = index % 9;
 	for (let i = 0; i < 9; i++) {
 		const linkedRow = cells[row * 9 + i];
 		if (linkedRow.symbol !== 0) set |= (0x0001 << linkedRow.symbol);
@@ -69,7 +71,9 @@ const simpleNakedCell = (cells, cell) => {
 		}
 	}
 	if (remainder > 0) {
-		cell.setSymbol(remainder);
+		// cell.setSymbol(remainder);
+		cell.symbol = remainder;
+		cell.mask = 0x0000;
 		return true;
 	}
 	return false;
