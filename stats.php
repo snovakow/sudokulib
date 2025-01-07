@@ -193,8 +193,8 @@ try {
 			$sql = "CREATE TABLE `$tableName` (
   `id` int(10) unsigned NOT NULL,
   `puzzleData` binary(32) NOT NULL DEFAULT '00000000000000000000000000000000',
-  `clueCount` tinyint(2) unsigned NOT NULL,
-  `solveType` tinyint(1) unsigned NOT NULL,
+  `clueCount` tinyint(2) unsigned NOT NULL DEFAULT '0',
+  `solveType` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `hiddenSimple` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `omissionSimple` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `naked2Simple` tinyint(3) unsigned NOT NULL DEFAULT '0',
@@ -224,7 +224,7 @@ try {
 ) ENGINE=InnoDB DEFAULT CHARSET=ascii COLLATE=ascii_bin;";
 			echo "$sql\n";
 
-			$sql = "INSERT INTO `$tableName` (`id`, `puzzleData`, `clueCount`, `solveType`) SELECT `id`, `puzzleData`, `clueCount`, 5 FROM `$rename`;";
+			$sql = "INSERT INTO `$tableName` (`id`, `puzzleData`, `clueCount`) SELECT `id`, `puzzleData`, `clueCount` FROM `$rename`;";
 			echo "$sql\n\n";
 		}
 	}
