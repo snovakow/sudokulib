@@ -15,7 +15,7 @@ function insertValues($number, $values)
 {
 	$valueList = implode(",", $values);
 	$table = tableName($number);
-	return "INSERT INTO `$table` (id, clueCount, solveType, 
+	return "INSERT INTO `$table` (id, solveType, 
 		hiddenSimple, omissionSimple, naked2Simple, naked3Simple, nakedSimple, 
 		omissionVisible, naked2Visible, nakedVisible, 
 		naked2, naked3, naked4, hidden1, hidden2, hidden3, hidden4, omissions, 
@@ -65,15 +65,8 @@ try {
 		$tableNumber = (int)$fields[0];
 		$id = (int)$fields[1];
 
-		$values = &$valueLists[$tableNumber];
-		if (!$values) {
-			$valueLists[$tableNumber] = [];
-			$values = &$valueLists[$tableNumber];
-		}
-
 		$valueList = [
 			$id,
-			0,
 			$post->solveType,
 			$post->hiddenSimple,
 			$post->omissionSimple,
@@ -102,7 +95,10 @@ try {
 			$post->superCount,
 		];
 		$flatList = implode(',', $valueList);
-		$values[] = "($flatList)";
+
+		$values = &$valueLists[$tableNumber];
+		if ($values) $values[] = "($flatList)";
+		else $valueLists[$tableNumber] = ["($flatList)"];
 	}
 	foreach ($valueLists as $tableNumber => $values) {
 		$db->exec(insertValues($tableNumber, $values));
