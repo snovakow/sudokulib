@@ -7,7 +7,7 @@
 #
 # Host: localhost (MySQL 5.7.32)
 # Database: sudoku
-# Generation Time: 2025-01-02 20:29:43 +0000
+# Generation Time: 2025-01-07 20:18:26 +0000
 # ************************************************************
 
 
@@ -28,10 +28,12 @@ DROP TABLE IF EXISTS `puzzles001`;
 CREATE TABLE `puzzles001` (
   `id` int(10) unsigned NOT NULL,
   `puzzleData` binary(32) NOT NULL DEFAULT '00000000000000000000000000000000',
-  `clueCount` tinyint(2) unsigned NOT NULL,
-  `solveType` tinyint(1) unsigned NOT NULL,
+  `clueCount` tinyint(2) unsigned NOT NULL DEFAULT '0',
+  `solveType` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `hiddenSimple` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `omissionSimple` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `naked2Simple` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `naked3Simple` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `nakedSimple` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `omissionVisible` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `naked2Visible` tinyint(3) unsigned NOT NULL DEFAULT '0',
