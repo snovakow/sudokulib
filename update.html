@@ -208,11 +208,12 @@
 
 		const updateDataStack = [];
 		const maxSend = 1000;
+		const maxParallel = 4;
 		let runningSends = 0;
 		const updateData = (data) => {
 			if (data) updateDataStack.push(data);
-			if (runningSends === 1 && updateDataStack.length < maxSend) return;
-			if (runningSends === 2) return;
+			if (runningSends > 0 && updateDataStack.length < maxSend) return;
+			if (runningSends === maxParallel) return;
 			if (updateDataStack.length === 0) return;
 			runningSends++;
 
