@@ -23,8 +23,8 @@ function addTable($number)
 	return "CREATE TABLE IF NOT EXISTS `$table` (
 		`id` int(10) unsigned NOT NULL,
 		`puzzleData` binary(32) NOT NULL DEFAULT '00000000000000000000000000000000',
-		`clueCount` tinyint(2) unsigned NOT NULL,
-		`solveType` tinyint(1) unsigned NOT NULL,
+		`clueCount` tinyint(2) unsigned NOT NULL DEFAULT '0',
+		`solveType` tinyint(1) unsigned NOT NULL DEFAULT '0',
 		`hiddenSimple` tinyint(3) unsigned NOT NULL DEFAULT '0',
 		`omissionSimple` tinyint(3) unsigned NOT NULL DEFAULT '0',
 		`naked2Simple` tinyint(3) unsigned NOT NULL DEFAULT '0',
