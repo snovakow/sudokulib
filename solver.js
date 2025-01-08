@@ -498,16 +498,6 @@ const simpleHiddenValid = (grid, indexFill, symbolFill) => {
 				if (symbol !== 0) continue;
 				let valid = true;
 
-				/*
-				for (const i of cell.group) {
-					const symbol = cells[i].symbol;
-					if (symbol === 0) continue;
-					if (x === symbol) {
-						valid = false;
-						break;
-					}
-				}
-				*/
 				const row = Math.floor(index / 9);
 				const col = index % 9;
 				for (let i = 0; i < 9; i++) {
@@ -524,13 +514,10 @@ const simpleHiddenValid = (grid, indexFill, symbolFill) => {
 
 			}
 			if (symbolIndex !== -1) {
-				// symbolCell.setSymbol(x);
 				if (indexFill === symbolIndex && symbolFill === x) continue;
 
 				grid[symbolIndex] = x;
 				filled.push(symbolIndex);
-				// return true;
-				// if (cellIndex === symbolCellIndex && cellSymbol === x) return true;
 			}
 		}
 	}
@@ -544,13 +531,7 @@ const simpleNakedValid = (grid, indexFill, symbolFill) => {
 		if (symbol !== 0) continue;
 		remaining++;
 		let set = 0x0000;
-		/*
-		for (const i of cell.group) {
-			const symbol = grid[i].symbol;
-			if (symbol === 0) continue;
-			set |= (0x0001 << symbol);
-		}
-		*/
+
 		const row = Math.floor(index / 9);
 		const col = index % 9;
 		for (let i = 0; i < 9; i++) {
@@ -580,10 +561,8 @@ const simpleNakedValid = (grid, indexFill, symbolFill) => {
 			if (indexFill === index && symbolFill === remainder) continue;
 
 			grid[index] = remainder;
-			remaining--;
 			filled.push(index);
-			// cell.setSymbol(remainder);
-			// return true;
+			remaining--;
 		}
 	}
 
