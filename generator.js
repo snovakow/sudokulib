@@ -2,6 +2,7 @@ import {
 	candidates, simpleHidden, simpleOmissions, simpleNaked2, simpleNaked3, simpleNaked,
 	visibleOmissions, visibleNaked2, visibleNaked, hiddenSingles, NakedHiddenGroups, omissions, uniqueRectangle,
 	yWing, xyzWing, xWing, swordfish, jellyfish, superposition, aCells, bCells,
+	simpleHiddenValid, simpleNakedValid,
 } from "./solver.js";
 
 const consoleOut = (result) => {
@@ -362,8 +363,6 @@ const randomize = (array, degree = 1) => {
 	}
 }
 
-const grid = new Uint8Array(81);
-
 function isValidCell(board, row, col, x) {
 	for (let i = 0; i < 9; i++) {
 		if (board[row * 9 + i] === x || board[i * 9 + col] === x) return false;
@@ -416,6 +415,7 @@ const solutionCount = (grid, baseIndex, baseSymbol) => {
 }
 
 const sudokuGenerator = (cells, target = 0) => {
+	const grid = new Uint8Array(81);
 	if (target === -1) {
 		for (let i = 0; i < 81; i++) grid[i] = cells[i].symbol;
 	} else {
