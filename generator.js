@@ -397,6 +397,7 @@ const sodokoSolver = (grid) => {
 }
 
 const solutionCount = (grid, baseIndex, baseSymbol) => {
+	/*
 	for (let i = 0; i < 81; i++) {
 		if (grid[i] !== 0) continue;
 		const index = i;
@@ -411,6 +412,37 @@ const solutionCount = (grid, baseIndex, baseSymbol) => {
 		}
 		return false;
 	}
+	*/
+	for (let index = 0; index < 81; index++) {
+		if (grid[index] !== 0) continue;
+		for (let x = 1; x <= 9; x++) {
+			const symbol = x;
+			if (baseIndex === index && baseSymbol === symbol) continue;
+			if (isValidCell(grid, Math.floor(index / 9), index % 9, symbol)) {
+				grid[index] = symbol;
+
+				let results = [index];
+				let progress = false;
+				do {
+					const [filled, remaining] = simpleNakedValid(grid, baseIndex, baseSymbol);
+					if (remaining === 0) {
+						return true;
+					}
+					if (filled.length > 0) {
+						results.push(...filled);
+						progress = true;
+					} else {
+						progress = false;
+					}
+				} while (progress);
+
+				if (solutionCount(grid, baseIndex, baseSymbol)) return true;
+				else for (const i of results) grid[i] = 0;
+			}
+		}
+		return false;
+	}
+
 	return true;
 }
 
@@ -439,9 +471,28 @@ const sudokuGenerator = (cells, target = 0) => {
 			grid[index] = 0;
 
 			savedGrid.set(grid);
+			/*
 			const result = solutionCount(savedGrid, index, symbol);
-
 			if (result) grid[index] = symbol;
+			*/
+			let complete = false;
+			let progress = false;
+			do {
+				const [filled, remaining] = simpleNakedValid(savedGrid, index, symbol);
+				if (remaining === 0) complete = true;
+				progress = (filled.length > 0);
+				if (remaining > 0) {
+					const filled = simpleHiddenValid(savedGrid, index, symbol);
+					if (filled.length > 0) progress = true;
+					if (filled.length === remaining) complete = true;
+				}
+			} while (progress && !complete);
+			if (complete) {
+				grid[index] = symbol;
+			} else {
+				const result = solutionCount(savedGrid, index, symbol);
+				if (result) grid[index] = symbol;
+			}
 		}
 	} else {
 		if (target === 1) {
