@@ -96,13 +96,11 @@ try {
 		];
 		$flatList = implode(',', $valueList);
 
-		$values = &$valueLists[$tableNumber];
-		if ($values) $values[] = "($flatList)";
+		if ($valueLists[$tableNumber]) $valueLists[$tableNumber][] = "($flatList)";
 		else $valueLists[$tableNumber] = ["($flatList)"];
 	}
 	foreach ($valueLists as $tableNumber => $values) {
 		$db->exec(insertValues($tableNumber, $values));
-		echo insertValues($tableNumber, $values);
 	}
 } catch (PDOException $e) {
 	// echo "Connection failed: " . $e->getMessage();
