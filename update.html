@@ -207,8 +207,8 @@
 		};
 
 		const updateDataStack = [];
-		const maxSend = 1000;
-		const maxParallel = 2;
+		const maxSend = 10000;
+		const maxParallel = 1;
 		let runningSends = 0;
 		const updateData = (data) => {
 			if (data) updateDataStack.push(data);
