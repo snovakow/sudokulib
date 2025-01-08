@@ -488,6 +488,108 @@ const simpleHidden = (cells) => {
 	return false;
 }
 
+const simpleHiddenValid = (grid, indexFill, symbolFill) => {
+	const filled = [];
+	for (let x = 1; x <= 9; x++) {
+		for (const group of Grid.groupTypes) {
+			let symbolIndex = -1;
+			for (const index of group) {
+				const symbol = grid[index];
+				if (symbol !== 0) continue;
+				let valid = true;
+
+				/*
+				for (const i of cell.group) {
+					const symbol = cells[i].symbol;
+					if (symbol === 0) continue;
+					if (x === symbol) {
+						valid = false;
+						break;
+					}
+				}
+				*/
+				const row = Math.floor(index / 9);
+				const col = index % 9;
+				for (let i = 0; i < 9; i++) {
+					if (x === grid[row * 9 + i] || x === grid[i * 9 + col]) { valid = false; break; }
+					const m = 3 * Math.floor(row / 3) + Math.floor(i / 3);
+					const n = 3 * Math.floor(col / 3) + i % 3;
+					if (x === grid[m * 9 + n]) { valid = false; break; }
+				}
+
+				if (!valid) continue;
+
+				if (symbolIndex === -1) symbolIndex = index;
+				else { symbolIndex = -1; break; }
+
+			}
+			if (symbolIndex !== -1) {
+				// symbolCell.setSymbol(x);
+				if (indexFill === symbolIndex && symbolFill === x) continue;
+
+				grid[symbolIndex] = x;
+				filled.push(symbolIndex);
+				// return true;
+				// if (cellIndex === symbolCellIndex && cellSymbol === x) return true;
+			}
+		}
+	}
+	return filled;
+}
+const simpleNakedValid = (grid, indexFill, symbolFill) => {
+	const filled = [];
+	let remaining = 0;
+	for (let index = 0; index < 81; index++) {
+		const symbol = grid[index];
+		if (symbol !== 0) continue;
+		remaining++;
+		let set = 0x0000;
+		/*
+		for (const i of cell.group) {
+			const symbol = grid[i].symbol;
+			if (symbol === 0) continue;
+			set |= (0x0001 << symbol);
+		}
+		*/
+		const row = Math.floor(index / 9);
+		const col = index % 9;
+		for (let i = 0; i < 9; i++) {
+			const symbolRow = grid[row * 9 + i];
+			if (symbolRow !== 0) set |= (0x0001 << symbolRow);
+			const symbolCol = grid[i * 9 + col];
+			if (symbolCol !== 0) set |= (0x0001 << symbolCol);
+
+			const m = 3 * Math.floor(row / 3) + Math.floor(i / 3);
+			const n = 3 * Math.floor(col / 3) + i % 3;
+			const symbolBox = grid[m * 9 + n];
+			if (symbolBox !== 0) set |= (0x0001 << symbolBox);
+		}
+
+		let remainder = 0;
+		for (let x = 1; x <= 9; x++) {
+			if (((set >>> x) & 0x001) === 0x000) {
+				if (remainder === 0) {
+					remainder = x;
+				} else {
+					remainder = 0;
+					break;
+				}
+			}
+		}
+		if (remainder > 0) {
+			if (indexFill === index && symbolFill === remainder) continue;
+
+			grid[index] = remainder;
+			remaining--;
+			filled.push(index);
+			// cell.setSymbol(remainder);
+			// return true;
+		}
+	}
+
+	return [filled, remaining];
+}
+
 const hiddenSingles = (cells) => {
 	for (let x = 1; x <= 9; x++) {
 		for (const group of Grid.groupTypes) {
@@ -2058,5 +2160,5 @@ export {
 	generate, candidates, simpleHidden, simpleOmissions, simpleNaked2, simpleNaked3, simpleNaked,
 	visibleOmissions, visibleNaked2, visibleNaked, hiddenSingles, NakedHiddenGroups, omissions, uniqueRectangle,
 	yWing, xyzWing, xWing, swordfish, jellyfish,
-	superposition, phistomefel, bruteForce
+	superposition, phistomefel, bruteForce, simpleHiddenValid, simpleNakedValid
 };
