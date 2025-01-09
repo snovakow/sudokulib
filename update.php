@@ -20,7 +20,7 @@ function insertValues($number, $values)
 		omissionVisible, naked2Visible, nakedVisible, 
 		naked2, naked3, naked4, hidden1, hidden2, hidden3, hidden4, omissions, 
 		uniqueRectangle, yWing, xyzWing, xWing, swordfish, jellyfish, 
-		superSize, superRank, superCount) VALUES $valueList ON DUPLICATE KEY UPDATE 
+		superRank, superSize, superType, superDepth, superCount) VALUES $valueList ON DUPLICATE KEY UPDATE 
         solveType = VALUES(solveType), 
         hiddenSimple = VALUES(hiddenSimple), 
         omissionSimple = VALUES(omissionSimple), 
@@ -44,8 +44,10 @@ function insertValues($number, $values)
         xWing = VALUES(xWing), 
         swordfish = VALUES(swordfish), 
         jellyfish = VALUES(jellyfish), 
-        superSize = VALUES(superSize), 
         superRank = VALUES(superRank), 
+        superSize = VALUES(superSize), 
+        superType = VALUES(superType), 
+        superDepth = VALUES(superDepth), 
 	    superCount = VALUES(superCount)";
 }
 
@@ -90,8 +92,10 @@ try {
 			$post->xWing,
 			$post->swordfish,
 			$post->jellyfish,
-			$post->superSize,
 			$post->superRank,
+			$post->superSize,
+			$post->superType,
+			$post->superDepth,
 			$post->superCount,
 		];
 		$flatList = implode(',', $valueList);
