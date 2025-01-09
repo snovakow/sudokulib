@@ -617,84 +617,84 @@ try {
 
 		$len1 = 6;
 		$len2 = 6;
-		$len3 = 20;
+		$len3 = 6;
+		$len4 = 6;
+		$len5 = 6;
+		$len6 = 20;
 
-		$rows0 = [];
-		$rows1 = [];
-		$rows2 = [];
-		$total1 = 0;
-		$total2 = 0;
+		$rows = [];
+		$total = 0;
 
 		for ($i = 1; $i <= $tableCount; $i++) {
 			$table = tableName($i);
-			$sql = "SELECT `superRank`, `superSize`, `superCount`, COUNT(*) AS count ";
-			$sql .= "FROM `$table` WHERE `solveType`=4 GROUP BY `superRank`, `superSize`, `superCount`";
+			$sql = "";
+			// $sql .= "SELECT `superRank`, `superSize`, `superType`, `superDepth`, `superCount`, COUNT(*) AS count ";
+			// $sql .= "FROM `$table` WHERE `solveType`=4 GROUP BY `superRank`, `superSize`, `superType`, `superDepth`, `superCount` ";
+			$sql .= "SELECT `superSize`, `superDepth`, COUNT(*) AS count ";
+			$sql .= "FROM `$table` WHERE `solveType`=4 GROUP BY `superSize`, `superDepth` ";
+			$sql .= "ORDER BY ";
+			$sql .= "`superSize`";
+			$sql .= ",";
+			$sql .= "`superDepth`";
+			// $sql .= ",";
+			// $sql .= "`superCount`";
+			// $sql .= ",";
+			// $sql .= "`superRank`";
+			// $sql .= ",";
+			// $sql .= "`superType`";
 			$stmt = $db->prepare($sql);
 			$stmt->execute();
 
 			$result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 			foreach ($result as $key => $row) {
-				$superRank = (int)$row['superRank'];
 				$superSize = (int)$row['superSize'];
-				$superCount = (int)$row['superCount'];
+				$superDepth = (int)$row['superDepth'];
+				// $superCount = (int)$row['superCount'];
+				// $superRank = (int)$row['superRank'];
+				// $superType = (int)$row['superType'];
 				$count = (int)$row['count'];
 
-				$title =  str_pad("$superSize", $len1, " ");
-				$title .=  str_pad("$superCount", $len2, " ");
+				$title =  "";
+				$title .=  str_pad("$superSize", $len2, " ");
+				$title .=  str_pad("$superDepth", $len4, " ");
+				// $title .=  str_pad("$superCount", $len5, " ");
+				// $title .=  str_pad("$superRank", $len1, " ");
+				// $title .=  str_pad("$superType", $len3, " ");
 
-				$total1 += $count;
-				if ($superRank === 0) {
-					if (array_key_exists($title, $rows0)) $rows0[$title] += $count;
-					else $rows0[$title] = $count;
-				}
-				if ($superRank === 1) {
-					if (array_key_exists($title, $rows1)) $rows1[$title] += $count;
-					else $rows1[$title] = $count;
-				}
-				if ($superRank === 2) {
-					$total2 += $count;
-					if (array_key_exists($title, $rows2)) $rows2[$title] += $count;
-					else $rows2[$title] = $count;
-				}
+				$total = max($total, $count);
+				if (array_key_exists($title, $rows)) $rows[$title] += $count;
+				else $rows[$title] = $count;
 			}
 		}
 
-		foreach ($rows0 as $title => $count) {
-			$percent = percentage($count, $total1, 3);
-			$format = number_format($count);
-			echo "Incomplete: $percent $format\n\n";
-		}
-
 		echo str_pad("Size", $len1, " ", STR_PAD_BOTH);
-		echo str_pad("Count", $len2, " ", STR_PAD_BOTH);
-		echo str_pad("Total", $len3, " ", STR_PAD_BOTH);
+		echo str_pad("Depth", $len2, " ", STR_PAD_BOTH);
+		// echo str_pad("Count", $len3, " ", STR_PAD_BOTH);
+		// echo str_pad("Rank", $len4, " ", STR_PAD_BOTH);
+		// echo str_pad("Type", $len5, " ", STR_PAD_BOTH);
+		echo str_pad("Total", $len6, " ", STR_PAD_BOTH);
 		echo "\n";
 		echo str_pad(str_pad("", $len1 - 1, "-", STR_PAD_BOTH), $len1, " ");
 		echo str_pad(str_pad("", $len2 - 1, "-", STR_PAD_BOTH), $len2, " ");
-		echo str_pad(str_pad("", $len3 - 1, "-", STR_PAD_BOTH), $len3, " ");
+		// echo str_pad(str_pad("", $len3 - 1, "-", STR_PAD_BOTH), $len3, " ");
+		// echo str_pad(str_pad("", $len4 - 1, "-", STR_PAD_BOTH), $len4, " ");
+		// echo str_pad(str_pad("", $len5 - 1, "-", STR_PAD_BOTH), $len5, " ");
+		echo str_pad(str_pad("", $len6 - 1, "-", STR_PAD_BOTH), $len6, " ");
 		echo "\n";
 
-		foreach ($rows1 as $title => $count) {
-			$percent = percentage($count, $total1, 3);
+		// $percent = percentage($count, $total, 3);
+		// $format = number_format($count);
+		// echo "Incomplete: $percent $format\n\n";
+
+		foreach ($rows as $title => $count) {
+			$percent = percentage($count, $total, 3);
 			$format = number_format($count);
 
 			echo $title;
-			echo str_pad("$percent $format", $len3, " ");
+			echo str_pad("$percent $format", $len6, " ");
 			echo  "\n";
 		}
 
-		$percent = percentage($total2, $total1, 3);
-		$format = number_format($total2);
-		echo "\nRank 2: $percent $format\n";
-
-		foreach ($rows2 as $title => $count) {
-			$percent = percentage($count, $total2, 3);
-			$format = number_format($count);
-
-			echo $title;
-			echo str_pad("$percent $format", $len3, " ");
-			echo  "\n";
-		}
 		echo  "\n";
 	}
 
