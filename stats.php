@@ -217,8 +217,10 @@ try {
   `xWing` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `swordfish` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `jellyfish` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `superSize` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `superRank` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `superSize` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `superType` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `superDepth` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `superCount` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=ascii COLLATE=ascii_bin;";
