@@ -35,9 +35,11 @@ const consoleOut = (result) => {
 	lines.push("Swordfish: " + result.swordfish);
 	lines.push("Jellyfish: " + result.jellyfish);
 
-	lines.push("Superposition Count: " + result.superCount);
 	lines.push("Superposition Rank: " + result.superRank);
 	lines.push("Superposition Size: " + result.superSize);
+	lines.push("Superposition Type: " + result.superType);
+	lines.push("Superposition Depth: " + result.superDepth);
+	lines.push("Superposition Count: " + result.superCount);
 
 	return lines;
 }
@@ -270,9 +272,11 @@ const fillSolve = (cells, simples, visibles, strategies, superpositions) => {
 	let candidateVisible = true;
 	let solved = true;
 
-	let superCount = 0;
 	let superRank = 0;
 	let superSize = 0;
+	let superType = 0;
+	let superDepth = 0;
+	let superCount = 0;
 
 	do {
 		const remaining = solveSimple();
@@ -303,9 +307,10 @@ const fillSolve = (cells, simples, visibles, strategies, superpositions) => {
 			if (result.rank > 0) {
 				superRank = Math.max(superRank, result.rank);
 				superSize = Math.max(superSize, result.size);
-
-				progress = 2;
+				superType = Math.max(superType, result.type);
+				superDepth = Math.max(superDepth, result.depth);
 				superCount++;
+				progress = 2;
 			}
 		}
 
@@ -342,8 +347,10 @@ const fillSolve = (cells, simples, visibles, strategies, superpositions) => {
 		xWing: xWingReduced,
 		swordfish: swordfishReduced,
 		jellyfish: jellyfishReduced,
-		superSize,
 		superRank,
+		superSize,
+		superType,
+		superDepth,
 		superCount,
 	};
 }
