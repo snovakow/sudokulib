@@ -1591,7 +1591,7 @@ const uniqueRectangle = (cells) => {
 	}
 }
 
-const superpositionSolve = (cells) => {
+const superpositionSolve = (cells, limit = 81) => {
 	let remaining = 0;
 	for (let i = 0; i < 81; i++) {
 		const cell = cells[i];
@@ -1599,7 +1599,7 @@ const superpositionSolve = (cells) => {
 	}
 
 	const progress = remaining;
-	while (remaining > 0) {
+	while (remaining > 0 && (progress - remaining < limit)) {
 		if (simpleHidden(cells)) {
 			remaining--;
 			continue;
@@ -1650,23 +1650,25 @@ const superpositionSolve = (cells) => {
 	// 	}	
 	// }
 
-	return result;
+	const depth = progress - remaining;
+	return [result, depth];
 };
 
 const superposition = (cells) => {
 	const startBoard = cells.toData();
 
 	class SuperpositionResult {
-		constructor(type, symbol, cell, size, complete = false) {
+		constructor(type, symbol, cell, size, depth, complete = false) {
 			this.type = type; // 0 = Cell Candidates, 1 = Group Candidate
 			this.symbol = symbol;
 			this.cell = cell;
 			this.size = size;
+			this.depth = depth;
 			this.complete = complete;
 		}
 	}
 
-	const checkCells = (type, cells, supers, size) => {
+	const checkCells = (type, cells, supers, size, depth) => {
 		const reduced = [];
 		for (const checkCell of cells) {
 			if (checkCell.symbol !== 0) continue;
@@ -1688,33 +1690,34 @@ const superposition = (cells) => {
 				if (!checkCell.has(x)) continue;
 				if (symbolSet.has(x)) continue;
 
-				reduced.push(new SuperpositionResult(type, x, checkCell, size));
+				reduced.push(new SuperpositionResult(type, x, checkCell, size, depth));
 			}
 		}
 		return reduced;
 	};
 
-	const superCandidates = (targetSize) => {
+	const superCandidates = (targetSize, limit) => {
 		const results = [];
-		const masterCandidates = [];
 		for (let index = 0; index < 81; index++) {
 			const cell = cells[index];
 			if (cell.symbol !== 0) continue;
 			if (cell.size !== targetSize) continue;
 
 			const supers = [];
+			let maxDepth = 0;
 			for (let x = 1; x <= 9; x++) {
 				if (!cell.has(x)) continue;
 
 				cell.setSymbol(x);
-				const state = superpositionSolve(cells);
+				const [state, depth] = superpositionSolve(cells, limit);
 				if (state === 0) {
-					return [new SuperpositionResult(0, x, cell, targetSize, true)];
+					return [new SuperpositionResult(0, x, cell, targetSize, depth, true)];
 				}
 				if (state === 1) {
 					const result = cells.toData();
 					supers.push(result);
 					cells.fromData(startBoard);
+					maxDepth = Math.max(maxDepth, depth);
 				}
 				if (state === 2) {
 					cells.fromData(startBoard);
@@ -1737,9 +1740,8 @@ const superposition = (cells) => {
 		return results;
 	};
 
-	const superSymbols = (targetSize) => {
+	const superSymbols = (targetSize, limit) => {
 		const results = [];
-		const masterSymbols = [];
 		for (let x = 1; x <= 9; x++) {
 			for (const group of Grid.groupTypes) {
 				const symbolCells = [];
@@ -1756,16 +1758,18 @@ const superposition = (cells) => {
 				if (symbolCells.length !== targetSize) continue;
 
 				const supers = [];
+				let maxDepth = 0;
 				for (const cell of symbolCells) {
 					cell.setSymbol(x);
-					const state = superpositionSolve(cells);
+					const [state, depth] = superpositionSolve(cells, limit);
 					if (state === 0) {
-						return [new SuperpositionResult(1, x, cell, targetSize, true)];
+						return [new SuperpositionResult(1, x, cell, targetSize, depth, true)];
 					}
 					if (state === 1) {
 						const result = cells.toData();
 						supers.push(result);
 						cells.fromData(startBoard);
+						maxDepth = Math.max(maxDepth, depth);
 					}
 					if (state === 2) {
 						cells.fromData(startBoard);
@@ -1801,25 +1805,33 @@ const superposition = (cells) => {
 
 	if (results.length === 0) {
 		return {
+			type: 0,
 			rank: 0,
 			size: 0,
+			depth: 0,
 		};
 	}
 
 	const result = results[0];
 	if (results.length === 1 && result.complete) {
 		return {
+			type: result.type,
 			rank: 1,
 			size: result.size,
+			depth: result.depth,
 		};
 	}
 
+	let maxType = 0;
+	let maxDepth = 0;
 	for (const result of results) {
 		result.cell.delete(result.symbol);
 	}
 	return {
+		type: maxType,
 		rank: 2,
 		size: result.size,
+		depth: maxDepth,
 	};
 }
 
