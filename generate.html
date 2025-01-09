@@ -174,8 +174,6 @@
 			if (coreCount > 0) lastUpdateTime = Date.now();
 			const recordedTime = lastUpdateTime - processStartTime;
 
-			const remainingCount = MAX_SIZE - puzzleCount;
-
 			const addEstimate = (line, title) => {
 				addLine(statsEstimate, line, title);
 				statsEstimate.push(document.createElement('br'));
@@ -187,12 +185,24 @@
 			statsEstimate.push(document.createElement('br'));
 
 			if (recordedCount > 0) {
-				const ms = recordedTime / recordedCount * remainingCount;
-				const date = new Date(Date.now() + ms).toLocaleString(undefined, options);
-				addEstimate(date, "10M ETA");
-				addEstimate(formatTime(ms) + " remaining");
-				const ms7 = recordedTime * MAX_SIZE / recordedCount;
-				addEstimate(formatTime(ms7) + " total");
+				const now = Date.now();
+
+				const remainingCount7 = 1e7 - puzzleCount;
+				const ms7 = recordedTime / recordedCount * remainingCount7;
+				const date7 = new Date(now + ms7).toLocaleString(undefined, options);
+				addEstimate(date7, "10M ETA");
+				addEstimate(formatTime(ms7) + " remaining");
+				const msTotal7 = recordedTime * 1e7 / recordedCount;
+				addEstimate(formatTime(msTotal7) + " total");
+				statsEstimate.push(document.createElement('br'));
+
+				const remainingCount9 = 1e9 - puzzleCount;
+				const ms9 = recordedTime / recordedCount * remainingCount9;
+				const date9 = new Date(now + ms9).toLocaleString(undefined, options);
+				addEstimate(date9, "1 Billion ETA");
+				addEstimate(formatTime(ms9) + " remaining");
+				const msTotal9 = recordedTime * 1e9 / recordedCount;
+				addEstimate(formatTime(msTotal9) + " total");
 				statsEstimate.push(document.createElement('br'));
 			}
 
