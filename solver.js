@@ -1721,21 +1721,21 @@ const superposition = (cells) => {
 				}
 				if (state === 2) {
 					cells.fromData(startBoard);
-					results.push(new SuperpositionResult(0, x, cell, targetSize));
-					// return results;
+					results.push(new SuperpositionResult(0, x, cell, targetSize, depth));
+					return results;
 				}
 			}
 			if (supers.length === 1) {
 				const result = supers[0];
 				cells.fromData(result);
-				return [new SuperpositionResult(0, 0, cell, targetSize, true)];
-			} else {
-				masterCandidates.push(supers);
+				return [new SuperpositionResult(0, 0, cell, targetSize, maxDepth, true)];
 			}
-		}
-		for (const supers of masterCandidates) {
-			const reduced = checkCells(0, cells, supers, supers.length);
-			if (reduced.length > 0) results.push(...reduced);
+
+			const reduced = checkCells(0, cells, supers, supers.length, maxDepth);
+			if (reduced.length > 0) {
+				results.push(...reduced);
+				return results;
+			}
 		}
 		return results;
 	};
@@ -1773,23 +1773,23 @@ const superposition = (cells) => {
 					}
 					if (state === 2) {
 						cells.fromData(startBoard);
-						results.push(new SuperpositionResult(1, x, cell, targetSize));
-						// return results;
+						results.push(new SuperpositionResult(1, x, cell, targetSize, depth));
+						return results;
 					}
 				}
 
 				if (supers.length === 1) {
 					const result = supers[0];
 					cells.fromData(result);
-					return [new SuperpositionResult(1, x, null, targetSize, true)];
-				} else {
-					masterSymbols.push(supers);
+					return [new SuperpositionResult(1, x, null, targetSize, maxDepth, true)];
+				}
+
+				const reduced = checkCells(1, cells, supers, targetSize, maxDepth);
+				if (reduced.length > 0) {
+					results.push(...reduced);
+					return results;
 				}
 			}
-		}
-		for (const supers of masterSymbols) {
-			const reduced = checkCells(1, cells, supers, targetSize);
-			if (reduced.length > 0) results.push(...reduced);
 		}
 		return results;
 	}
