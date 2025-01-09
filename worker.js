@@ -85,7 +85,7 @@ const step = () => {
 	for (const cell of cells) if (cell.symbol === 0) cell.fill();
 	const save = cells.toData();
 
-	const result = fillSolve(cells, simples, visibles, strategies, false);
+	const result = fillSolve(cells, simples, visibles, strategies, true);
 	data.puzzleClues = data.puzzle;
 	data.puzzleFilled = puzzleFilled.join('');
 	data.clueCount = clueCount;
@@ -103,17 +103,21 @@ const step = () => {
 	// 3 Candidate Minimal
 	// 4 Incomplete
 	data.solveType = 0;
-	data.superCount = 0;
 	data.superRank = 0;
 	data.superSize = 0;
+	data.superType = 0;
+	data.superDepth = 0;
+	data.superCount = 0;
 	if (!result.simple) {
 		if (result.solved) {
 			data.solveType = 1;
 		} else {
 			data.solveType = 4;
-			data.superCount = result.superCount;
 			data.superRank = result.superRank;
 			data.superSize = result.superSize;
+			data.superType = result.superType;
+			data.superDepth = result.superDepth;
+			data.superCount = result.superCount;
 		}
 	}
 
