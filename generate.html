@@ -169,8 +169,6 @@
 
 			statsEstimate = [];
 
-			const recordedCount = totalCount - processStartCount;
-
 			if (coreCount > 0) lastUpdateTime = Date.now();
 			const recordedTime = lastUpdateTime - processStartTime;
 
@@ -184,6 +182,7 @@
 			addEstimate(formatTime(recordedTime) + " elapsed");
 			statsEstimate.push(document.createElement('br'));
 
+			const recordedCount = totalCount - processStartCount;
 			if (recordedCount > 0) {
 				const now = Date.now();
 
@@ -196,7 +195,7 @@
 				addEstimate(formatTime(msTotal7) + " total");
 				statsEstimate.push(document.createElement('br'));
 
-				const remainingCount9 = 1e9 - puzzleCount;
+				const remainingCount9 = 1e9 - totalCount;
 				const ms9 = recordedTime / recordedCount * remainingCount9;
 				const date9 = new Date(now + ms9).toLocaleString(undefined, options);
 				addEstimate(date9, "1 Billion ETA");
