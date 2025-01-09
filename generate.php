@@ -47,8 +47,10 @@ function addTable($number)
   `xWing` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `swordfish` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `jellyfish` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `superSize` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `superRank` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `superSize` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `superType` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `superDepth` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `superCount` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=ascii COLLATE=ascii_bin";
@@ -63,7 +65,7 @@ function insertValues($number, $values)
 		omissionVisible, naked2Visible, nakedVisible,
 		naked2, naked3, naked4, hidden1, hidden2, hidden3, hidden4, omissions,
 		uniqueRectangle, yWing, xyzWing, xWing, swordfish, jellyfish,
-		superSize, superRank, superCount) VALUES $valueList";
+		superRank, superSize, superType, superDepth, superCount) VALUES $valueList";
 }
 
 try {
@@ -147,8 +149,10 @@ try {
 			$post->xWing,
 			$post->swordfish,
 			$post->jellyfish,
-			$post->superSize,
 			$post->superRank,
+			$post->superSize,
+			$post->superType,
+			$post->superDepth,
 			$post->superCount,
 		];
 		$flatList = implode(',', $valueList);
