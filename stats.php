@@ -688,7 +688,7 @@ try {
 			$value += $count;
 			$titles[$title] = $value;
 		}
-		foreach ($titles as $count) $total = max($total, $count);
+		foreach ($titles as $count) $total += $count;
 
 		echo str_pad("Size", $len1, " ", STR_PAD_BOTH);
 		echo str_pad("Depth", $len2, " ", STR_PAD_BOTH);
