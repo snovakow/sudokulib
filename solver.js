@@ -1696,7 +1696,7 @@ const superposition = (cells) => {
 		return reduced;
 	};
 
-	const superCandidates = (targetSize, limit) => {
+	const superCandidates = (targetSize) => {
 		const results = [];
 		for (let index = 0; index < 81; index++) {
 			const cell = cells[index];
@@ -1709,7 +1709,7 @@ const superposition = (cells) => {
 				if (!cell.has(x)) continue;
 
 				cell.setSymbol(x);
-				const [state, depth] = superpositionSolve(cells, limit);
+				const [state, depth] = superpositionSolve(cells);
 				if (state === 0) {
 					return [new SuperpositionResult(0, x, cell, targetSize, depth, true)];
 				}
@@ -1740,7 +1740,7 @@ const superposition = (cells) => {
 		return results;
 	};
 
-	const superSymbols = (targetSize, limit) => {
+	const superSymbols = (targetSize) => {
 		const results = [];
 		for (let x = 1; x <= 9; x++) {
 			for (const group of Grid.groupTypes) {
@@ -1761,7 +1761,7 @@ const superposition = (cells) => {
 				let maxDepth = 0;
 				for (const cell of symbolCells) {
 					cell.setSymbol(x);
-					const [state, depth] = superpositionSolve(cells, limit);
+					const [state, depth] = superpositionSolve(cells);
 					if (state === 0) {
 						return [new SuperpositionResult(1, x, cell, targetSize, depth, true)];
 					}
