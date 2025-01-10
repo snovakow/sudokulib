@@ -157,6 +157,18 @@ function tableLogic($strategy = "")
 	return $logic;
 }
 
+function superSort($a, $b)
+{
+	if ($a['superDepth'] == 0 && $b['superDepth'] != 0) return -1;
+	if ($a['superDepth'] != 0 && $b['superDepth'] == 0) return 1;
+
+	if ($a['superSize'] == $b['superSize']) {
+		if ($a['superDepth'] == $b['superDepth']) return 0;
+		return ($a['superDepth'] < $b['superDepth']) ? -1 : 1;
+	}
+	return ($a['superSize'] < $b['superSize']) ? -1 : 1;
+}
+
 try {
 	$servername = "localhost";
 	$username = "snovakow";
@@ -623,7 +635,6 @@ try {
 		$len6 = 20;
 
 		$rows = [];
-		$total = 0;
 
 		for ($i = 1; $i <= $tableCount; $i++) {
 			$table = tableName($i);
@@ -631,11 +642,7 @@ try {
 			// $sql .= "SELECT `superRank`, `superSize`, `superType`, `superDepth`, `superCount`, COUNT(*) AS count ";
 			// $sql .= "FROM `$table` WHERE `solveType`=4 GROUP BY `superRank`, `superSize`, `superType`, `superDepth`, `superCount` ";
 			$sql .= "SELECT `superSize`, `superDepth`, COUNT(*) AS count ";
-			$sql .= "FROM `$table` WHERE `solveType`=4 GROUP BY `superSize`, `superDepth` ";
-			$sql .= "ORDER BY ";
-			$sql .= "`superSize`";
-			$sql .= ",";
-			$sql .= "`superDepth`";
+			$sql .= "FROM `$table` WHERE `solveType`=4 GROUP BY `superSize`, `superDepth`";
 			// $sql .= ",";
 			// $sql .= "`superCount`";
 			// $sql .= ",";
@@ -646,7 +653,7 @@ try {
 			$stmt->execute();
 
 			$result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-			foreach ($result as $key => $row) {
+			foreach ($result as $row) {
 				$superSize = (int)$row['superSize'];
 				$superDepth = (int)$row['superDepth'];
 				// $superCount = (int)$row['superCount'];
@@ -654,18 +661,34 @@ try {
 				// $superType = (int)$row['superType'];
 				$count = (int)$row['count'];
 
-				$title =  "";
-				$title .=  str_pad("$superSize", $len2, " ");
-				$title .=  str_pad("$superDepth", $len4, " ");
-				// $title .=  str_pad("$superCount", $len5, " ");
-				// $title .=  str_pad("$superRank", $len1, " ");
-				// $title .=  str_pad("$superType", $len3, " ");
-
-				$total = max($total, $count);
-				if (array_key_exists($title, $rows)) $rows[$title] += $count;
-				else $rows[$title] = $count;
+				$rows[] = ['superSize' => $superSize, 'superDepth' => $superDepth, 'count' => $count];
 			}
 		}
+
+		usort($rows, "superSort");
+
+		$titles = [];
+		$total = 0;
+		foreach ($rows as $row) {
+			$superSize = $row['superSize'];
+			$superDepth = $row['superDepth'];
+			// $superCount = (int)$row['superCount'];
+			// $superRank = (int)$row['superRank'];
+			// $superType = (int)$row['superType'];
+			$count = $row['count'];
+
+			$title =  "";
+			$title .=  str_pad("$superSize", $len1, " ");
+			$title .=  str_pad("$superDepth", $len2, " ");
+			// $title .=  str_pad("$superCount", $len3, " ");
+			// $title .=  str_pad("$superRank", $len4, " ");
+			// $title .=  str_pad("$superType", $len5, " ");
+
+			$value = $titles[$title] ?: 0;
+			$value += $count;
+			$titles[$title] = $value;
+		}
+		foreach ($titles as $count) $total = max($total, $count);
 
 		echo str_pad("Size", $len1, " ", STR_PAD_BOTH);
 		echo str_pad("Depth", $len2, " ", STR_PAD_BOTH);
@@ -682,11 +705,7 @@ try {
 		echo str_pad(str_pad("", $len6 - 1, "-", STR_PAD_BOTH), $len6, " ");
 		echo "\n";
 
-		// $percent = percentage($count, $total, 3);
-		// $format = number_format($count);
-		// echo "Incomplete: $percent $format\n\n";
-
-		foreach ($rows as $title => $count) {
+		foreach ($titles as $title => $count) {
 			$percent = percentage($count, $total, 3);
 			$format = number_format($count);
 
