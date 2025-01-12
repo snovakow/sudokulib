@@ -65,6 +65,62 @@ function queryStrategy($db, $table)
 	return $result;
 }
 
+function tableGeneralStatement($tableCount, $tableName, $fields, $select, $logic, $order)
+{
+	$tableName_tmp = "{$tableName}_tmp";
+
+	$sql = "";
+	$sql .= "DROP TABLE IF EXISTS `$tableName`;\n";
+	$sql .= "CREATE TABLE `$tableName` (\n";
+	$sql .= "  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,\n";
+	foreach ($fields as $field) $sql .= "  `$field` tinyint(2) unsigned NOT NULL,\n";
+	$sql .= "  `puzzle_id` int(10) unsigned NOT NULL,\n";
+	$sql .= "  `table_id` int(10) unsigned NOT NULL,\n";
+	$sql .= "  PRIMARY KEY (`id`)\n";
+	$sql .= ") ENGINE=InnoDB DEFAULT CHARSET=ascii;\n";
+
+	if ($tableCount > 1) {
+		$sql .= "DROP TEMPORARY TABLE IF EXISTS `$tableName_tmp`;\n";
+		$sql .= "CREATE TEMPORARY TABLE `$tableName_tmp` (\n";
+		foreach ($fields as $field) $sql .= "  `$field` tinyint(2) unsigned NOT NULL,\n";
+		$sql .= "  `puzzle_id` int(10) unsigned NOT NULL,\n";
+		$sql .= "  `table_id` int(10) unsigned NOT NULL\n";
+		$sql .= ") ENGINE=InnoDB DEFAULT CHARSET=ascii;\n";
+	}
+
+	for ($table_id = 1; $table_id <= $tableCount; $table_id++) {
+		$tableLead = $tableName;
+		$tableSwap = $tableName_tmp;
+		if ($tableCount % 2 !=  $table_id % 2) {
+			$tableLead = $tableName_tmp;
+			$tableSwap = $tableName;
+		}
+
+		if ($table_id > 2) {
+			$sql .= "TRUNCATE TABLE `$tableLead`;\n";
+			if ($table_id == $tableCount) $sql .= "ALTER TABLE `$tableLead` AUTO_INCREMENT=1;\n";
+		}
+
+		$fieldList = implode("`, `", $fields);
+		$sql .= "INSERT INTO `$tableLead` (`$fieldList`, `puzzle_id`, `table_id`)\n";
+
+		$table = tableName($table_id);
+
+		$selectLogic = "SELECT $select, `id` AS puzzle_id, '$table_id' AS table_id FROM `$table` WHERE $logic";
+		if ($table_id > 1) {
+			$sql .= "($selectLogic) \n";
+			$sql .= "UNION ALL (SELECT `$fieldList`, `puzzle_id`, `table_id` FROM `$tableSwap`) \n";
+		} else {
+			$sql .= "$selectLogic \n";
+		}
+		$sql .= "ORDER BY $order LIMIT 1000000;\n";
+	}
+
+	if ($tableCount > 1) $sql .= "DROP TEMPORARY TABLE `$tableName_tmp`;\n";
+
+	$sql .= "ALTER TABLE `$tableName` AUTO_INCREMENT=1;\n";
+	return $sql;
+}
 function tableStatement($tableCount, $select, $tableName, $logic)
 {
 	$tableName_tmp = "{$tableName}_tmp";
@@ -253,7 +309,7 @@ try {
 		echo "$sql\n";
 
 		$logic = "`solveType`=1";
-		$sql = tableStatement($tableCount, "nakedVisible", "visible_naked", $logic);
+		$sql = tableStatement($tableCount, "nakedVisible", "candidate_visible", $logic);
 		echo "$sql\n";
 
 		echo tableStrategyLogic($tableCount, 3, "naked2", "candidate_naked2");
@@ -271,22 +327,16 @@ try {
 		echo tableStrategyLogic($tableCount, 3, "swordfish", "candidate_swordfish");
 		echo tableStrategyLogic($tableCount, 3, "jellyfish", "candidate_jellyfish");
 
-		$logic = "`solveType`=4";
-		$logic .= strategyLogic("hiddenSimple");
-		$logic .= strategyLogic("omissionSimple");
-		$logic .= strategyLogic("naked2Simple");
-		$logic .= strategyLogic("naked3Simple");
-		$logic .= strategyLogic("nakedSimple");
-		$logic .= strategyLogic("omissionVisible");
-		$logic .= strategyLogic("naked2Visible");
-		$logic .= strategyLogic("nakedVisible");
-		$logic .= tableLogic();
-		$sql = tableStatement($tableCount, "clueCount", "unsolvable", $logic);
-		echo "$sql\n";
+		$fields = ["superSize", "superCount", "superDepth", "superRank", "superType"];
+		$select = implode(", ", $fields);
+		$logic = "`solveType`=4 AND `naked2`=0 AND `naked3`=0 AND `naked4`=0 AND `hidden1`=0 AND `hidden2`=0 AND `hidden3`=0 AND `hidden4`=0 AND ";
+		$logic .= "`omissions`=0 AND `uniqueRectangle`=0 AND `yWing`=0 AND `xyzWing`=0 AND `xWing`=0 AND `swordfish`=0 AND `jellyfish`=0";
+		$order = implode(" ASC, ", $fields) . " ASC";
+		echo tableGeneralStatement($tableCount, "super_min", $fields, $select, $logic, $order), "\n";;
 
 		$logic = "`solveType`=4";
-		$select = "(clueCount + hiddenSimple + omissionSimple + naked2Simple + naked3Simple + nakedSimple + nakedVisible)";
-		echo tableStatement($tableCount, $select, "unsolvable_filled", $logic), "\n";
+		$order = implode(" DESC, ", $fields) . " DESC";
+		echo tableGeneralStatement($tableCount, "super_max", $fields, $select, $logic, $order), "\n";;
 	}
 
 	if ($mode === 2) {
@@ -295,7 +345,7 @@ try {
 		$tableNames = [
 			"simple_hidden",
 			"simple_omission",
-			"visible_naked",
+			"candidate_visible",
 			"candidate_naked2",
 			"candidate_naked3",
 			"candidate_naked4",
@@ -310,8 +360,8 @@ try {
 			"candidate_xWing",
 			"candidate_swordfish",
 			"candidate_jellyfish",
-			"unsolvable",
-			"unsolvable_filled",
+			"super_min",
+			"super_max",
 		];
 
 		printf("%-26s%8s%4s%10s\n", "Table", "Percent", "Max", "Count");
