@@ -215,9 +215,6 @@ function tableLogic($strategy = "")
 
 function superSort($a, $b)
 {
-	if ($a['superDepth'] == 0 && $b['superDepth'] != 0) return -1;
-	if ($a['superDepth'] != 0 && $b['superDepth'] == 0) return 1;
-
 	if ($a['superSize'] == $b['superSize']) {
 		if ($a['superDepth'] == $b['superDepth']) return 0;
 		return ($a['superDepth'] < $b['superDepth']) ? -1 : 1;
@@ -331,12 +328,12 @@ try {
 		$select = implode(", ", $fields);
 		$logic = "`solveType`=4 AND `naked2`=0 AND `naked3`=0 AND `naked4`=0 AND `hidden1`=0 AND `hidden2`=0 AND `hidden3`=0 AND `hidden4`=0 AND ";
 		$logic .= "`omissions`=0 AND `uniqueRectangle`=0 AND `yWing`=0 AND `xyzWing`=0 AND `xWing`=0 AND `swordfish`=0 AND `jellyfish`=0";
-		$order = implode(" ASC, ", $fields) . " ASC";
-		echo tableGeneralStatement($tableCount, "super_min", $fields, $select, $logic, $order), "\n";;
+		$order = implode(", ", $fields);
+		echo tableGeneralStatement($tableCount, "super_min", $fields, $select, $logic, $order), "\n";
 
 		$logic = "`solveType`=4";
 		$order = implode(" DESC, ", $fields) . " DESC";
-		echo tableGeneralStatement($tableCount, "super_max", $fields, $select, $logic, $order), "\n";;
+		echo tableGeneralStatement($tableCount, "super_max", $fields, $select, $logic, $order), "\n";
 	}
 
 	if ($mode === 2) {
