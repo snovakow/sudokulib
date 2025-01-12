@@ -137,9 +137,10 @@
 
 			const seconds = Math.floor(now / 1000);
 			if (seconds === processTimer) return;
+			processTimer = seconds;
+
 
 			if (coreCount === 0 && pingRun && !pingRunBusy) pingSend();
-			processTimer = seconds;
 
 			if (!generateMode && !pingFound) {
 				if (!pingInitiated) return
