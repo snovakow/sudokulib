@@ -115,6 +115,9 @@
 		};
 
 		let animationLoop = true;
+		let appStage = 0;
+		let sendDataSending = false;
+		const sendDataStack = [];
 
 		let pingInitiated = false;
 		let pingFound = false;
@@ -123,6 +126,14 @@
 		let pingRunBusy = false;
 
 		let coreCount = 0;
+
+		const generateButton = document.createElement('button');
+		generateButton.style.top = '8px';
+		generateButton.style.right = '8px';
+		generateButton.style.position = 'absolute';
+		generateButton.style.width = '80px';
+		generateButton.style.height = '32px';
+		generateButton.appendChild(document.createTextNode("Generate"));
 
 		const createEstimate = () => {
 			const now = Date.now();
@@ -139,6 +150,10 @@
 			if (seconds === processTimer) return;
 			processTimer = seconds;
 
+			if (!sendDataSending && appStage === 2 && sendDataStack.length === 0 && generateButton.parentElement) {
+				animationLoop = false;
+				document.body.removeChild(generateButton);
+			}
 
 			if (coreCount === 0 && pingRun && !pingRunBusy) pingSend();
 
@@ -265,14 +280,6 @@
 		const searchCores = parseInt(search.get("cores"));
 		if (!isNaN(searchCores) && searchCores <= 10 && searchCores > 0) coreCount = searchCores;
 
-		const generateButton = document.createElement('button');
-		generateButton.style.top = '8px';
-		generateButton.style.right = '8px';
-		generateButton.style.position = 'absolute';
-		generateButton.style.width = '80px';
-		generateButton.style.height = '32px';
-		generateButton.appendChild(document.createTextNode("Generate"));
-
 		let strategyCounter = null;
 		let workers = null;
 		const toggleWorker = () => {
@@ -292,8 +299,6 @@
 		};
 
 		let sendDataSent = 0;
-		const sendDataStack = [];
-		let sendDataSending = false;
 		const MAX_SEND = 1000;
 
 		const populateGenerate = () => {
@@ -446,6 +451,8 @@
 				}
 			}
 			generateButton.addEventListener('click', () => {
+				if (appStage === 1) generateButton.disabled = true;
+				appStage++;
 				pingSend(responder);
 			});
 			document.body.appendChild(generateButton);
