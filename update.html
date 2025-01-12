@@ -78,14 +78,31 @@
 			return `${hours}:${minutesString}:${secondsString}`;
 		}
 
+		const updateButton = document.createElement('button');
+		updateButton.appendChild(document.createTextNode("Update"));
+		updateButton.style.top = '8px';
+		updateButton.style.right = '8px';
+		updateButton.style.position = 'absolute';
+		updateButton.style.width = '80px';
+		updateButton.style.height = '32px';
+
 		let animationTicker = 0;
 		let animating = true;
+
+		let appStage = 0;
+		let runningSends = 0;
+		const updateDataStack = [];
 		const animateFrame = () => {
 			if (animating) window.requestAnimationFrame(animateFrame);
 
 			const tick = Math.floor(Date.now() / 1000);
 			if (tick === animationTicker) return;
 			animationTicker = tick;
+
+			if (runningSends === 0 && appStage === 2 && updateDataStack.length === 0 && updateButton.parentElement) {
+				animating = false;
+				document.body.removeChild(updateButton);
+			}
 
 			if (receivedNodeOverride) {
 				while (receivedNode.firstChild) receivedNode.removeChild(receivedNode.lastChild);
@@ -156,14 +173,6 @@
 			}
 		}
 
-		const updateButton = document.createElement('button');
-		updateButton.appendChild(document.createTextNode("Update"));
-		updateButton.style.top = '8px';
-		updateButton.style.right = '8px';
-		updateButton.style.position = 'absolute';
-		updateButton.style.width = '80px';
-		updateButton.style.height = '32px';
-
 		const url = './tables.php?version=1';
 		fetch(url, { cache: "no-store" }).then(response => {
 			response.text().then((string) => {
@@ -206,10 +215,8 @@
 			for (let i = 0; i < coreCount; i++) workers[i] = new WorkerUnit();
 		};
 
-		const updateDataStack = [];
 		const maxSend = 10000;
 		const maxParallel = 1;
-		let runningSends = 0;
 		const updateData = (data) => {
 			if (data) updateDataStack.push(data);
 			if (runningSends > 0 && updateDataStack.length < maxSend) return;
@@ -357,6 +364,9 @@
 		};
 
 		updateButton.addEventListener('click', () => {
+			if (appStage === 1) updateButton.disabled = true;
+			appStage++;
+
 			if (startTime === 0) startTime = Date.now();
 			if (animationTicker === 0) animateFrame();
 			while (updateButton.firstChild) updateButton.removeChild(updateButton.firstChild);
