@@ -1824,13 +1824,17 @@ const superposition = (cells) => {
 
 	let maxType = 0;
 	let maxDepth = 0;
+	let maxSize = 0;
 	for (const result of results) {
+		maxType = Math.max(maxType, result.type);
+		maxDepth = Math.max(maxDepth, result.depth);
+		maxSize = Math.max(maxSize, result.size);
 		result.cell.delete(result.symbol);
 	}
 	return {
 		type: maxType,
 		rank: 2,
-		size: result.size,
+		size: maxSize,
 		depth: maxDepth,
 	};
 }
