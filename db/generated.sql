@@ -7,7 +7,7 @@
 #
 # Host: localhost (MySQL 5.7.32)
 # Database: sudoku
-# Generation Time: 2024-12-22 20:14:57 +0000
+# Generation Time: 2025-01-12 18:58:31 +0000
 # ************************************************************
 
 
@@ -185,6 +185,21 @@ CREATE TABLE `candidate_uniqueRectangle` (
 
 
 
+# Dump of table candidate_visible
+# ------------------------------------------------------------
+
+DROP TABLE IF EXISTS `candidate_visible`;
+
+CREATE TABLE `candidate_visible` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `count` tinyint(2) unsigned NOT NULL,
+  `puzzle_id` int(10) unsigned NOT NULL,
+  `table_id` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=ascii;
+
+
+
 # Dump of table candidate_xWing
 # ------------------------------------------------------------
 
@@ -260,14 +275,18 @@ CREATE TABLE `simple_omission` (
 
 
 
-# Dump of table unsolvable
+# Dump of table super_max
 # ------------------------------------------------------------
 
-DROP TABLE IF EXISTS `unsolvable`;
+DROP TABLE IF EXISTS `super_max`;
 
-CREATE TABLE `unsolvable` (
+CREATE TABLE `super_max` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `count` tinyint(2) unsigned NOT NULL,
+  `superSize` tinyint(2) unsigned NOT NULL,
+  `superCount` tinyint(2) unsigned NOT NULL,
+  `superDepth` tinyint(2) unsigned NOT NULL,
+  `superRank` tinyint(2) unsigned NOT NULL,
+  `superType` tinyint(2) unsigned NOT NULL,
   `puzzle_id` int(10) unsigned NOT NULL,
   `table_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`)
@@ -275,29 +294,18 @@ CREATE TABLE `unsolvable` (
 
 
 
-# Dump of table unsolvable_filled
+# Dump of table super_min
 # ------------------------------------------------------------
 
-DROP TABLE IF EXISTS `unsolvable_filled`;
+DROP TABLE IF EXISTS `super_min`;
 
-CREATE TABLE `unsolvable_filled` (
+CREATE TABLE `super_min` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `count` tinyint(2) unsigned NOT NULL,
-  `puzzle_id` int(10) unsigned NOT NULL,
-  `table_id` int(10) unsigned NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=ascii;
-
-
-
-# Dump of table visible_naked
-# ------------------------------------------------------------
-
-DROP TABLE IF EXISTS `visible_naked`;
-
-CREATE TABLE `visible_naked` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `count` tinyint(2) unsigned NOT NULL,
+  `superSize` tinyint(2) unsigned NOT NULL,
+  `superCount` tinyint(2) unsigned NOT NULL,
+  `superDepth` tinyint(2) unsigned NOT NULL,
+  `superRank` tinyint(2) unsigned NOT NULL,
+  `superType` tinyint(2) unsigned NOT NULL,
   `puzzle_id` int(10) unsigned NOT NULL,
   `table_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`)
