@@ -678,24 +678,15 @@ try {
 		$len2 = 6;
 		$len3 = 6;
 		$len4 = 6;
-		$len5 = 6;
-		$len6 = 20;
+		$len5 = 20;
 
 		$rows = [];
 
 		for ($i = 1; $i <= $tableCount; $i++) {
 			$table = tableName($i);
 			$sql = "";
-			// $sql .= "SELECT `superRank`, `superSize`, `superType`, `superDepth`, `superCount`, COUNT(*) AS count ";
-			// $sql .= "FROM `$table` WHERE `solveType`=4 GROUP BY `superRank`, `superSize`, `superType`, `superDepth`, `superCount` ";
 			$sql .= "SELECT `superSize`, `superDepth`, COUNT(*) AS count ";
 			$sql .= "FROM `$table` WHERE `solveType`=4 GROUP BY `superSize`, `superDepth`";
-			// $sql .= ",";
-			// $sql .= "`superCount`";
-			// $sql .= ",";
-			// $sql .= "`superRank`";
-			// $sql .= ",";
-			// $sql .= "`superType`";
 			$stmt = $db->prepare($sql);
 			$stmt->execute();
 
