@@ -685,15 +685,17 @@ try {
 
 		$len1 = 6;
 		$len2 = 6;
-		$len3 = 20;
+		$len3 = 6;
+		$len4 = 6;
+		$len5 = 20;
 
 		$rows = [];
 
 		for ($i = 1; $i <= $tableCount; $i++) {
 			$table = tableName($i);
 			$sql = "";
-			$sql .= "SELECT `superSize`, `superDepth`, COUNT(*) AS count ";
-			$sql .= "FROM `$table` WHERE `solveType`=4 GROUP BY `superSize`, `superDepth`";
+			$sql .= "SELECT `superSize`, `superDepth`, `superCount`, COUNT(*) AS count ";
+			$sql .= "FROM `$table` WHERE `solveType`=4 GROUP BY `superSize`, `superDepth`, `superCount`";
 			$stmt = $db->prepare($sql);
 			$stmt->execute();
 
@@ -702,46 +704,85 @@ try {
 				$superSize = (int)$row['superSize'];
 				$superDepth = (int)$row['superDepth'];
 				$count = (int)$row['count'];
-
-				$rows[] = ['superSize' => $superSize, 'superDepth' => $superDepth, 'count' => $count];
+				$rows[] = $row;
 			}
 		}
 
 		usort($rows, "superSort");
 
-		$titles = [];
-		$total = 0;
+		$results = [];
 		foreach ($rows as $row) {
 			$superSize = $row['superSize'];
 			$superDepth = $row['superDepth'];
+			$superCount = $row['superCount'];
 			$count = $row['count'];
 
 			$title =  "";
 			$title .=  str_pad("$superSize    ", $len1, " ", STR_PAD_LEFT);
 			$title .=  str_pad("$superDepth    ", $len2, " ", STR_PAD_LEFT);
 
-			$value = $titles[$title] ?: 0;
-			$value += $count;
-			$titles[$title] = $value;
+			$result = $results[$title] ?: [];
+			$result[] = $row;
+			$results[$title] = $result;
 		}
-		// foreach ($titles as $count) $total += $count;
-		foreach ($titles as $count) $total = max($total, $count);
+
+		$titles = [];
+		$total = 0;
+		foreach ($results as $title => $value) {
+			$started = false;
+			$countTotal = 0;
+			$max = 0;
+			$min = 0;
+			foreach ($value as $row) {
+				$superCount = $row['superCount'];
+				$count = $row['count'];
+
+				$countTotal += $count;
+				if ($started) {
+					$max = max($max, $superCount);
+					$min = min($min, $superCount);
+				} else {
+					$max = $superCount;
+					$min = $superCount;
+					$started = true;
+				}
+			}
+
+			$values = $titles[$title] ?: [];
+			$values['count'] = $countTotal;
+			$values['max'] = $max;
+			$values['min'] = $min;
+			$titles[$title] = $values;
+
+			$total = max($total, $countTotal);
+		}
 
 		echo str_pad("Size", $len1, " ", STR_PAD_BOTH);
 		echo str_pad("Depth", $len2, " ", STR_PAD_BOTH);
-		echo str_pad("Total", $len3, " ", STR_PAD_BOTH);
+		echo str_pad("Min", $len3, " ", STR_PAD_BOTH);
+		echo str_pad("Max", $len4, " ", STR_PAD_BOTH);
+		echo str_pad("Total", $len5, " ", STR_PAD_BOTH);
 		echo "\n";
 		echo str_pad(str_pad("", $len1 - 1, "-", STR_PAD_BOTH), $len1, " ");
 		echo str_pad(str_pad("", $len2 - 1, "-", STR_PAD_BOTH), $len2, " ");
 		echo str_pad(str_pad("", $len3 - 1, "-", STR_PAD_BOTH), $len3, " ");
+		echo str_pad(str_pad("", $len4 - 1, "-", STR_PAD_BOTH), $len4, " ");
+		echo str_pad(str_pad("", $len5 - 1, "-", STR_PAD_BOTH), $len5, " ");
 		echo "\n";
 
-		foreach ($titles as $title => $value) {
-			$percent = percentage($value, $total, 3);
-			$format = number_format($value);
+		foreach ($titles as $title => $values) {
+			$count = $values['count'];
+			$max = $values['max'];
+			$min = $values['min'];
+
+			$title .=  str_pad("$min    ", $len3, " ", STR_PAD_LEFT);
+			$title .=  str_pad("$max    ", $len4, " ", STR_PAD_LEFT);
+
+			$percent = percentage($count, $total, 3);
+			$format = number_format($count);
 
 			echo $title;
-			echo str_pad("$percent $format", $len3, " ", STR_PAD_RIGHT);
+			echo str_pad("$percent $format", $len5, " ", STR_PAD_RIGHT);
 			echo  "\n";
 		}
 
