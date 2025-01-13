@@ -742,7 +742,7 @@ try {
 			$format = number_format($count);
 
 			echo $title;
-			echo str_pad("$percent $format", $len6, " ");
+			echo str_pad("$percent $format", $len5, " ");
 			echo  "\n";
 		}
 
