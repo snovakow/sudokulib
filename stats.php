@@ -676,9 +676,7 @@ try {
 
 		$len1 = 6;
 		$len2 = 6;
-		$len3 = 6;
-		$len4 = 6;
-		$len5 = 20;
+		$len3 = 20;
 
 		$rows = [];
 
@@ -710,39 +708,31 @@ try {
 			$count = $row['count'];
 
 			$title =  "";
-			$title .=  str_pad("$superSize", $len1, " ");
-			$title .=  str_pad("$superDepth", $len2, " ");
-			// $title .=  str_pad("$superCount", $len3, " ");
-			// $title .=  str_pad("$superRank", $len4, " ");
-			// $title .=  str_pad("$superType", $len5, " ");
+			$title .=  str_pad("$superSize    ", $len1, " ", STR_PAD_LEFT);
+			$title .=  str_pad("$superDepth    ", $len2, " ", STR_PAD_LEFT);
 
 			$value = $titles[$title] ?: 0;
 			$value += $count;
 			$titles[$title] = $value;
 		}
-		foreach ($titles as $count) $total += $count;
+		// foreach ($titles as $count) $total += $count;
+		foreach ($titles as $count) $total = max($total, $count);
 
 		echo str_pad("Size", $len1, " ", STR_PAD_BOTH);
 		echo str_pad("Depth", $len2, " ", STR_PAD_BOTH);
-		// echo str_pad("Count", $len3, " ", STR_PAD_BOTH);
-		// echo str_pad("Rank", $len4, " ", STR_PAD_BOTH);
-		// echo str_pad("Type", $len5, " ", STR_PAD_BOTH);
-		echo str_pad("Total", $len6, " ", STR_PAD_BOTH);
+		echo str_pad("Total", $len3, " ", STR_PAD_BOTH);
 		echo "\n";
 		echo str_pad(str_pad("", $len1 - 1, "-", STR_PAD_BOTH), $len1, " ");
 		echo str_pad(str_pad("", $len2 - 1, "-", STR_PAD_BOTH), $len2, " ");
-		// echo str_pad(str_pad("", $len3 - 1, "-", STR_PAD_BOTH), $len3, " ");
-		// echo str_pad(str_pad("", $len4 - 1, "-", STR_PAD_BOTH), $len4, " ");
-		// echo str_pad(str_pad("", $len5 - 1, "-", STR_PAD_BOTH), $len5, " ");
-		echo str_pad(str_pad("", $len6 - 1, "-", STR_PAD_BOTH), $len6, " ");
+		echo str_pad(str_pad("", $len3 - 1, "-", STR_PAD_BOTH), $len3, " ");
 		echo "\n";
 
-		foreach ($titles as $title => $count) {
-			$percent = percentage($count, $total, 3);
-			$format = number_format($count);
+		foreach ($titles as $title => $value) {
+			$percent = percentage($value, $total, 3);
+			$format = number_format($value);
 
 			echo $title;
-			echo str_pad("$percent $format", $len3, " ");
+			echo str_pad("$percent $format", $len3, " ", STR_PAD_RIGHT);
 			echo  "\n";
 		}
 
