@@ -700,12 +700,7 @@ try {
 			$stmt->execute();
 
 			$result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-			foreach ($result as $row) {
-				$superSize = (int)$row['superSize'];
-				$superDepth = (int)$row['superDepth'];
-				$count = (int)$row['count'];
-				$rows[] = $row;
-			}
+			foreach ($result as $row) $rows[] = $row;
 		}
 
 		usort($rows, "superSort");
@@ -714,8 +709,6 @@ try {
 		foreach ($rows as $row) {
 			$superSize = $row['superSize'];
 			$superDepth = $row['superDepth'];
-			$superCount = $row['superCount'];
-			$count = $row['count'];
 
 			$title =  "";
 			$title .=  str_pad("$superSize    ", $len1, " ", STR_PAD_LEFT);
@@ -748,13 +741,13 @@ try {
 				}
 			}
 
+			$total = max($total, $countTotal);
+
 			$values = $titles[$title] ?: [];
 			$values['count'] = $countTotal;
 			$values['max'] = $max;
 			$values['min'] = $min;
 			$titles[$title] = $values;
-
-			$total = max($total, $countTotal);
 		}
 
 		echo str_pad("Size", $len1, " ", STR_PAD_BOTH);
