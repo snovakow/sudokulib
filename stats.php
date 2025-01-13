@@ -297,17 +297,22 @@ try {
 	}
 
 	if ($mode === 1) {
+		$fields = ["count"];
+
+		$select = "`hiddenSimple` as count";
 		$logic = "`solveType`=0 AND `omissionSimple`=0 AND `naked2Simple`=0 AND `naked3Simple`=0 AND `nakedSimple`=0";
-		$sql = tableStatement($tableCount, "clueCount", "simple_hidden", $logic);
-		echo "$sql\n";
+		$order = "count";
+		echo tableGeneralStatement($tableCount, "simple_hidden", $fields, $select, $logic, $order), "\n";
 
+		$select = "`omissionSimple` as count";
 		$logic = "`solveType`=0 AND `omissionSimple`>0 AND `naked2Simple`=0 AND `naked3Simple`=0 AND `nakedSimple`=0";
-		$sql = tableStatement($tableCount, "omissionSimple", "simple_omission", $logic);
-		echo "$sql\n";
+		$order = "count DESC";
+		echo tableGeneralStatement($tableCount, "simple_omission", $fields, $select, $logic, $order), "\n";
 
+		$select = "`nakedVisible` as count";
 		$logic = "`solveType`=1";
-		$sql = tableStatement($tableCount, "nakedVisible", "candidate_visible", $logic);
-		echo "$sql\n";
+		$order = "count DESC";
+		echo tableGeneralStatement($tableCount, "candidate_visible", $fields, $select, $logic, $order), "\n";
 
 		echo tableStrategyLogic($tableCount, 3, "naked2", "candidate_naked2");
 		echo tableStrategyLogic($tableCount, 3, "naked3", "candidate_naked3");
@@ -364,7 +369,11 @@ try {
 		printf("%-26s%8s%4s%10s\n", "Table", "Percent", "Max", "Count");
 		printf("%'-26s%'-9s%'-4s%'-10s\n", " ", " ", " ", " ");
 		foreach ($tableNames as $tableName) {
-			$sql = "SELECT COUNT(*) AS count, MAX(`count`) as max FROM `$tableName`";
+			if ($tableName == "simple_hidden") $sql = "SELECT COUNT(*) AS count, MAX(81 - `count`) as max FROM `$tableName`";
+			else if ($tableName == "super_min" || $tableName == "super_max") {
+				$sql = "SELECT COUNT(*) AS count, MAX(`superCount`) as max FROM `$tableName`";
+			} else $sql = "SELECT COUNT(*) AS count, MAX(`count`) as max FROM `$tableName`";
+
 			$stmt = $db->prepare($sql);
 			$stmt->execute();
 			$result = $stmt->fetch();
