@@ -694,9 +694,6 @@ try {
 			foreach ($result as $row) {
 				$superSize = (int)$row['superSize'];
 				$superDepth = (int)$row['superDepth'];
-				// $superCount = (int)$row['superCount'];
-				// $superRank = (int)$row['superRank'];
-				// $superType = (int)$row['superType'];
 				$count = (int)$row['count'];
 
 				$rows[] = ['superSize' => $superSize, 'superDepth' => $superDepth, 'count' => $count];
