@@ -707,9 +707,6 @@ try {
 		foreach ($rows as $row) {
 			$superSize = $row['superSize'];
 			$superDepth = $row['superDepth'];
-			// $superCount = (int)$row['superCount'];
-			// $superRank = (int)$row['superRank'];
-			// $superType = (int)$row['superType'];
 			$count = $row['count'];
 
 			$title =  "";
