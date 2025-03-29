@@ -75,7 +75,9 @@
 			const minutes = Math.floor(seconds / 60);
 			const minutesString = new String(minutes % 60).padStart(2, '0');
 			const hours = Math.floor(minutes / 60);
-			return `${hours}:${minutesString}:${secondsString}`;
+			const hoursString = new String(hours % 24).padStart(2, '0');
+			const days = Math.floor(hours / 24);
+			return `${days} days ${hoursString}:${minutesString}:${secondsString}`;
 		}
 
 		const updateButton = document.createElement('button');
@@ -92,6 +94,7 @@
 		let appStage = 0;
 		let runningSends = 0;
 		const updateDataStack = [];
+
 		const animateFrame = () => {
 			if (animating) window.requestAnimationFrame(animateFrame);
 
@@ -114,13 +117,15 @@
 				makeBold(processedNode, "Processed", strategyCounter.totalPuzzles.toLocaleString());
 				processedNodeOverride = false;
 			}
+
+			const currentCount = startCount + updateDataSent;
 			if (sentNodeOverride) {
 				while (sentNode.firstChild) sentNode.removeChild(sentNode.lastChild);
 				makeBold(sentNode, "Sent", updateDataSent.toLocaleString());
-				const progressTotal = totalCount - startCount;
-				if (progressTotal > 0) {
+				if (totalCount > 0) {
 					sentNode.appendChild(document.createElement("br"));
-					makeBold(sentNode, "Progress", (100 * updateDataSent / progressTotal).toFixed(2) + "%");
+					const percent = Math.floor((100 * currentCount / totalCount) * 100) / 100;
+					makeBold(sentNode, "Progress", percent.toFixed(2) + "%");
 				}
 				sentNodeOverride = false;
 			}
@@ -146,7 +151,6 @@
 				body.appendChild(document.createElement("br"));
 			}
 
-			const currentCount = startCount + updateDataSent;
 			if (startTime > 0 && updateDataSent > 0) {
 				const passed = Date.now() - startTime;
 				if (passed > 3 * 1000) {
@@ -161,8 +165,12 @@
 						}
 					}
 					if (currentCount < totalCount) {
+						const chunk7ETA = (MAX_SIZE - currentCount % MAX_SIZE) * passed / updateDataSent;
+						makeBold(body, "10M ETA", formatTime(chunk7ETA));
+						body.appendChild(document.createElement("br"));
+
 						const eta = (totalCount - currentCount) * passed / updateDataSent;
-						makeBold(body, "ETA", formatTime(eta));
+						makeBold(body, "1 Billion ETA", formatTime(eta));
 					}
 				}
 			}
@@ -186,12 +194,15 @@
 
 				setCount(tableCount, puzzleCount);
 				document.body.appendChild(updateButton);
+
+				makeBold(body, "Total", totalCount.toLocaleString())
 			});
 		});
 
 		const WorkerUnit = class {
 			constructor() {
-				this.worker = new Worker("worker.js", { type: "module" });
+				const worker_url = new URL("./worker_generator.js", import.meta.url);
+				this.worker = new Worker(worker_url, { type: "module" });
 				this.remaining = 0;
 			}
 			process(data) {
@@ -230,12 +241,9 @@
 					id: ready.id,
 					solveType: ready.solveType,
 					hiddenSimple: ready.hiddenSimple,
-					omissionSimple: ready.omissionSimple,
-					naked2Simple: ready.naked2Simple,
-					naked3Simple: ready.naked3Simple,
 					nakedSimple: ready.nakedSimple,
+					omissionSimple: ready.omissionSimple,
 					omissionVisible: ready.omissionVisible,
-					naked2Visible: ready.naked2Visible,
 					nakedVisible: ready.nakedVisible,
 					naked2: ready.naked2,
 					naked3: ready.naked3,
@@ -251,11 +259,6 @@
 					xWing: ready.xWing,
 					swordfish: ready.swordfish,
 					jellyfish: ready.jellyfish,
-					superRank: ready.superRank,
-					superSize: ready.superSize,
-					superType: ready.superType,
-					superDepth: ready.superDepth,
-					superCount: ready.superCount,
 				};
 				readyDataSend.push(post);
 				if (readyDataSend.length === maxSend) break;
@@ -369,14 +372,17 @@
 
 			if (startTime === 0) startTime = Date.now();
 			if (animationTicker === 0) animateFrame();
-			while (updateButton.firstChild) updateButton.removeChild(updateButton.firstChild);
 			toggleWorker();
 			if (workers) {
+				while (updateButton.firstChild) updateButton.removeChild(updateButton.firstChild);
 				updateButton.appendChild(document.createTextNode("Stop"));
 				processUpdate();
-			} else {
-				updateButton.appendChild(document.createTextNode("Update"));
 			}
+		});
+
+		window.addEventListener("beforeunload", (event) => {
+			if (appStage === 0 || !animating) return;
+			event.preventDefault();
 		});
 	</script>
 

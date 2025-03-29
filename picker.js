@@ -10,7 +10,8 @@ export const pixAlign = (val) => {
 	return Math.round(val) + 0.5;
 };
 
-const canvasDraw = (selected, font, canvas) => {
+const canvasDraw = (selected, font, marker) => {
+	const canvas = marker ? pickerMarker : picker;
 	canvas.width = cellSize * 3 * window.devicePixelRatio;
 	canvas.height = cellSize * 3 * window.devicePixelRatio;
 
@@ -74,13 +75,19 @@ const canvasDraw = (selected, font, canvas) => {
 	for (let x = 0; x < 3; x++, roff += inc) {
 		let coff = off;
 		for (let y = 0; y < 3; y++, coff += inc) {
-			ctx.fillText(symbols[x][y], pixAlign(coff), pixAlign(roff + (measure.actualBoundingBoxAscent * 0.5 - measure.actualBoundingBoxDescent * 0.5)));
+			const xoff = marker ? (y - 1) * unitSize * 0.2 : 0;
+			const yoff = marker ? (x - 1) * unitSize * 0.2 : 0;
+			ctx.fillText(
+				symbols[x][y],
+				pixAlign(coff + xoff),
+				pixAlign(roff + yoff + (measure.actualBoundingBoxAscent * 0.5 - measure.actualBoundingBoxDescent * 0.5))
+			);
 		}
 	}
 };
 export const pickerDraw = (selected, font, fontMarker) => {
-	canvasDraw(selected, font, picker);
-	canvasDraw(selected, fontMarker, pickerMarker);
+	canvasDraw(selected, font, false);
+	canvasDraw(selected, fontMarker, true);
 };
 
 export { picker, pickerMarker };

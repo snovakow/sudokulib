@@ -1,0 +1,169 @@
+<!doctype html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<title>Stats</title>
+	<meta name="viewport" content="width=device-width,initial-scale=1">
+
+	<script type="module">
+		const body = document.createElement('pre');
+		body.style.textAlign = "left";
+		body.style.position = "absolute";
+		body.style.top = "16px";
+		body.style.left = "16px";
+		body.style.margin = "0px";
+		document.body.appendChild(body);
+
+		const search = new URLSearchParams(window.location.search);
+		const mode = parseInt(search.get("mode") ?? -1);
+
+		const percentage = (number, total, precision) => {
+			const percent = (number * 100 / total).toFixed(precision);
+			return percent.padStart(precision + 3, "0") + "%";
+		};
+
+		const appendSpace = () => {
+			const line = document.createElement('br');
+			body.appendChild(line);
+		};
+		const appendLine = (text) => {
+			const line = document.createElement('DIV');
+			line.appendChild(document.createTextNode(text));
+			body.appendChild(line);
+		};
+
+		const startTime = performance.now();
+
+		const modeText = (data) => {
+			if (mode > 1) {
+				const time = Math.round((performance.now() - startTime) / 1000);
+				data += `\n${Math.floor(time / 60)}m ${time % 60}s\n\n`;
+			}
+			body.appendChild(document.createTextNode(data));
+		}
+
+		const mode3 = (data) => {
+			const totalCount = data.totalCount;
+			let runningTotal = 0;
+
+			appendLine(`--- Total ${totalCount.toLocaleString()}`);
+			appendSpace();
+
+			const len1 = 16;
+			const len2 = 7;
+			const len3 = 7;
+			const len4 = 11;
+
+			let fields = [];
+			fields.push("Strategy".padEnd(len1));
+			fields.push("Percent".padStart(len2));
+			fields.push("Sum".padStart(len3));
+			fields.push("Count".padStart(len4));
+			appendLine(fields.join(" "));
+
+			fields = [];
+			fields.push("".padStart(len1, "-"));
+			fields.push("".padStart(len2, "-"));
+			fields.push("".padStart(len3, "-"));
+			fields.push("".padStart(len4, "-"));
+			appendLine(fields.join(" "));
+
+			const fixed = 2;
+
+			const printLine = (title, count, min) => {
+				runningTotal += count;
+				const runningPercent = percentage(runningTotal, totalCount, fixed);
+				const percent = percentage(count, totalCount, fixed);
+				const number = count.toLocaleString();
+				const minLine = min ? ` (${percentage(min, count, fixed)} min)` : "";
+				// appendLine(`${label} ${percent} (${runningPercent})${minLine} ${number}`);
+
+				fields = [];
+				fields.push(title.padEnd(len1));
+				fields.push(`${percent}`.padStart(len2));
+				fields.push(`${runningPercent}`.padStart(len3));
+				fields.push(`${number}`.padStart(len4));
+				appendLine(fields.join(" "));
+			};
+			printLine("Hidden Simple", data.hiddenSimple);
+			printLine("Naked Simple", data.nakedSimple);
+			printLine("Omission Simple", data.omissionSimple);
+			printLine("Omission Visible", data.omissionVisible);
+			printLine("Candidate", data.candidate + data.candidateMin, data.candidateMin);
+			printLine("Unsolvable", data.unsolvable);
+
+			appendSpace();
+			const time = Math.round((performance.now() - startTime) / 1000);
+			appendLine(`${Math.floor(time / 60)}m ${time % 60}s`);
+			appendSpace();
+		}
+
+		const mode6 = (data) => {
+			const printTitle = (title, avg, count, total, precision) => {
+				const percent = percentage(count, total, precision);
+				const number = count.toLocaleString();
+				appendLine(`${title}: (${avg.toFixed(2)}) ${percent} ${number}`);
+			}
+			const printStat = (title, count, total, precision) => {
+				const percent = percentage(count, total, precision);
+				const number = count.toLocaleString();
+				appendLine(`${title}: ${percent} ${number}`);
+			}
+
+			let avg = 0;
+			let counts = 0;
+			for (const [clueCount, count] of Object.entries(data.counts)) {
+				avg += parseInt(clueCount) * count;
+				counts += count;
+			}
+			avg /= counts;
+			appendLine(`Clues: (${avg.toFixed(2)}) ${data.totalCount.toLocaleString()}`);
+
+			for (const clueCount in data.counts) {
+				const count = data.counts[clueCount];
+				printStat(clueCount, count, data.totalCount, 5);
+			}
+			appendSpace();
+
+			const titles = [
+				"Hidden Simple",
+				"Naked Simple",
+				"Omission Simple",
+				"Omission Visible",
+				"Candidate",
+				"Candidate Minimal",
+				"Incomplete",
+			];
+
+			for (const [solveType, countType] of Object.entries(data.countTypes)) {
+				let counts = 0;
+				let avg = 0;
+				for (const [clueCount, count] of Object.entries(countType)) {
+					avg += parseInt(clueCount) * count;
+					counts += count;
+				}
+				avg /= counts;
+				printTitle(titles[solveType], avg, counts, data.totalCount, 2);
+				for (const [clueCount, count] of Object.entries(data.counts)) printStat(clueCount, countType[clueCount] ?? 0, count, 2);
+				appendSpace();
+			}
+
+			const time = Math.round((performance.now() - startTime) / 1000);
+			appendLine(`${Math.floor(time / 60)}m ${time % 60}s`);
+			appendSpace();
+		}
+
+		const url = './statsFeed.php' + window.location.search;
+		fetch(url, { cache: "no-store" }).then(response => {
+			if (mode >= 0 && mode <= 5 && mode !== 3) response.text().then((text) => { modeText(text); });
+			if (mode === 3) response.json().then((json) => { mode3(json); });
+			if (mode === 6) response.json().then((json) => { mode6(json); });
+		});
+	</script>
+
+</head>
+
+<body></body>
+
+</html>

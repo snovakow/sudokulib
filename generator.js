@@ -1,7 +1,8 @@
 import {
-	candidates, simpleHidden, simpleOmissions, simpleNaked2, simpleNaked3, simpleNaked,
-	visibleOmissions, visibleNaked2, visibleNaked, hiddenSingles, NakedHiddenGroups, omissions, uniqueRectangle,
-	yWing, xyzWing, xWing, swordfish, jellyfish, superposition, aCells, bCells,
+	candidates, simpleHidden, simpleOmissions, simpleNaked,
+	visibleOmissions, visibleNaked,
+	hiddenSingles, NakedHiddenGroups, omissions, uniqueRectangle,
+	yWing, xyzWing, xWing, swordfish, jellyfish, aCells, bCells,
 	simpleHiddenValid, simpleNakedValid,
 } from "./solver.js";
 
@@ -9,15 +10,11 @@ const consoleOut = (result) => {
 	const lines = [];
 	lines.push("Solved: " + (result.solved ? "Yes" : "No"));
 	lines.push("Simple: " + (result.simple ? "Yes" : "No"));
-	lines.push("Visual: " + (result.candidateVisible ? "Yes" : "No"));
 	lines.push("Simple Hidden: " + result.hiddenSimple);
-	lines.push("Simple Omission: " + result.omissionSimple);
-	lines.push("Simple Naked 2: " + result.naked2Simple);
-	lines.push("Simple Naked 3: " + result.naked3Simple);
 	lines.push("Simple Naked: " + result.nakedSimple);
+	lines.push("Simple Omission: " + result.omissionSimple);
 
 	lines.push("Visual Omission: " + result.omissionVisible);
-	lines.push("Visual Naked2: " + result.naked2Visible);
 	lines.push("Visual Naked: " + result.nakedVisible);
 
 	lines.push("Naked 2: " + result.naked2);
@@ -35,22 +32,9 @@ const consoleOut = (result) => {
 	lines.push("Swordfish: " + result.swordfish);
 	lines.push("Jellyfish: " + result.jellyfish);
 
-	lines.push("Superposition Rank: " + result.superRank);
-	lines.push("Superposition Size: " + result.superSize);
-	lines.push("Superposition Type: " + result.superType);
-	lines.push("Superposition Depth: " + result.superDepth);
-	lines.push("Superposition Count: " + result.superCount);
-
 	return lines;
 }
 
-const isFinished = (cells) => {
-	for (let i = 0; i < 81; i++) {
-		const cell = cells[i];
-		if (cell.symbol === 0) return false;
-	}
-	return true;
-}
 const emptyCount = (cells) => {
 	let count = 0;
 	for (let i = 0; i < 81; i++) {
@@ -63,13 +47,10 @@ const emptyCount = (cells) => {
 let VAL = 0;
 const STRATEGY = {
 	SIMPLE_HIDDEN: VAL++,
-	SIMPLE_INTERSECTION: VAL++,
-	SIMPLE_NAKED2: VAL++,
-	SIMPLE_NAKED3: VAL++,
 	SIMPLE_NAKED: VAL++,
+	SIMPLE_INTERSECTION: VAL++,
 
 	VISIBLE_INTERSECTION: VAL++,
-	VISIBLE_NAKED2: VAL++,
 	VISIBLE_NAKED: VAL++,
 
 	NAKED_2: VAL++,
@@ -89,18 +70,11 @@ const STRATEGY = {
 };
 Object.freeze(STRATEGY);
 
-const fillSolve = (cells, simples, visibles, strategies, superpositions) => {
+const fillSolve = (cells, simples, strategies) => {
 	simples = simples ?? [
 		STRATEGY.SIMPLE_HIDDEN,
-		STRATEGY.SIMPLE_INTERSECTION,
-		STRATEGY.SIMPLE_NAKED2,
-		STRATEGY.SIMPLE_NAKED3,
 		STRATEGY.SIMPLE_NAKED,
-	];
-	visibles = visibles ?? [
-		STRATEGY.VISIBLE_INTERSECTION,
-		STRATEGY.VISIBLE_NAKED2,
-		STRATEGY.VISIBLE_NAKED,
+		STRATEGY.SIMPLE_INTERSECTION,
 	];
 	strategies = strategies ?? [
 		STRATEGY.NAKED_2,
@@ -120,10 +94,8 @@ const fillSolve = (cells, simples, visibles, strategies, superpositions) => {
 	];
 
 	let hiddenSimple = 0;
-	let omissionSimple = 0;
-	let naked2Simple = 0;
-	let naked3Simple = 0;
 	let nakedSimple = 0;
+	let omissionSimple = 0;
 
 	const solveSimple = () => {
 		let remaining = emptyCount(cells);
@@ -135,23 +107,13 @@ const fillSolve = (cells, simples, visibles, strategies, superpositions) => {
 					found = true;
 					break;
 				}
-				if (simple === STRATEGY.SIMPLE_INTERSECTION && simpleOmissions(cells)) {
-					omissionSimple++;
-					found = true;
-					break;
-				}
-				if (simple === STRATEGY.SIMPLE_NAKED2 && simpleNaked2(cells)) {
-					naked2Simple++;
-					found = true;
-					break;
-				}
-				if (simple === STRATEGY.SIMPLE_NAKED3 && simpleNaked3(cells)) {
-					naked3Simple++;
-					found = true;
-					break;
-				}
 				if (simple === STRATEGY.SIMPLE_NAKED && simpleNaked(cells)) {
 					nakedSimple++;
+					found = true;
+					break;
+				}
+				if (simple === STRATEGY.SIMPLE_INTERSECTION && simpleOmissions(cells)) {
+					omissionSimple++;
 					found = true;
 					break;
 				}
@@ -163,7 +125,6 @@ const fillSolve = (cells, simples, visibles, strategies, superpositions) => {
 	}
 
 	let omissionVisible = 0;
-	let naked2Visible = 0;
 	let nakedVisible = 0;
 
 	let naked2Reduced = 0;
@@ -185,19 +146,9 @@ const fillSolve = (cells, simples, visibles, strategies, superpositions) => {
 	// 1 reduced
 	// 2 placed
 	const solveVisiblePriority = (strategy) => {
-		if (strategy === STRATEGY.VISIBLE_INTERSECTION && visibleOmissions(cells)) {
-			omissionVisible++;
-			return 1;
-		}
-		if (strategy === STRATEGY.VISIBLE_NAKED2 && visibleNaked2(cells)) {
-			naked2Visible++;
-			return 1;
-		}
-		if (strategy === STRATEGY.VISIBLE_NAKED && visibleNaked(cells)) {
-			nakedVisible++;
-			return 2;
-		}
-		return 0;
+		if (strategy === STRATEGY.VISIBLE_INTERSECTION && visibleOmissions(cells)) return true;
+		if (strategy === STRATEGY.VISIBLE_NAKED && visibleNaked(cells)) return true;
+		return false;
 	}
 	const solvePriority = (strategy) => {
 		if (!nakedHidden) {
@@ -211,127 +162,115 @@ const fillSolve = (cells, simples, visibles, strategies, superpositions) => {
 		}
 		if (strategy === STRATEGY.NAKED_2 && nakedHidden.nakedPair()) {
 			naked2Reduced++;
-			return 1;
+			return true;
 		}
 		if (strategy === STRATEGY.NAKED_3 && nakedHidden.nakedTriple()) {
 			naked3Reduced++;
-			return 1;
+			return true;
 		}
 		if (strategy === STRATEGY.NAKED_4 && nakedHidden.nakedQuad()) {
 			naked4Reduced++;
-			return 1;
+			return true;
 		}
 		if (strategy === STRATEGY.HIDDEN_1 && hiddenSingles(cells)) {
 			hidden1Reduced++;
-			return 2;
+			return true;
 		}
 		if (strategy === STRATEGY.HIDDEN_2 && nakedHidden.hiddenPair()) {
 			hidden2Reduced++;
-			return 1;
+			return true;
 		}
 		if (strategy === STRATEGY.HIDDEN_3 && nakedHidden.hiddenTriple()) {
 			hidden3Reduced++;
-			return 1;
+			return true;
 		}
 		if (strategy === STRATEGY.HIDDEN_4 && nakedHidden.hiddenQuad()) {
 			hidden4Reduced++;
-			return 1;
+			return true;
 		}
 		if (strategy === STRATEGY.INTERSECTION_REMOVAL && omissions(cells)) {
 			omissionsReduced++;
-			return 1;
+			return true;
 		}
 		if (strategy === STRATEGY.DEADLY_PATTERN && uniqueRectangle(cells)) {
 			uniqueRectangleReduced++;
-			return 1;
+			return true;
 		}
 		if (strategy === STRATEGY.Y_WING && yWing(cells)) {
 			yWingReduced++;
-			return 1;
+			return true;
 		}
 		if (strategy === STRATEGY.XYZ_WING && xyzWing(cells)) {
 			xyzWingReduced++;
-			return 1;
+			return true;
 		}
 		if (strategy === STRATEGY.X_WING && xWing(cells)) {
 			xWingReduced++;
-			return 1;
+			return true;
 		}
 		if (strategy === STRATEGY.SWORDFISH && swordfish(cells)) {
 			swordfishReduced++;
-			return 1;
+			return true;
 		}
 		if (strategy === STRATEGY.JELLYFISH && jellyfish(cells)) {
 			jellyfishReduced++;
-			return 1;
+			return true;
 		}
-		return 0;
+		return false;
 	}
 
 	let simple = true;
-	let candidateVisible = true;
+	let visible = false;
 	let solved = true;
-
-	let superRank = 0;
-	let superSize = 0;
-	let superType = 0;
-	let superDepth = 0;
-	let superCount = 0;
 
 	do {
 		const remaining = solveSimple();
 		if (!remaining) break;
 
 		simple = false;
+		visible = true;
 		candidates(cells);
 
-		let progress = 0;
-		do {
-			for (const strategy of visibles) {
-				progress = solveVisiblePriority(strategy);
-				if (progress > 0) break;
-			}
-			if (progress === 0) {
-				candidateVisible = false;
-
-				for (const strategy of strategies) {
-					progress = solvePriority(strategy);
-					if (progress > 0) break;
-				}
-				nakedHidden = null;
-			}
-		} while (progress === 1);
-
-		if (progress === 0 && superpositions) {
-			const result = superposition(cells);
-			if (result.rank > 0) {
-				superRank = Math.max(superRank, result.rank);
-				superSize = Math.max(superSize, result.size);
-				superType = Math.max(superType, result.type);
-				superDepth = Math.max(superDepth, result.depth);
-				superCount++;
-				progress = 2;
+		let breakOut = false;
+		while (solveVisiblePriority(STRATEGY.VISIBLE_INTERSECTION)) {
+			if (solveVisiblePriority(STRATEGY.VISIBLE_NAKED)) {
+				omissionVisible++;
+				breakOut = true;
+				break;
 			}
 		}
+		if (breakOut) continue;
 
-		if (progress === 0) solved = false;
+		visible = false;
+
+		let progress = false;
+		do {
+			for (const strategy of strategies) {
+				progress = solvePriority(strategy);
+				if (progress) break;
+			}
+			nakedHidden = null;
+
+			if (progress) {
+				if (solveVisiblePriority(STRATEGY.VISIBLE_NAKED)) {
+					nakedVisible++;
+					break;
+				}
+			} else {
+				solved = false;
+			}
+		} while (progress);
+
 	} while (solved);
-
-	if (simple) candidateVisible = false;
-
-	if (superCount > 0) solved = false;
 
 	return {
 		solved,
 		simple,
-		candidateVisible,
+		visible,
 		hiddenSimple,
-		omissionSimple,
-		naked2Simple,
-		naked3Simple,
 		nakedSimple,
+		omissionSimple,
 		omissionVisible,
-		naked2Visible,
 		nakedVisible,
 		naked2: naked2Reduced,
 		naked3: naked3Reduced,
@@ -347,11 +286,6 @@ const fillSolve = (cells, simples, visibles, strategies, superpositions) => {
 		xWing: xWingReduced,
 		swordfish: swordfishReduced,
 		jellyfish: jellyfishReduced,
-		superRank,
-		superSize,
-		superType,
-		superDepth,
-		superCount,
 	};
 }
 const makeArray = (size) => {
@@ -469,7 +403,7 @@ const sudokuGenerator = (cells, target = 0) => {
 	const rndi = makeArray(81);
 	randomize(rndi);
 
-	if (target === 0) {
+	if (target <= 0) {
 		for (let i = 0; i < 81; i++) {
 			const index = rndi[i];
 

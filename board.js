@@ -1,4 +1,6 @@
 import { Cell, CellCandidate, Grid } from "../sudokulib/Grid.js";
+import * as SudokuProcess from "../sudokulib/process.js";
+
 const pixAlign = (val) => {
 	return Math.round(val) + 0.5;
 };
@@ -9,20 +11,7 @@ const LINE_THICK = 8;
 const LINE_THICK_HALF = LINE_THICK * 0.5;
 const LINE_THIN = 2;
 
-const FONT = {};
-FONT.REGULAR = "REGULAR, Hauss, sans-serif";
-FONT.COMIC = "COMIC, 'Comic Sans MS', 'Comic Sans', cursive";
-FONT.marker = FONT.REGULAR;
-FONT.default = FONT.REGULAR;
-FONT.initialized = false;
-Object.freeze(FONT.REGULAR);
-Object.freeze(FONT.COMIC);
-Object.freeze(FONT.default);
-
-const setMarkerFont = (markerFont) => {
-	if (markerFont) FONT.marker = FONT.COMIC;
-	else FONT.marker = FONT.REGULAR;
-};
+const FONT = "sans-serif";
 
 const BOX_SIDE = 3;
 const GRID_SIDE = BOX_SIDE * BOX_SIDE;
@@ -36,6 +25,12 @@ class Board {
 
 		this.startCells = new Grid();
 		for (let i = 0; i < 81; i++) this.startCells[i] = new Cell(i);
+
+		this.puzzleSolved = new Uint8Array(81);
+
+		this.errorCells = new Set();
+
+		Object.seal(this);
 	}
 	setGrid(cells) {
 		for (let i = 0; i < 81; i++) {
@@ -54,6 +49,7 @@ class Board {
 		for (const cell of this.cells) {
 			cell.setSymbol(this.startCells[cell.index].symbol);
 		}
+		this.errorCells.clear();
 	}
 	hitDetect(x, y, sizeTotal) {
 		const size = sizeTotal - LINE_THICK;
@@ -131,8 +127,6 @@ class Board {
 		}
 		ctx.stroke();
 
-		if (!FONT.initialized) return;
-
 		ctx.textAlign = 'center';
 		ctx.textBaseline = 'bottom';
 		ctx.fillStyle = 'Black'; // DimGray Black
@@ -148,8 +142,12 @@ class Board {
 			for (let c = 0; c < GRID_SIDE; c++, coff += unitSize) {
 				const index = r * 9 + c;
 				const cell = this.cells[index];
+
+				if (cell.symbol > 0 && this.errorCells.has(index)) ctx.fillStyle = 'HSL(9 100% 50%)';
+				else ctx.fillStyle = 'Black';
+
 				if (cell.symbol === 0) {
-					ctx.font = pixAlign(unitSize * 0.7 * 1 / 3) + "px " + FONT.marker;
+					ctx.font = pixAlign(unitSize * 0.7 * 1 / 3) + "px " + FONT;
 
 					if (!measureCandidate) measureCandidate = ctx.measureText("0");
 
@@ -165,10 +163,9 @@ class Board {
 						}
 					}
 				} else {
-					const startCell = board.startCells[index];
-					const font = startCell.symbol > 0 ? FONT.default : FONT.marker;
+					const startCell = this.startCells[index];
 					const fontSize = pixAlign(unitSize * 0.7);
-					ctx.font = fontSize + "px " + font;
+					ctx.font = fontSize + "px " + FONT;
 
 					let measured = measure;
 					if (startCell.symbol === 0) {
@@ -189,60 +186,35 @@ class Board {
 }
 const board = new Board();
 
-const storageToCells = (data) => {
-	const dataCells = data.grid;
-	if (!dataCells) return null;
-	for (let i = 0; i < 81; i++) {
-		const dataCell = dataCells[i];
-		const startCell = board.startCells[i];
-		const cell = board.cells[i];
-		if (dataCell.clue) {
-			startCell.symbol = dataCell.symbol;
-			cell.symbol = dataCell.symbol;
-		} else {
-			startCell.symbol = 0;
-			cell.setSymbol(dataCell.symbol);
-			if (dataCell.symbol === 0) cell.mask = dataCell.mask;
-		}
-	}
-	return data.metadata;
-}
-const cellsToStorage = (metadata) => {
-	const dataCells = [];
-	for (let i = 0; i < 81; i++) {
-		const startCell = board.startCells[i];
-		const data = {};
-		if (startCell.symbol === 0) {
-			const cell = board.cells[i];
-			data.clue = false;
-			data.symbol = cell.symbol;
-			data.mask = cell.mask;
-		} else {
-			data.clue = true;
-			data.symbol = startCell.symbol;
-			data.mask = 0x0000;
-		}
-		dataCells.push(data);
-	}
-	return {
-		grid: dataCells,
-		metadata
-	}
-}
-
-const saveGrid = (metadata) => {
-	window.name = JSON.stringify(cellsToStorage(metadata));
+const saveGrid = (metadata, clues) => {
+	const data = JSON.stringify(metadata);
+	const encoded = SudokuProcess.puzzleGridBase64(board, clues);
+	// window.location.hash = encoded;
+	history.replaceState(null, "", "#" + encoded);
+	sessionStorage.setItem("saveData", data);
 };
-const loadGrid = () => {
-	const data = window.name;
-	if (!data) return null;
-	let metadata = null;
+const loadGrid = (hash, clues) => {
+	if (!hash) {
+		sessionStorage.removeItem("saveData");
+		return { coded: false, metadata: null };
+	}
 	try {
-		metadata = storageToCells(JSON.parse(data));
-	} catch (err) {
-		console.log("Window name data error", err);
+		SudokuProcess.puzzleBase64Grid(board, hash, clues);
+	} catch (error) {
+		console.log(error);
+		sessionStorage.removeItem("saveData");
+		return { coded: false, metadata: null };
 	}
-	return metadata;
+	try {
+		const data = sessionStorage.getItem("saveData");
+		return { coded: true, metadata: JSON.parse(data) };
+	} catch (error) {
+		return { coded: true, metadata: null };
+	}
 };
 
-export { board, FONT, loadGrid, saveGrid, setMarkerFont };
+const clearGrid = () => {
+	sessionStorage.removeItem("saveData");
+};
+
+export { board, FONT, loadGrid, saveGrid, clearGrid };

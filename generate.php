@@ -14,7 +14,8 @@ function totalCount($tableCount, $puzzleCount)
 function tableName($number)
 {
 	$pad = str_pad($number, 3, "0", STR_PAD_LEFT);
-	return "puzzles$pad";
+	$puzzles = "puzzles";
+	return "$puzzles$pad";
 }
 
 function addTable($number)
@@ -26,12 +27,9 @@ function addTable($number)
   `clueCount` tinyint(2) unsigned NOT NULL DEFAULT '0',
   `solveType` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `hiddenSimple` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `omissionSimple` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `naked2Simple` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `naked3Simple` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `nakedSimple` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `omissionSimple` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `omissionVisible` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `naked2Visible` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `nakedVisible` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `naked2` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `naked3` tinyint(3) unsigned NOT NULL DEFAULT '0',
@@ -47,11 +45,6 @@ function addTable($number)
   `xWing` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `swordfish` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `jellyfish` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `superRank` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `superSize` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `superType` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `superDepth` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `superCount` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=ascii COLLATE=ascii_bin";
 }
@@ -61,11 +54,10 @@ function insertValues($number, $values)
 	$valueList = implode(",", $values);
 	$table = tableName($number);
 	return "INSERT INTO `$table` (id, puzzleData, clueCount, solveType,
-		hiddenSimple, omissionSimple, naked2Simple, naked3Simple, nakedSimple,
-		omissionVisible, naked2Visible, nakedVisible,
+		hiddenSimple, nakedSimple, omissionSimple,
+		omissionVisible, nakedVisible,
 		naked2, naked3, naked4, hidden1, hidden2, hidden3, hidden4, omissions,
-		uniqueRectangle, yWing, xyzWing, xWing, swordfish, jellyfish,
-		superRank, superSize, superType, superDepth, superCount) VALUES $valueList";
+		uniqueRectangle, yWing, xyzWing, xWing, swordfish, jellyfish) VALUES $valueList";
 }
 
 try {
@@ -78,8 +70,10 @@ try {
 	$array = json_decode(file_get_contents("php://input"));
 	$addCount = count($array);
 
+	$tables = "tables";
+
 	$db->exec("START TRANSACTION");
-	$stmt = $db->prepare("SELECT `tableCount`, `puzzleCount` FROM `tables` FOR UPDATE");
+	$stmt = $db->prepare("SELECT `tableCount`, `puzzleCount` FROM `$tables` FOR UPDATE");
 	$stmt->execute();
 	$result = $stmt->fetch();
 	$tableCount = (int)$result['tableCount'];
@@ -128,12 +122,9 @@ try {
 			$post->clueCount,
 			$post->solveType,
 			$post->hiddenSimple,
-			$post->omissionSimple,
-			$post->naked2Simple,
-			$post->naked3Simple,
 			$post->nakedSimple,
+			$post->omissionSimple,
 			$post->omissionVisible,
-			$post->naked2Visible,
 			$post->nakedVisible,
 			$post->naked2,
 			$post->naked3,
@@ -149,11 +140,6 @@ try {
 			$post->xWing,
 			$post->swordfish,
 			$post->jellyfish,
-			$post->superRank,
-			$post->superSize,
-			$post->superType,
-			$post->superDepth,
-			$post->superCount,
 		];
 		$flatList = implode(',', $valueList);
 		$values[] = "($flatList)";
@@ -161,7 +147,7 @@ try {
 
 	if (count($values) > 0) $db->exec(insertValues($tableCount, $values));
 
-	$stmt = $db->prepare("UPDATE `tables` SET `tableCount`=?, `puzzleCount`=?");
+	$stmt = $db->prepare("UPDATE `$tables` SET `tableCount`=?, `puzzleCount`=?");
 	$stmt->execute([$tableCount, $puzzleCount]);
 
 	$db->exec("COMMIT");

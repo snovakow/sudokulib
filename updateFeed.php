@@ -7,7 +7,8 @@ $count = (int)$_GET['count'];
 function tableName($number)
 {
 	$pad = str_pad($number, 3, "0", STR_PAD_LEFT);
-	return "puzzles$pad";
+	$puzzles = "puzzles";
+	return "$puzzles$pad";
 }
 
 const MAX_SIZE = 10000000;

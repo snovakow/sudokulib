@@ -5,9 +5,9 @@
 # http://www.sequelpro.com/
 # https://github.com/sequelpro/sequelpro
 #
-# Host: localhost (MySQL 5.7.32)
+# Host: localhost (MySQL 5.7.39)
 # Database: sudoku
-# Generation Time: 2025-01-09 19:23:23 +0000
+# Generation Time: 2025-03-19 16:47:25 +0000
 # ************************************************************
 
 
@@ -31,12 +31,9 @@ CREATE TABLE `puzzles001` (
   `clueCount` tinyint(2) unsigned NOT NULL DEFAULT '0',
   `solveType` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `hiddenSimple` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `omissionSimple` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `naked2Simple` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `naked3Simple` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `nakedSimple` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `omissionSimple` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `omissionVisible` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `naked2Visible` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `nakedVisible` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `naked2` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `naked3` tinyint(3) unsigned NOT NULL DEFAULT '0',
@@ -52,11 +49,6 @@ CREATE TABLE `puzzles001` (
   `xWing` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `swordfish` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `jellyfish` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `superRank` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `superSize` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `superType` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `superDepth` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `superCount` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=ascii COLLATE=ascii_bin;
 

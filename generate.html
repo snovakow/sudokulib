@@ -127,6 +127,8 @@
 
 		let coreCount = 0;
 
+		const search = new URLSearchParams(window.location.search);
+
 		const generateButton = document.createElement('button');
 		generateButton.style.top = '8px';
 		generateButton.style.right = '8px';
@@ -211,7 +213,7 @@
 				addEstimate(formatTime(msTotal7) + " total");
 				statsEstimate.push(document.createElement('br'));
 
-				const remainingCount9 = 1e9 - totalCount;
+				const remainingCount9 = 1e9 - (totalCount % 1e9);
 				const ms9 = recordedTime / recordedCount * remainingCount9;
 				const date9 = new Date(now + ms9).toLocaleString(undefined, options);
 				addEstimate(date9, "1 Billion ETA");
@@ -230,7 +232,7 @@
 
 		let prevPingTime = Date.now();
 		let prevPingCount = 0;
-		const pingSend = (responder) => {
+		function pingSend(responder) {
 			pingRunBusy = true;
 			const url = './tables.php?version=1';
 			fetch(url, { cache: "no-store" }).then(response => {
@@ -276,26 +278,30 @@
 		};
 		if (coreCount === 0) pingSend();
 
-		const search = new URLSearchParams(window.location.search);
 		const searchCores = parseInt(search.get("cores"));
 		if (!isNaN(searchCores) && searchCores <= 10 && searchCores > 0) coreCount = searchCores;
+
+		window.addEventListener("beforeunload", (event) => {
+			if (appStage === 0 || !animationLoop) return;
+			event.preventDefault();
+		});
 
 		let strategyCounter = null;
 		let workers = null;
 		const toggleWorker = () => {
 			pingRun = false;
-			while (generateButton.firstChild) generateButton.removeChild(generateButton.firstChild);
 			if (workers) {
-				generateButton.appendChild(document.createTextNode("Generate"));
 				for (const worker of workers) worker.terminate();
 				workers = null;
 				return;
 			}
+			while (generateButton.firstChild) generateButton.removeChild(generateButton.firstChild);
 			generateButton.appendChild(document.createTextNode("Stop"));
 			if (!strategyCounter) strategyCounter = new StrategyCounter();
 
 			workers = [];
-			for (let i = 0; i < coreCount; i++) workers[i] = new Worker("worker.js", { type: "module" });
+			const worker_url = new URL("./worker_generator.js", import.meta.url);
+			for (let i = 0; i < coreCount; i++) workers[i] = new Worker(worker_url, { type: "module" });
 		};
 
 		let sendDataSent = 0;
@@ -357,13 +363,10 @@
 					solveType: ready.solveType,
 
 					hiddenSimple: ready.hiddenSimple,
-					omissionSimple: ready.omissionSimple,
-					naked2Simple: ready.naked2Simple,
-					naked3Simple: ready.naked3Simple,
 					nakedSimple: ready.nakedSimple,
+					omissionSimple: ready.omissionSimple,
 
 					omissionVisible: ready.omissionVisible,
-					naked2Visible: ready.naked2Visible,
 					nakedVisible: ready.nakedVisible,
 
 					naked2: ready.naked2,
@@ -380,11 +383,6 @@
 					xWing: ready.xWing,
 					swordfish: ready.swordfish,
 					jellyfish: ready.jellyfish,
-					superRank: ready.superRank,
-					superSize: ready.superSize,
-					superType: ready.superType,
-					superDepth: ready.superDepth,
-					superCount: ready.superCount,
 				};
 
 				readyDataSend.push(post);
@@ -424,13 +422,14 @@
 
 		const processGenerate = () => {
 			for (const worker of workers) {
-				const workerData = {};
 				worker.onmessage = (e) => {
 					const data = e.data;
+
 					strategyCounter.addData();
 					populateGenerate();
 					sendData(data);
 				};
+				const workerData = {};
 				worker.postMessage(workerData);
 			}
 		};
@@ -452,8 +451,8 @@
 			}
 			generateButton.addEventListener('click', () => {
 				if (appStage === 1) generateButton.disabled = true;
+				responder();
 				appStage++;
-				pingSend(responder);
 			});
 			document.body.appendChild(generateButton);
 		}

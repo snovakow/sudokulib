@@ -9,9 +9,6 @@ $type = $_GET['strategy'];
 $strategy = "";
 
 $tableNames = [
-	"simple_hidden",
-	"simple_omission",
-	"candidate_visible",
 	"candidate_naked2",
 	"candidate_naked3",
 	"candidate_naked4",
@@ -26,9 +23,6 @@ $tableNames = [
 	"candidate_xWing",
 	"candidate_swordfish",
 	"candidate_jellyfish",
-	"super_min",
-	"super_max",
-	"custom",
 	"hardcoded",
 ];
 foreach ($tableNames as $tableName) {
@@ -43,7 +37,8 @@ if ($strategy == "") die();
 function tableName($number)
 {
 	$pad = str_pad($number, 3, "0", STR_PAD_LEFT);
-	return "puzzles$pad";
+	$puzzles = "puzzles";
+	return "$puzzles$pad";
 }
 
 try {
@@ -52,29 +47,6 @@ try {
 	$password = "kewbac-recge1-Fiwpux";
 	$dbname = "sudoku";
 	$db = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
-
-	if ($strategy == 'custom') {
-		$stmt = $db->prepare("SELECT `id`, `title`, `puzzle_id`, `table_id` FROM `custom`");
-		$stmt->execute();
-		$result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-		$results = [];
-		foreach ($result as $key => $row) {
-			$id = $row['id'];
-			$title = $row['title'];
-			$puzzle_id = $row['puzzle_id'];
-			$table_id = $row['table_id'];
-
-			$table = tableName($table_id);
-			$stmt = $db->prepare("SELECT HEX(`puzzleData`) AS 'puzzleData' FROM `$table` WHERE `id`=$puzzle_id");
-
-			$stmt->execute();
-			$result = $stmt->fetch();
-			$puzzleData = $result['puzzleData'];
-
-			$results[] = ['id' => $id, 'title' => $title, 'puzzleData' => $puzzleData];
-		}
-		exit(json_encode($results));
-	}
 
 	if ($strategy == 'hardcoded') {
 		$stmt = $db->prepare("SELECT `id`, `title`, `puzzle` FROM `hardcoded`");
