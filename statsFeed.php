@@ -471,7 +471,6 @@ try {
 				echo "\n";
 			}
 		}
-		echo "\n";
 	}
 
 	if ($mode === 5) {
